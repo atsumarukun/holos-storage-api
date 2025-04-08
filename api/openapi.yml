@@ -1,0 +1,26 @@
+openapi: "3.0.3"
+
+info:
+  title: "holos: ストレージ API"
+  version: ""
+
+servers:
+  - url: "http://localhost:8002"
+    description: "localhost"
+  - url: "http://storage-api:8000"
+    description: "docker compose service"
+
+paths:
+  /health:
+    get:
+      summary: "ヘルスチェック"
+      tags:
+        - "health"
+      responses:
+        204:
+          $ref: "#/components/responses/204"
+
+components:
+  responses:
+    204:
+      description: "Success"
