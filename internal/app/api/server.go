@@ -20,14 +20,10 @@ func Serve() {
 		log.Fatalln(err.Error())
 	}
 
-	log.Println(db)
+	inject(db)
 
 	r := gin.Default()
-	r.GET("/ping", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"message": "pong",
-		})
-	})
+	registerRouter(r)
 
 	srv := &http.Server{
 		Addr:              ":8000",
