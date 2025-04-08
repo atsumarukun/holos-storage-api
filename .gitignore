@@ -1,2 +1,5 @@
 # environment file
 .env
+
+# database directory
+db/data/
