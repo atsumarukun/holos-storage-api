@@ -13,6 +13,15 @@ import (
 )
 
 func Serve() {
+	conf := loadServerConfig()
+
+	db, err := NewDatabase(&conf.database)
+	if err != nil {
+		log.Fatalln(err.Error())
+	}
+
+	log.Println(db)
+
 	r := gin.Default()
 	r.GET("/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{
