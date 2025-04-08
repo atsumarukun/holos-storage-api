@@ -1,0 +1,16 @@
+FROM golang:1.24
+
+ARG UID=1000
+ARG USERNAME=docker
+
+RUN apt-get update && \
+    apt-get -y install sudo && \
+    useradd -u $UID -G sudo -m $USERNAME && \
+    echo "$USERNAME ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers
+
+USER $USERNAME
+
+RUN go install -tags 'mysql' github.com/golang-migrate/migrate/v4/cmd/migrate@v4.18 && \
+    go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.64 && \
+    go install go.uber.org/mock/mockgen@v0.5 && \
+    go install github.com/air-verse/air@v1.61

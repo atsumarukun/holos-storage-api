@@ -1,0 +1,23 @@
+{
+  "dockerComposeFile": ["../docker-compose.yml"],
+  "service": "storage-api",
+  "workspaceFolder": "/workspace",
+  "postAttachCommand": "git config --global --add safe.directory /workspace && air -c .air.toml",
+  "containerEnv": {
+    "SHELL": "/bin/bash"
+  },
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "git.openRepositoryInParentFolders": "always"
+      },
+      "extensions": [
+        "ReneSaarsoo.sql-formatter-vsc",
+        "shardulm94.trailing-spaces",
+        "bierner.markdown-mermaid",
+        "42Crunch.vscode-openapi",
+        "golang.Go"
+      ]
+    }
+  }
+}

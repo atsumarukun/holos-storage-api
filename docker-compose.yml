@@ -1,0 +1,44 @@
+services:
+  storage-db:
+    image: mysql:9.0
+    volumes:
+      - ./db/data:/var/lib/mysql
+    networks:
+      - nw-holos
+    environment:
+      TZ: UTC
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_USER: develop
+      MYSQL_PASSWORD: develop
+      MYSQL_DATABASE: develop
+    healthcheck:
+      test: ['CMD', 'mysqladmin', 'ping', '-h', 'localhost']
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  storage-api:
+    build:
+      context: .
+      dockerfile: build/package/Dockerfile.local
+    volumes:
+      - .:/workspace
+      - db_data:/workspace/db/data
+    working_dir: /workspace
+    networks:
+      - nw-holos
+    ports:
+      - 8002:8000
+    env_file:
+      - .env
+    tty: true
+    depends_on:
+      storage-db:
+        condition: service_healthy
+
+volumes:
+  db_data:
+
+networks:
+  nw-holos:
+    external: true
