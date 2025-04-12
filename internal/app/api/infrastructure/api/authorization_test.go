@@ -43,6 +43,15 @@ func TestAuthorization_Authorize(t *testing.T) {
 				w.WriteHeader(http.StatusUnauthorized)
 			},
 		},
+		{
+			name:         "authorization faild",
+			expectResult: nil,
+			expectError:  api.ErrAuthorizationFaild,
+			mockHandlerFunc: func(w http.ResponseWriter, r *http.Request) {
+				w.Header().Set("Content-Type", "application/json")
+				w.WriteHeader(http.StatusInternalServerError)
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
