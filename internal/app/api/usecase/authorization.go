@@ -3,10 +3,10 @@ package usecase
 
 import (
 	"context"
-	"errors"
 
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/domain/repository"
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/usecase/dto"
+	"github.com/atsumarukun/holos-storage-api/internal/app/api/usecase/mapper"
 )
 
 type AuthorizationUsecase interface {
@@ -24,5 +24,10 @@ func NewAuthorizationUsecase(authorizationRepo repository.AuthorizationRepositor
 }
 
 func (u *authorizationUsecase) Authorize(ctx context.Context, credential string) (*dto.AuthorizationDTO, error) {
-	return nil, errors.New("not implemented")
+	authorization, err := u.authorizationRepo.Authorize(ctx, credential)
+	if err != nil {
+		return nil, err
+	}
+
+	return mapper.ToAuthorizationDTO(authorization), nil
 }
