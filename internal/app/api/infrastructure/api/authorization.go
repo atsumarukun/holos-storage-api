@@ -35,6 +35,7 @@ func (r *authorizationRepository) Authorize(ctx context.Context, credential stri
 	if err != nil {
 		return nil, err
 	}
+	req.Header.Set("Authorization", credential)
 
 	resp, err := r.client.Do(req)
 	if err != nil {

@@ -21,33 +21,40 @@ func TestAuthorization_Authorize(t *testing.T) {
 
 	tests := []struct {
 		name            string
+		inputCredential string
 		expectResult    *entity.Authorization
 		expectError     error
 		mockHandlerFunc http.HandlerFunc
 	}{
 		{
-			name:         "success",
-			expectResult: authorization,
-			expectError:  nil,
+			name:            "success",
+			inputCredential: "Session: token",
+			expectResult:    authorization,
+			expectError:     nil,
 			mockHandlerFunc: func(w http.ResponseWriter, r *http.Request) {
 				w.Header().Set("Content-Type", "application/json")
+				if r.Header.Get("Authorization") == "" {
+					w.WriteHeader(http.StatusUnauthorized)
+				}
 				json.NewEncoder(w).Encode(map[string]string{"account_id": authorization.AccountID.String()})
 			},
 		},
 		{
-			name:         "unauthorized",
-			expectResult: nil,
-			expectError:  api.ErrUnauthorized,
-			mockHandlerFunc: func(w http.ResponseWriter, r *http.Request) {
+			name:            "unauthorized",
+			inputCredential: "Session: token",
+			expectResult:    nil,
+			expectError:     api.ErrUnauthorized,
+			mockHandlerFunc: func(w http.ResponseWriter, _ *http.Request) {
 				w.Header().Set("Content-Type", "application/json")
 				w.WriteHeader(http.StatusUnauthorized)
 			},
 		},
 		{
-			name:         "authorization faild",
-			expectResult: nil,
-			expectError:  api.ErrAuthorizationFaild,
-			mockHandlerFunc: func(w http.ResponseWriter, r *http.Request) {
+			name:            "authorization faild",
+			inputCredential: "Session: token",
+			expectResult:    nil,
+			expectError:     api.ErrAuthorizationFaild,
+			mockHandlerFunc: func(w http.ResponseWriter, _ *http.Request) {
 				w.Header().Set("Content-Type", "application/json")
 				w.WriteHeader(http.StatusInternalServerError)
 			},
@@ -59,7 +66,7 @@ func TestAuthorization_Authorize(t *testing.T) {
 			defer srv.Close()
 
 			repo := api.NewAuthorizationRepository(srv.Client(), srv.URL)
-			result, err := repo.Authorize(t.Context(), "Session: token")
+			result, err := repo.Authorize(t.Context(), tt.inputCredential)
 			if !errors.Is(err, tt.expectError) {
 				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
 			}
