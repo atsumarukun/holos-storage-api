@@ -35,13 +35,13 @@ func (m *authorizationMiddleware) Authorize(c *gin.Context) {
 
 	ctx := c.Request.Context()
 
-	authorization, err := m.authorizationUC.Authorize(ctx, credential)
+	account, err := m.authorizationUC.Authorize(ctx, credential)
 	if err != nil {
 		errors.Handle(c, err)
 		c.Abort()
 		return
 	}
 
-	c.Set("accountID", authorization.ID)
+	c.Set("accountID", account.ID)
 	c.Next()
 }
