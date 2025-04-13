@@ -9,20 +9,17 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-var codeMap = map[code.StatusCode]int{
-	code.BadRequest:   http.StatusBadRequest,
-	code.Unauthorized: http.StatusUnauthorized,
-	code.Forbidden:    http.StatusForbidden,
-	code.Conflict:     http.StatusConflict,
-	code.Internal:     http.StatusInternalServerError,
+type response struct {
+	code    int
+	message string
 }
 
-var messageMap = map[code.StatusCode]string{
-	code.BadRequest:   "bad request",
-	code.Unauthorized: "unauthorized",
-	code.Forbidden:    "forbidden",
-	code.Conflict:     "conflict",
-	code.Internal:     "internal server error",
+var responseMap = map[code.StatusCode]response{
+	code.BadRequest:   {code: http.StatusBadRequest, message: "bad request"},
+	code.Unauthorized: {code: http.StatusUnauthorized, message: "unauthorized"},
+	code.Forbidden:    {code: http.StatusForbidden, message: "forbidden"},
+	code.Conflict:     {code: http.StatusConflict, message: "conflict"},
+	code.Internal:     {code: http.StatusInternalServerError, message: "internal server error"},
 }
 
 func Handle(c *gin.Context, err error) {
@@ -30,10 +27,11 @@ func Handle(c *gin.Context, err error) {
 
 	if v, ok := err.(*status.Status); ok {
 		if v.Code() == code.BadRequest {
-			c.JSON(codeMap[v.Code()], v.Message())
+			c.JSON(http.StatusBadRequest, v.Message())
 			return
 		}
-		c.JSON(codeMap[v.Code()], map[string]string{"message": messageMap[v.Code()]})
+		resp := responseMap[v.Code()]
+		c.JSON(resp.code, map[string]string{"message": resp.message})
 		return
 	}
 	c.JSON(http.StatusInternalServerError, map[string]string{"message": "internal server error"})
