@@ -2,7 +2,6 @@ package api_test
 
 import (
 	"encoding/json"
-	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -12,6 +11,8 @@ import (
 
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/domain/entity"
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/infrastructure/api"
+	"github.com/atsumarukun/holos-storage-api/internal/app/api/pkg/status"
+	"github.com/atsumarukun/holos-storage-api/internal/app/api/pkg/status/code"
 )
 
 func TestAccount_FindOneByCredential(t *testing.T) {
@@ -43,20 +44,30 @@ func TestAccount_FindOneByCredential(t *testing.T) {
 			name:            "unauthorized",
 			inputCredential: "Session: token",
 			expectResult:    nil,
-			expectError:     api.ErrUnauthorized,
+			expectError:     status.Error(code.Unauthorized, "unauthorized"),
 			mockHandlerFunc: func(w http.ResponseWriter, _ *http.Request) {
 				w.Header().Set("Content-Type", "application/json")
 				w.WriteHeader(http.StatusUnauthorized)
+				body, err := json.Marshal(&map[string]string{"message": "unauthorized"})
+				if err != nil {
+					t.Error(err)
+				}
+				w.Write(body)
 			},
 		},
 		{
 			name:            "authorization faild",
 			inputCredential: "Session: token",
 			expectResult:    nil,
-			expectError:     api.ErrAuthorizationFaild,
+			expectError:     status.Error(code.Internal, "internal server error"),
 			mockHandlerFunc: func(w http.ResponseWriter, _ *http.Request) {
 				w.Header().Set("Content-Type", "application/json")
 				w.WriteHeader(http.StatusInternalServerError)
+				body, err := json.Marshal(&map[string]string{"message": "internal server error"})
+				if err != nil {
+					t.Error(err)
+				}
+				w.Write(body)
 			},
 		},
 	}
@@ -67,7 +78,7 @@ func TestAccount_FindOneByCredential(t *testing.T) {
 
 			repo := api.NewAccountRepository(srv.Client(), srv.URL)
 			result, err := repo.FindOneByCredential(t.Context(), tt.inputCredential)
-			if !errors.Is(err, tt.expectError) {
+			if !status.Is(err, tt.expectError) {
 				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
 			}
 

@@ -1,6 +1,7 @@
 package status
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/pkg/status/code"
@@ -50,4 +51,18 @@ func (e *Status) Code() code.StatusCode {
 
 func (e *Status) Message() string {
 	return e.message
+}
+
+func Is(err error, target error) bool {
+	if err == nil && target == nil {
+		return true
+	}
+
+	ss, sok := err.(*Status)
+	ts, tok := target.(*Status)
+
+	if sok && tok {
+		return ss.code == ts.code && ss.message == ts.message
+	}
+	return errors.Is(err, target)
 }

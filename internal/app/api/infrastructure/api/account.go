@@ -7,15 +7,9 @@ import (
 
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/domain/entity"
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/domain/repository"
+	"github.com/atsumarukun/holos-storage-api/internal/app/api/infrastructure/api/pkg/errors"
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/infrastructure/model"
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/infrastructure/transformer"
-	"github.com/atsumarukun/holos-storage-api/internal/app/api/pkg/status"
-	"github.com/atsumarukun/holos-storage-api/internal/app/api/pkg/status/code"
-)
-
-var (
-	ErrUnauthorized       = status.Error(code.Unauthorized, "unauthorized")
-	ErrAuthorizationFaild = status.Error(code.Internal, "authorization faild")
 )
 
 type accountRepository struct {
@@ -48,10 +42,8 @@ func (r *accountRepository) FindOneByCredential(ctx context.Context, credential 
 		}
 	}()
 
-	if resp.StatusCode == http.StatusUnauthorized {
-		return nil, ErrUnauthorized
-	} else if resp.StatusCode != http.StatusOK {
-		return nil, ErrAuthorizationFaild
+	if resp.StatusCode != http.StatusOK {
+		return nil, errors.Decode(resp)
 	}
 
 	var model model.AccountModel
