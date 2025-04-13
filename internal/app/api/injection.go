@@ -1,8 +1,9 @@
 package api
 
 import (
-	"github.com/atsumarukun/holos-storage-api/internal/app/api/interface/handler"
 	"github.com/jmoiron/sqlx"
+
+	"github.com/atsumarukun/holos-storage-api/internal/app/api/interface/handler"
 )
 
 var healthHandler handler.HealthHandler

@@ -23,7 +23,7 @@ linters-settings:
   gocyclo:
     min-complexity: 10
   goimports:
-    local-prefixes: github.com/atsumarukun/holos-account-api
+    local-prefixes: github.com/atsumarukun/holos-storage-api
   dupl:
     threshold: 100
   gosec:
