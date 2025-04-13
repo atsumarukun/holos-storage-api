@@ -29,7 +29,7 @@ func TestAccount_FindOneByCredential(t *testing.T) {
 	}{
 		{
 			name:            "success",
-			inputCredential: "Session: token",
+			inputCredential: "Session: YNDNun_KFu1uFmS691yJ6eqJ9eczRVKn",
 			expectResult:    account,
 			expectError:     nil,
 			mockHandlerFunc: func(w http.ResponseWriter, r *http.Request) {
@@ -42,7 +42,7 @@ func TestAccount_FindOneByCredential(t *testing.T) {
 		},
 		{
 			name:            "unauthorized",
-			inputCredential: "Session: token",
+			inputCredential: "Session: YNDNun_KFu1uFmS691yJ6eqJ9eczRVKn",
 			expectResult:    nil,
 			expectError:     status.Error(code.Unauthorized, "unauthorized"),
 			mockHandlerFunc: func(w http.ResponseWriter, _ *http.Request) {
@@ -57,7 +57,7 @@ func TestAccount_FindOneByCredential(t *testing.T) {
 		},
 		{
 			name:            "authorization faild",
-			inputCredential: "Session: token",
+			inputCredential: "Session: YNDNun_KFu1uFmS691yJ6eqJ9eczRVKn",
 			expectResult:    nil,
 			expectError:     status.Error(code.Internal, "internal server error"),
 			mockHandlerFunc: func(w http.ResponseWriter, _ *http.Request) {
