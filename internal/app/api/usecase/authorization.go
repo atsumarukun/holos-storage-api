@@ -10,24 +10,24 @@ import (
 )
 
 type AuthorizationUsecase interface {
-	Authorize(context.Context, string) (*dto.AuthorizationDTO, error)
+	Authorize(context.Context, string) (*dto.AccountDTO, error)
 }
 
 type authorizationUsecase struct {
-	authorizationRepo repository.AuthorizationRepository
+	accountRepo repository.AccountRepository
 }
 
-func NewAuthorizationUsecase(authorizationRepo repository.AuthorizationRepository) AuthorizationUsecase {
+func NewAuthorizationUsecase(accountRepo repository.AccountRepository) AuthorizationUsecase {
 	return &authorizationUsecase{
-		authorizationRepo: authorizationRepo,
+		accountRepo: accountRepo,
 	}
 }
 
-func (u *authorizationUsecase) Authorize(ctx context.Context, credential string) (*dto.AuthorizationDTO, error) {
-	authorization, err := u.authorizationRepo.Authorize(ctx, credential)
+func (u *authorizationUsecase) Authorize(ctx context.Context, credential string) (*dto.AccountDTO, error) {
+	account, err := u.accountRepo.FindOneByCredential(ctx, credential)
 	if err != nil {
 		return nil, err
 	}
 
-	return mapper.ToAuthorizationDTO(authorization), nil
+	return mapper.ToAccountDTO(account), nil
 }

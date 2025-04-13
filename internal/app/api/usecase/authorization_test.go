@@ -16,29 +16,29 @@ import (
 )
 
 func TestAuthorization_Authorize(t *testing.T) {
-	authorization := &entity.Authorization{
-		AccountID: uuid.New(),
+	account := &entity.Account{
+		ID: uuid.New(),
 	}
-	authorizationDTO := &dto.AuthorizationDTO{
-		AccountID: authorization.AccountID,
+	accountDTO := &dto.AccountDTO{
+		ID: account.ID,
 	}
 
 	tests := []struct {
-		name                     string
-		inputCredential          string
-		expectResult             *dto.AuthorizationDTO
-		expectError              error
-		setMockAuthorizationRepo func(context.Context, *repository.MockAuthorizationRepository)
+		name               string
+		inputCredential    string
+		expectResult       *dto.AccountDTO
+		expectError        error
+		setMockAccountRepo func(context.Context, *repository.MockAccountRepository)
 	}{
 		{
 			name:            "success",
 			inputCredential: "Session: YNDNun_KFu1uFmS691yJ6eqJ9eczRVKn",
-			expectResult:    authorizationDTO,
+			expectResult:    accountDTO,
 			expectError:     nil,
-			setMockAuthorizationRepo: func(ctx context.Context, authorizationRepo *repository.MockAuthorizationRepository) {
-				authorizationRepo.EXPECT().
-					Authorize(ctx, gomock.Any()).
-					Return(authorization, nil).
+			setMockAccountRepo: func(ctx context.Context, accountRepo *repository.MockAccountRepository) {
+				accountRepo.EXPECT().
+					FindOneByCredential(ctx, gomock.Any()).
+					Return(account, nil).
 					Times(1)
 			},
 		},
@@ -47,9 +47,9 @@ func TestAuthorization_Authorize(t *testing.T) {
 			inputCredential: "Session: YNDNun_KFu1uFmS691yJ6eqJ9eczRVKn",
 			expectResult:    nil,
 			expectError:     http.ErrServerClosed,
-			setMockAuthorizationRepo: func(ctx context.Context, authorizationRepo *repository.MockAuthorizationRepository) {
-				authorizationRepo.EXPECT().
-					Authorize(ctx, gomock.Any()).
+			setMockAccountRepo: func(ctx context.Context, accountRepo *repository.MockAccountRepository) {
+				accountRepo.EXPECT().
+					FindOneByCredential(ctx, gomock.Any()).
 					Return(nil, http.ErrServerClosed).
 					Times(1)
 			},
@@ -62,10 +62,10 @@ func TestAuthorization_Authorize(t *testing.T) {
 
 			ctx := t.Context()
 
-			authorizationRepo := repository.NewMockAuthorizationRepository(ctrl)
-			tt.setMockAuthorizationRepo(ctx, authorizationRepo)
+			accountRepo := repository.NewMockAccountRepository(ctrl)
+			tt.setMockAccountRepo(ctx, accountRepo)
 
-			uc := usecase.NewAuthorizationUsecase(authorizationRepo)
+			uc := usecase.NewAuthorizationUsecase(accountRepo)
 			result, err := uc.Authorize(ctx, tt.inputCredential)
 			if !errors.Is(err, tt.expectError) {
 				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)

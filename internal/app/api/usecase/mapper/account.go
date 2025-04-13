@@ -5,8 +5,8 @@ import (
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/usecase/dto"
 )
 
-func ToAuthorizationDTO(authorization *entity.Authorization) *dto.AuthorizationDTO {
-	return &dto.AuthorizationDTO{
-		AccountID: authorization.AccountID,
+func ToAccountDTO(account *entity.Account) *dto.AccountDTO {
+	return &dto.AccountDTO{
+		ID: account.ID,
 	}
 }

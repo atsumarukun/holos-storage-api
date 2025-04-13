@@ -7,6 +7,6 @@ import (
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/domain/entity"
 )
 
-type AuthorizationRepository interface {
-	Authorize(context.Context, string) (*entity.Authorization, error)
+type AccountRepository interface {
+	FindOneByCredential(context.Context, string) (*entity.Account, error)
 }

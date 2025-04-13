@@ -42,6 +42,6 @@ func (m *authorizationMiddleware) Authorize(c *gin.Context) {
 		return
 	}
 
-	c.Set("accountID", authorization.AccountID)
+	c.Set("accountID", authorization.ID)
 	c.Next()
 }

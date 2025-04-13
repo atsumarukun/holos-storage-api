@@ -18,19 +18,19 @@ var (
 	ErrAuthorizationFaild = status.Error(code.Internal, "authorization faild")
 )
 
-type authorizationRepository struct {
+type accountRepository struct {
 	client   *http.Client
 	endpoint string
 }
 
-func NewAuthorizationRepository(client *http.Client, endpoint string) repository.AuthorizationRepository {
-	return &authorizationRepository{
+func NewAccountRepository(client *http.Client, endpoint string) repository.AccountRepository {
+	return &accountRepository{
 		client:   client,
 		endpoint: endpoint,
 	}
 }
 
-func (r *authorizationRepository) Authorize(ctx context.Context, credential string) (authorization *entity.Authorization, err error) {
+func (r *accountRepository) FindOneByCredential(ctx context.Context, credential string) (account *entity.Account, err error) {
 	req, err := http.NewRequestWithContext(ctx, "GET", r.endpoint, http.NoBody)
 	if err != nil {
 		return nil, err
@@ -54,10 +54,10 @@ func (r *authorizationRepository) Authorize(ctx context.Context, credential stri
 		return nil, ErrAuthorizationFaild
 	}
 
-	var model model.AuthorizationModel
+	var model model.AccountModel
 	if err := json.NewDecoder(resp.Body).Decode(&model); err != nil {
 		return nil, err
 	}
 
-	return transformer.ToAuthorizationEntity(&model), nil
+	return transformer.ToAccountEntity(&model), nil
 }

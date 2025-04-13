@@ -5,6 +5,6 @@ import (
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/infrastructure/model"
 )
 
-func ToAuthorizationEntity(authorization *model.AuthorizationModel) *entity.Authorization {
-	return entity.RestoreAuthorization(authorization.AccountID)
+func ToAccountEntity(account *model.AccountModel) *entity.Account {
+	return entity.RestoreAccount(account.ID)
 }

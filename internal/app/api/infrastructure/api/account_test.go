@@ -14,29 +14,29 @@ import (
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/infrastructure/api"
 )
 
-func TestAuthorization_Authorize(t *testing.T) {
-	authorization := &entity.Authorization{
-		AccountID: uuid.New(),
+func TestAccount_FindOneByCredential(t *testing.T) {
+	account := &entity.Account{
+		ID: uuid.New(),
 	}
 
 	tests := []struct {
 		name            string
 		inputCredential string
-		expectResult    *entity.Authorization
+		expectResult    *entity.Account
 		expectError     error
 		mockHandlerFunc http.HandlerFunc
 	}{
 		{
 			name:            "success",
 			inputCredential: "Session: token",
-			expectResult:    authorization,
+			expectResult:    account,
 			expectError:     nil,
 			mockHandlerFunc: func(w http.ResponseWriter, r *http.Request) {
 				w.Header().Set("Content-Type", "application/json")
 				if r.Header.Get("Authorization") == "" {
 					w.WriteHeader(http.StatusUnauthorized)
 				}
-				json.NewEncoder(w).Encode(map[string]string{"account_id": authorization.AccountID.String()})
+				json.NewEncoder(w).Encode(map[string]string{"id": account.ID.String()})
 			},
 		},
 		{
@@ -65,8 +65,8 @@ func TestAuthorization_Authorize(t *testing.T) {
 			srv := httptest.NewServer(tt.mockHandlerFunc)
 			defer srv.Close()
 
-			repo := api.NewAuthorizationRepository(srv.Client(), srv.URL)
-			result, err := repo.Authorize(t.Context(), tt.inputCredential)
+			repo := api.NewAccountRepository(srv.Client(), srv.URL)
+			result, err := repo.FindOneByCredential(t.Context(), tt.inputCredential)
 			if !errors.Is(err, tt.expectError) {
 				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
 			}

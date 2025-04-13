@@ -6,20 +6,21 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/atsumarukun/holos-storage-api/internal/app/api/interface/middleware"
-	"github.com/atsumarukun/holos-storage-api/internal/app/api/usecase/dto"
-	"github.com/atsumarukun/holos-storage-api/test/mock/usecase"
 	"github.com/gin-gonic/gin"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/uuid"
 	"go.uber.org/mock/gomock"
+
+	"github.com/atsumarukun/holos-storage-api/internal/app/api/interface/middleware"
+	"github.com/atsumarukun/holos-storage-api/internal/app/api/usecase/dto"
+	"github.com/atsumarukun/holos-storage-api/test/mock/usecase"
 )
 
 func TestAuthorization_Authorize(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
-	authorizationDTO := &dto.AuthorizationDTO{
-		AccountID: uuid.New(),
+	accountDTO := &dto.AccountDTO{
+		ID: uuid.New(),
 	}
 
 	tests := []struct {
@@ -31,11 +32,11 @@ func TestAuthorization_Authorize(t *testing.T) {
 		{
 			name:                "success",
 			authorizationHeader: "Session 1Ty1HKTPKTt8xEi-_3HTbWf2SCHOdqOS",
-			expectResult:        authorizationDTO.AccountID,
+			expectResult:        accountDTO.ID,
 			setMockAuthorizationUC: func(ctx context.Context, authorizationUC *usecase.MockAuthorizationUsecase) {
 				authorizationUC.EXPECT().
 					Authorize(ctx, gomock.Any()).
-					Return(authorizationDTO, nil).
+					Return(accountDTO, nil).
 					Times(1)
 			},
 		},

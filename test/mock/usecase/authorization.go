@@ -42,10 +42,10 @@ func (m *MockAuthorizationUsecase) EXPECT() *MockAuthorizationUsecaseMockRecorde
 }
 
 // Authorize mocks base method.
-func (m *MockAuthorizationUsecase) Authorize(arg0 context.Context, arg1 string) (*dto.AuthorizationDTO, error) {
+func (m *MockAuthorizationUsecase) Authorize(arg0 context.Context, arg1 string) (*dto.AccountDTO, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Authorize", arg0, arg1)
-	ret0, _ := ret[0].(*dto.AuthorizationDTO)
+	ret0, _ := ret[0].(*dto.AccountDTO)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
