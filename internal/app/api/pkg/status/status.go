@@ -53,7 +53,7 @@ func (e *Status) Message() string {
 	return e.message
 }
 
-func Is(err error, target error) bool {
+func Is(err, target error) bool {
 	if err == nil && target == nil {
 		return true
 	}
