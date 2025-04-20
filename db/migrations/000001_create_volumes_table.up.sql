@@ -1,0 +1,10 @@
+CREATE TABLE IF NOT EXISTS `volumes` (
+  `id` CHAR(36) NOT NULL COMMENT "ID",
+  `account_id` CHAR(36) NOT NULL COMMENT "アカウントID",
+  `name` VARCHAR(255) NOT NULL COMMENT "ボリューム名",
+  `is_public` TINYINT (1) NOT NULL COMMENT "公開フラグ",
+  `created_at` DATETIME (6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT "作成日時",
+  `updated_at` DATETIME (6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6) COMMENT "更新日時",
+  PRIMARY KEY (`id`),
+  UNIQUE `uq_volumes_name` (`name`)
+);
