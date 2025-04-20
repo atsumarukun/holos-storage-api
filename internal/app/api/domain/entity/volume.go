@@ -4,7 +4,16 @@ import (
 	"errors"
 	"time"
 
+	"github.com/atsumarukun/holos-storage-api/internal/app/api/pkg/status"
+	"github.com/atsumarukun/holos-storage-api/internal/app/api/pkg/status/code"
 	"github.com/google/uuid"
+)
+
+var (
+	ErrRequiredVolumeAccountID = status.Error(code.Internal, "account id for volume is required")
+	ErrShortVolumeName         = status.Error(code.BadRequest, "volume name is too short")
+	ErrLongVolumeName          = status.Error(code.BadRequest, "volume name is too long")
+	ErrInvalidVolumeName       = status.Error(code.BadRequest, "volume name contains invalid characters")
 )
 
 type Volume struct {
