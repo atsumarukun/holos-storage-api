@@ -19,8 +19,293 @@ paths:
       responses:
         204:
           $ref: "#/components/responses/204"
+  /volumes:
+    post:
+      summary: "ボリューム作成"
+      tags:
+        - "volumes"
+      security:
+        - sessionAuth: []
+        - accessKeyAuth: []
+      parameters:
+        - in: "header"
+          name: "Authorization"
+          schema:
+            type: "string"
+          required: true
+          description: "セッショントークンまたはアクセスキー"
+          example: "Session 1Ty1HKTPKTt8xEi-_3HTbWf2SCHOdqOS"
+      requestBody:
+        $ref: "#/components/requestBodies/create_volume"
+      responses:
+        201:
+          $ref: "#/components/responses/create_volume"
+        400:
+          $ref: "#/components/responses/400"
+        401:
+          $ref: "#/components/responses/401"
+        403:
+          $ref: "#/components/responses/403"
+        409:
+          $ref: "#/components/responses/409"
+        500:
+          $ref: "#/components/responses/500"
+    get:
+      summary: "ボリューム一覧取得"
+      tags:
+        - "volumes"
+      security:
+        - sessionAuth: []
+        - accessKeyAuth: []
+      parameters:
+        - in: "header"
+          name: "Authorization"
+          schema:
+            type: "string"
+          required: true
+          description: "セッショントークンまたはアクセスキー"
+          example: "Session 1Ty1HKTPKTt8xEi-_3HTbWf2SCHOdqOS"
+      responses:
+        200:
+          $ref: "#/components/responses/get_volumes"
+        401:
+          $ref: "#/components/responses/401"
+        403:
+          $ref: "#/components/responses/403"
+        500:
+          $ref: "#/components/responses/500"
+  /volumes/:id:
+    put:
+      summary: "ボリューム更新"
+      tags:
+        - "volumes"
+      security:
+        - sessionAuth: []
+        - accessKeyAuth: []
+      parameters:
+        - in: "header"
+          name: "Authorization"
+          schema:
+            type: "string"
+          required: true
+          description: "セッショントークンまたはアクセスキー"
+          example: "Session 1Ty1HKTPKTt8xEi-_3HTbWf2SCHOdqOS"
+      requestBody:
+        $ref: "#/components/requestBodies/update_volume"
+      responses:
+        200:
+          $ref: "#/components/responses/update_volume"
+        400:
+          $ref: "#/components/responses/400"
+        401:
+          $ref: "#/components/responses/401"
+        403:
+          $ref: "#/components/responses/403"
+        409:
+          $ref: "#/components/responses/409"
+        500:
+          $ref: "#/components/responses/500"
+    delete:
+      summary: "ボリューム削除"
+      tags:
+        - "volumes"
+      security:
+        - sessionAuth: []
+        - accessKeyAuth: []
+      parameters:
+        - in: "header"
+          name: "Authorization"
+          schema:
+            type: "string"
+          required: true
+          description: "セッショントークンまたはアクセスキー"
+          example: "Session 1Ty1HKTPKTt8xEi-_3HTbWf2SCHOdqOS"
+      responses:
+        204:
+          $ref: "#/components/responses/204"
+        401:
+          $ref: "#/components/responses/401"
+        403:
+          $ref: "#/components/responses/403"
+        500:
+          $ref: "#/components/responses/500"
+    get:
+      summary: "ボリューム単体取得"
+      tags:
+        - "volumes"
+      security:
+        - sessionAuth: []
+        - accessKeyAuth: []
+      parameters:
+        - in: "header"
+          name: "Authorization"
+          schema:
+            type: "string"
+          required: true
+          description: "セッショントークンまたはアクセスキー"
+          example: "Session 1Ty1HKTPKTt8xEi-_3HTbWf2SCHOdqOS"
+      responses:
+        200:
+          $ref: "#/components/responses/get_volume"
+        401:
+          $ref: "#/components/responses/401"
+        403:
+          $ref: "#/components/responses/403"
+        500:
+          $ref: "#/components/responses/500"
 
 components:
+  securitySchemes:
+    sessionAuth:
+      type: http
+      scheme: Session
+    accessKeyAuth:
+      type: http
+      scheme: AccessKey
+
+  schemas:
+    created_at:
+      type: "string"
+      description: "作成日時"
+      format: "date-time"
+      example: "2017-07-21T17:32:28Z"
+      readOnly: true
+    updated_at:
+      type: "string"
+      description: "更新日時"
+      format: "date-time"
+      example: "2017-07-21T17:32:28Z"
+      readOnly: true
+    volume:
+      type: "object"
+      properties:
+        id:
+          type: "string"
+          description: "ID"
+          example: "c99fc6e0-6e62-4de2-8a7e-5c608ceaa8c6"
+          readOnly: true
+        name:
+          type: "string"
+          description: "ボリューム名"
+          example: "volume_name"
+        is_public:
+          type: "boolean"
+          description: "公開フラグ"
+          example: false
+        created_at:
+          $ref: "#/components/schemas/created_at"
+        updated_at:
+          $ref: "#/components/schemas/updated_at"
+      required:
+        - "id"
+        - "name"
+        - "is_public"
+        - "created_at"
+        - "updated_at"
+
+  requestBodies:
+    create_volume:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/volume"
+    update_volume:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/volume"
+
   responses:
+    create_volume:
+      description: "Success"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/volume"
+    update_volume:
+      description: "Success"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/volume"
+    get_volume:
+      description: "Success"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/volume"
+    get_volumes:
+      description: "Success"
+      content:
+        application/json:
+          schema:
+            type: "object"
+            properties:
+              volumes:
+                type: "array"
+                items:
+                  $ref: "#/components/schemas/volume"
     204:
       description: "Success"
+    400:
+      description: "Bad Request"
+      content:
+        text/plain:
+          schema:
+            type: "object"
+            properties:
+              message:
+                type: "string"
+                example: "bad request"
+    401:
+      description: "Unauthorized"
+      content:
+        text/plain:
+          schema:
+            type: "object"
+            properties:
+              message:
+                type: "string"
+                example: "unauthorized"
+    403:
+      description: "Forbidden"
+      content:
+        text/plain:
+          schema:
+            type: "object"
+            properties:
+              message:
+                type: "string"
+                example: "forbidden"
+    404:
+      description: "Resource Not Found"
+      content:
+        text/plain:
+          schema:
+            type: "object"
+            properties:
+              message:
+                type: "string"
+                example: "resource not found"
+    409:
+      description: "Conflict"
+      content:
+        text/plain:
+          schema:
+            type: "object"
+            properties:
+              message:
+                type: "string"
+                example: "conflict"
+    500:
+      description: "Internal Server Error"
+      content:
+        text/plain:
+          schema:
+            type: "object"
+            properties:
+              message:
+                type: "string"
+                example: "internal server error"

@@ -44,17 +44,19 @@
 
 | キー | 型 | 備考 |
 | --- | --- | --- |
-| id | uuid.UUID | |
-| name | string | 1文字以上255文字以下<br />\\/:*?"<>\|は利用不可 |
-| isPublic | bool | |
-| createdAt | time.Time | |
-| updatedAt | time.Time | |
+| ID | uuid.UUID | |
+| AccountID | uuid.UUID | |
+| Name | string | 1文字以上255文字以下<br />\\/:*?"<>\|は利用不可 |
+| IsPublic | bool | |
+| CreatedAt | time.Time | |
+| UpdatedAt | time.Time | |
 
 ## テーブル
 
 | カラム名 | 型 | キー | null許容 | 備考 |
 | --- | --- | --- | --- | --- |
 | id | char(36) | PK | | ID |
+| account_id | char(36) | | | アカウントID |
 | name | varchar(255) | UQ | | ボリューム名 |
 | is_public | tinyint(1) | | | 公開フラグ |
 | created_at | datetime(6) | | | 作成日時 |
@@ -107,3 +109,4 @@
 | 変更日 | 変更者 | 変更内容 |
 | --- | --- | --- |
 | 2025/04/20 | @atsumarukun | 初版 |
+| 2025/04/20 | @atsumarukun | ドメインオブジェクトとテーブルにアカウントIDを追加 |
