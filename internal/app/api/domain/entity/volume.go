@@ -1,7 +1,7 @@
 package entity
 
 import (
-	"errors"
+	"regexp"
 	"time"
 
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/pkg/status"
@@ -28,6 +28,21 @@ type Volume struct {
 func NewVolume(accountID uuid.UUID, name string, isPublic bool) (*Volume, error) {
 	var volume Volume
 
+	if err := volume.generateID(); err != nil {
+		return nil, err
+	}
+	if err := volume.setAccountID(accountID); err != nil {
+		return nil, err
+	}
+	if err := volume.SetName(name); err != nil {
+		return nil, err
+	}
+	volume.SetIsPublic(isPublic)
+
+	now := time.Now()
+	volume.CreatedAt = now
+	volume.UpdatedAt = now
+
 	return &volume, nil
 }
 
@@ -43,13 +58,41 @@ func RestoreVolume(id uuid.UUID, accountID uuid.UUID, name string, isPublic bool
 }
 
 func (v *Volume) SetName(name string) error {
-	return errors.New("not implemented")
+	if len(name) < 1 {
+		return ErrShortVolumeName
+	} else if 255 < len(name) {
+		return ErrLongVolumeName
+	}
+	matched, err := regexp.MatchString(`^[A-Za-z0-9!@#$%^&()_\-+=\[\]{};',.~ ]*$`, name)
+	if err != nil {
+		return err
+	}
+	if !matched {
+		return ErrInvalidVolumeName
+	}
+	v.Name = name
+	v.UpdatedAt = time.Now()
+	return nil
 }
 
 func (v *Volume) SetIsPublic(isPublic bool) {
 	v.IsPublic = isPublic
+	v.UpdatedAt = time.Now()
 }
 
 func (v *Volume) generateID() error {
-	return errors.New("not implemented")
+	id, err := uuid.NewRandom()
+	if err != nil {
+		return err
+	}
+	v.ID = id
+	return nil
+}
+
+func (v *Volume) setAccountID(accountID uuid.UUID) error {
+	if accountID == uuid.Nil {
+		return ErrRequiredVolumeAccountID
+	}
+	v.AccountID = accountID
+	return nil
 }

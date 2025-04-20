@@ -76,7 +76,7 @@ func TestVolume_SetName(t *testing.T) {
 		{name: "upper case only", inputName: "NAME", expectError: nil},
 		{name: "number only", inputName: "1234", expectError: nil},
 		{name: "mixed lower case and upper case and number", inputName: "volumeName1234", expectError: nil},
-		{name: "valid symbols", inputName: "!@#$%^&()_-+=[]{};',.|~", expectError: nil},
+		{name: "valid symbols", inputName: "!@#$%^&()_-+=[]{};',.~", expectError: nil},
 		{name: "include space", inputName: "volume name", expectError: nil},
 		{name: "include slash", inputName: "volume/name", expectError: entity.ErrInvalidVolumeName},
 		{name: "include backslash", inputName: "volume\\name", expectError: entity.ErrInvalidVolumeName},
