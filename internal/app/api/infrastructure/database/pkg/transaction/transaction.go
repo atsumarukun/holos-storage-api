@@ -2,6 +2,7 @@ package transaction
 
 import (
 	"context"
+	"database/sql"
 
 	"github.com/jmoiron/sqlx"
 
@@ -50,6 +51,7 @@ type driver interface {
 	sqlx.QueryerContext
 	sqlx.Execer
 	sqlx.ExecerContext
+	NamedExecContext(ctx context.Context, query string, arg interface{}) (sql.Result, error)
 }
 
 func GetDriver(ctx context.Context, db *sqlx.DB) driver {
