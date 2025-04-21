@@ -100,10 +100,11 @@ func TestVolume_FindOneByNameAndAccountID(t *testing.T) {
 		setMockDB      func(mock sqlmock.Sqlmock)
 	}{
 		{
-			name:         "success",
-			inputName:    "name",
-			expectResult: volume,
-			expectError:  nil,
+			name:           "success",
+			inputName:      "name",
+			inputAccountID: accountID,
+			expectResult:   volume,
+			expectError:    nil,
 			setMockDB: func(mock sqlmock.Sqlmock) {
 				mock.ExpectQuery(regexp.QuoteMeta(`SELECT id, account_id, name, is_public, created_at, updated_at FROM volumes WHERE name = ? AND account_id = ? LIMIT 1;`)).
 					WithArgs("name", accountID).
@@ -112,10 +113,11 @@ func TestVolume_FindOneByNameAndAccountID(t *testing.T) {
 			},
 		},
 		{
-			name:         "not found",
-			inputName:    "name",
-			expectResult: nil,
-			expectError:  nil,
+			name:           "not found",
+			inputName:      "name",
+			inputAccountID: accountID,
+			expectResult:   nil,
+			expectError:    nil,
 			setMockDB: func(mock sqlmock.Sqlmock) {
 				mock.ExpectQuery(regexp.QuoteMeta(`SELECT id, account_id, name, is_public, created_at, updated_at FROM volumes WHERE name = ? AND account_id = ? LIMIT 1;`)).
 					WithArgs("name", accountID).
@@ -124,10 +126,11 @@ func TestVolume_FindOneByNameAndAccountID(t *testing.T) {
 			},
 		},
 		{
-			name:         "find error",
-			inputName:    "name",
-			expectResult: nil,
-			expectError:  sql.ErrConnDone,
+			name:           "find error",
+			inputName:      "name",
+			inputAccountID: accountID,
+			expectResult:   nil,
+			expectError:    sql.ErrConnDone,
 			setMockDB: func(mock sqlmock.Sqlmock) {
 				mock.ExpectQuery(regexp.QuoteMeta(`SELECT id, account_id, name, is_public, created_at, updated_at FROM volumes WHERE name = ? AND account_id = ? LIMIT 1;`)).
 					WithArgs("name", accountID).
