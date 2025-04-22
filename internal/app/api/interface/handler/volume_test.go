@@ -44,7 +44,7 @@ func TestVolume_Create(t *testing.T) {
 			requestJSON:    []byte(`{"name": "name", "is_public": false}`),
 			isSetAccountID: true,
 			expectCode:     http.StatusCreated,
-			expectResponse: map[string]any{"id": volumeDTO.ID, "account_id": volumeDTO.AccountID, "name": volumeDTO.Name, "is_public": volumeDTO.IsPublic, "created_at": volumeDTO.CreatedAt, "updated_at": volumeDTO.UpdatedAt},
+			expectResponse: map[string]any{"id": volumeDTO.ID.String(), "account_id": volumeDTO.AccountID.String(), "name": volumeDTO.Name, "is_public": volumeDTO.IsPublic, "created_at": volumeDTO.CreatedAt.Format(time.RFC3339Nano), "updated_at": volumeDTO.UpdatedAt.Format(time.RFC3339Nano)},
 			setMockVolumeUC: func(ctx context.Context, volumeUC *usecase.MockVolumeUsecase) {
 				volumeUC.
 					EXPECT().
