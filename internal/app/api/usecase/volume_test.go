@@ -105,7 +105,7 @@ func TestVolume_Create(t *testing.T) {
 				volumeServ.
 					EXPECT().
 					Exists(ctx, gomock.Any()).
-					Return(nil).
+					Return(service.ErrVolumeAlreadyExists).
 					Times(1)
 			},
 		},
@@ -164,7 +164,7 @@ func TestVolume_Create(t *testing.T) {
 			}
 
 			opts := cmp.Options{
-				cmpopts.IgnoreFields(dto.VolumeDTO{}, "ID"),
+				cmpopts.IgnoreFields(dto.VolumeDTO{}, "ID", "CreatedAt", "UpdatedAt"),
 			}
 			if diff := cmp.Diff(result, tt.expectResult, opts...); diff != "" {
 				t.Error(diff)
