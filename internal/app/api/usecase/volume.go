@@ -3,12 +3,13 @@ package usecase
 
 import (
 	"context"
-	"errors"
 
+	"github.com/atsumarukun/holos-storage-api/internal/app/api/domain/entity"
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/domain/repository"
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/domain/repository/pkg/transaction"
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/domain/service"
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/usecase/dto"
+	"github.com/atsumarukun/holos-storage-api/internal/app/api/usecase/mapper"
 	"github.com/google/uuid"
 )
 
@@ -35,5 +36,20 @@ func NewVolumeUsecase(
 }
 
 func (u *volumeUsecase) Create(ctx context.Context, accountID uuid.UUID, name string, isPublic bool) (*dto.VolumeDTO, error) {
-	return nil, errors.New("not implemented")
+	volume, err := entity.NewVolume(accountID, name, isPublic)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := u.transactionObj.Transaction(ctx, func(ctx context.Context) error {
+		if err := u.volumeServ.Exists(ctx, volume); err != nil {
+			return err
+		}
+
+		return u.volumeRepo.Create(ctx, volume)
+	}); err != nil {
+		return nil, err
+	}
+
+	return mapper.ToVolumeDTO(volume), nil
 }
