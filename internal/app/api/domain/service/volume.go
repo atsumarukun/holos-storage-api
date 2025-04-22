@@ -12,7 +12,7 @@ import (
 
 var (
 	ErrRequiredVolume      = status.Error(code.Internal, "volume is required")
-	ErrVolumeAlreadyExists = status.Error(code.Conflict, "volume already exists")
+	ErrVolumeAlreadyExists = status.Error(code.Conflict, "volume name already used")
 )
 
 type VolumeService interface {

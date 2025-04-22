@@ -28,7 +28,7 @@ func Handle(c *gin.Context, err error) {
 
 	if v, ok := err.(*status.Status); ok {
 		resp := responseMap[v.Code()]
-		if v.Code() == code.BadRequest {
+		if v.Code() == code.BadRequest || v.Code() == code.Conflict {
 			c.JSON(resp.code, map[string]string{"message": v.Message()})
 			return
 		}
