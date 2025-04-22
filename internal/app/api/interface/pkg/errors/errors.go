@@ -29,7 +29,7 @@ func Handle(c *gin.Context, err error) {
 	if v, ok := err.(*status.Status); ok {
 		resp := responseMap[v.Code()]
 		if v.Code() == code.BadRequest {
-			c.JSON(resp.code, v.Message())
+			c.JSON(resp.code, map[string]string{"message": v.Message()})
 			return
 		}
 		c.JSON(resp.code, map[string]string{"message": resp.message})
