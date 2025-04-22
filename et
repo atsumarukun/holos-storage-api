@@ -1,0 +1,852 @@
+[33mcommit 6fb6e8bc7d4caeec8db6fd4dca890e040a7f9966[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32missue-48[m[33m)[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Wed Apr 23 01:10:42 2025 +0900
+
+    create: parameterパッケージを作成.
+
+[33mcommit fcbcfc3ac9bb4b0031b61924e62b85e48d961748[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Wed Apr 23 01:02:05 2025 +0900
+
+    create: ボリュームハンドラのユニットテストコードを作成.
+
+[33mcommit d4844bb6fb48e8689e375b26ebe59ab918fa2385[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Wed Apr 23 00:45:39 2025 +0900
+
+    create: ボリュームユースケースのモックを生成.
+
+[33mcommit 3dbd751089de594b39ec7a1b6556d43048a11005[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Wed Apr 23 00:42:04 2025 +0900
+
+    create: ボリュームハンドラを作成.
+
+[33mcommit 4e1958a1ad0de613379bc5cc0b7267b37ad20894[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Wed Apr 23 00:35:37 2025 +0900
+
+    fix: ボリュームユースケースのユニットテストコードを修正.
+
+[33mcommit 96697c73522fba1eb4814197bb3810ce35a2eff9[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Wed Apr 23 00:32:46 2025 +0900
+
+    create: ボリュームユースケースを実装.
+
+[33mcommit 519f5c6b9f8bf3db510d570a734ac4f1f6728fdc[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Wed Apr 23 00:28:50 2025 +0900
+
+    create: ボリュームユースケースのユニットテストコードを作成.
+
+[33mcommit 1a448c0031ef312ef712d6037d38754bd31e5d15[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Wed Apr 23 00:28:18 2025 +0900
+
+    create: ボリュームサービスのモックを生成.
+
+[33mcommit 4a6a65715ecc8696d0274d12de2536f315c285e8[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Tue Apr 22 23:57:58 2025 +0900
+
+    create: ボリュームユースケースを作成.
+
+[33mcommit 45f1597bd91ee80d932c8ce5bbc7b9fa823a14bb[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Tue Apr 22 23:31:17 2025 +0900
+
+    create: ボリュームサービスを実装.
+
+[33mcommit 336c965244c6359d8d3ec455250e339fa38bec3c[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Tue Apr 22 23:29:12 2025 +0900
+
+    create: ボリュームサービスのユニットテストコードを作成.
+
+[33mcommit 46bdcdaa42a29a6a7fd59e16f89a5f2466e292b6[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Tue Apr 22 23:06:57 2025 +0900
+
+    create: ボリュームリポジトリのモックを生成.
+
+[33mcommit 2760571bbadcc8bd37bf878c9eb4adf72dde5d8f[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Tue Apr 22 23:02:11 2025 +0900
+
+    create: ボリュームサービスを作成.
+
+[33mcommit 0d649dcf76ff47127ad2a2c9477ac369d8615f1b[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Mon Apr 21 23:07:34 2025 +0900
+
+    fix: ボリュームリポジトリ内FindOneByNameAndAccountID関数のユニットテストコードを修正.
+
+[33mcommit 54aed7988e5be75d186bab159b0247f9f478463d[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Mon Apr 21 23:06:58 2025 +0900
+
+    create: ボリュームリポジトリを実装.
+
+[33mcommit 115702c89b383c3f830318d118cadde030085872[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Mon Apr 21 22:52:12 2025 +0900
+
+    create: ボリュームモデルを作成.
+
+[33mcommit 3f9bea6764e728405f4f4ead1bcda012e46993b8[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Mon Apr 21 22:47:38 2025 +0900
+
+    refactor: インフラストラクチャ層のmodelとtransformerを移動.
+
+[33mcommit bc5602b55adaa197bcedd2e61ac23e5c6780f917[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Mon Apr 21 22:30:51 2025 +0900
+
+    create: ボリュームリポジトリのユニットテストコードを作成.
+
+[33mcommit 141bff631f05eac5829f0b00a22ecf1aad266c8d[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Mon Apr 21 21:58:45 2025 +0900
+
+    create: mockデータベースを作成.
+
+[33mcommit 0f25927c80211bdb745db2fb8d908490008d6d87[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Mon Apr 21 21:57:17 2025 +0900
+
+    create: sqlmockをインストール.
+
+[33mcommit e83e2288528515aeb227e90d29ad364d7ccbc74e[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Mon Apr 21 21:53:07 2025 +0900
+
+    create: ボリュームリポジトリを作成.
+
+[33mcommit 54002e1257eb595974ef4645085b8a8a09c7ff6a[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Sun Apr 20 23:48:10 2025 +0900
+
+    create: ボリュームエンティティのメンバメソッドを実装.
+
+[33mcommit 5d9b53da05b240185a632300460e451d40b5fb44[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Sun Apr 20 23:40:38 2025 +0900
+
+    create: ボリュームエンティティのユニットテストコードを作成.
+
+[33mcommit 273d71743900dc97beb8b59e49723333535ce309[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Sun Apr 20 23:00:07 2025 +0900
+
+    create: ボリュームエンティティを作成.
+
+[33mcommit 943b6d9f3c3bf4d29e0dffc636e39df4741f3acb[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Sun Apr 20 22:59:18 2025 +0900
+
+    create: ボリュームテーブルを作成.
+
+[33mcommit 6d12e972b830fc07739ba590d1b63279474d51c2[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Sun Apr 20 22:58:53 2025 +0900
+
+    fix: マイグレーションスクリプトの環境変数名を修正.
+
+[33mcommit 4cbbe6b3e6e5ced3d41121b21ea277b8ff6b4803[m[33m ([m[1;31morigin/main[m[33m, [m[1;32mmain[m[33m)[m
+Merge: e01e99f c3ce4c3
+Author: あつまるくん <106739028+atsumarukun@users.noreply.github.com>
+Date:   Sun Apr 20 22:44:34 2025 +0900
+
+    Merge pull request #63 from atsumarukun/issue-46
+    
+    【ボリューム】ボリューム機能のER図を作成
+
+[33mcommit c3ce4c3004cc3383db4d16e814a1c49bcb6a6974[m[33m ([m[1;31morigin/issue-46[m[33m)[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Sun Apr 20 22:43:16 2025 +0900
+
+    create: ボリュームのER図を作成.
+
+[33mcommit e01e99fc1e87ab577c419fda40505c1461fc4e7a[m
+Merge: 809b963 44d3b05
+Author: あつまるくん <106739028+atsumarukun@users.noreply.github.com>
+Date:   Sun Apr 20 22:39:50 2025 +0900
+
+    Merge pull request #62 from atsumarukun/issue-53
+    
+    【ボリューム】SwaggerUIを作成
+
+[33mcommit 44d3b056c5690423fefd748026b4f60799eaf90c[m[33m ([m[1;31morigin/issue-53[m[33m)[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Sun Apr 20 22:37:46 2025 +0900
+
+    create: ボリューム機能のSwaggerUIを作成.
+
+[33mcommit 2e7114a0440e6914d956861f1cedd73ef0eca5a4[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Sun Apr 20 22:28:03 2025 +0900
+
+    update: ドメインオブジェクトとテーブルにアカウントIDを追加.
+
+[33mcommit 809b963a2db8b2c1d978777ad92347ae752cc9c1[m
+Merge: 8e5a7de 798cfad
+Author: あつまるくん <106739028+atsumarukun@users.noreply.github.com>
+Date:   Sun Apr 20 22:02:38 2025 +0900
+
+    Merge pull request #61 from atsumarukun/issue-45
+    
+    【ボリューム】DesignDocを作成
+
+[33mcommit 798cfad7780fb4947a445949fc24229e4137120f[m[33m ([m[1;31morigin/issue-45[m[33m)[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Sun Apr 20 22:00:53 2025 +0900
+
+    create: ボリューム機能のDesignDocを作成.
+
+[33mcommit 8e5a7deccd9315e30077db61b6db2dc1429bc3e1[m
+Merge: 5edea54 6db5475
+Author: あつまるくん <106739028+atsumarukun@users.noreply.github.com>
+Date:   Sun Apr 20 20:51:00 2025 +0900
+
+    Merge pull request #60 from atsumarukun/revert-44-issue-43
+    
+    Revert "【フォルダ】DesignDocを作成"
+
+[33mcommit 6db54754da6fe39d219798aa0f904d91a1f794a2[m
+Author: あつまるくん <106739028+atsumarukun@users.noreply.github.com>
+Date:   Sun Apr 20 20:49:52 2025 +0900
+
+    Revert "【フォルダ】DesignDocを作成"
+
+[33mcommit 5edea54279106fab510a5c85a201693e4f96fe8d[m
+Merge: 62d51ab b4cb0c6
+Author: あつまるくん <106739028+atsumarukun@users.noreply.github.com>
+Date:   Sun Apr 20 18:05:28 2025 +0900
+
+    Merge pull request #59 from atsumarukun/issue-58
+    
+    【開発環境】マイグレーションスクリプトを実装
+
+[33mcommit b4cb0c613c024ae1addef0a883a31646aff62987[m[33m ([m[1;31morigin/issue-58[m[33m)[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Sun Apr 20 18:03:29 2025 +0900
+
+    create: マイグレーション実行スクリプトを作成.
+
+[33mcommit c7166188ace20cc9f4d075389be4a92da2d7a572[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Sun Apr 20 18:03:19 2025 +0900
+
+    create: マイグレーションファイル生成スクリプトを作成.
+
+[33mcommit 62d51abe78cb2a53c500656dfc24ffa3574d984c[m
+Merge: c16980b c473d8b
+Author: あつまるくん <106739028+atsumarukun@users.noreply.github.com>
+Date:   Sun Apr 20 18:00:49 2025 +0900
+
+    Merge pull request #57 from atsumarukun/issue-56
+    
+    【開発環境】マイグレーションのDesignDocを作成
+
+[33mcommit c473d8b3022f3d9f9425d8da2c6c8b79b3a878e3[m[33m ([m[1;31morigin/issue-56[m[33m)[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Sun Apr 20 17:59:27 2025 +0900
+
+    create: マイグレーションのDesignDocを作成.
+
+[33mcommit c16980b09f2e4b274e858f8d8dfa853da4011f61[m
+Merge: 4826e38 7de69f1
+Author: あつまるくん <106739028+atsumarukun@users.noreply.github.com>
+Date:   Sun Apr 20 17:41:31 2025 +0900
+
+    Merge pull request #44 from atsumarukun/issue-43
+    
+    【フォルダ】DesignDocを作成
+
+[33mcommit 7de69f195c9aece394cab07a29bed57a016d108f[m[33m ([m[1;31morigin/issue-43[m[33m)[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Sun Apr 20 17:40:12 2025 +0900
+
+    create: フォルダ機能のDesignDocを作成.
+
+[33mcommit 4826e38c0b28b99b02168098ff591f36a8d46a28[m
+Merge: 73d1dc8 14a251e
+Author: あつまるくん <106739028+atsumarukun@users.noreply.github.com>
+Date:   Sun Apr 13 17:53:59 2025 +0900
+
+    Merge pull request #42 from atsumarukun/issue-40
+    
+    【開発環境】linterの設定を修正
+
+[33mcommit 14a251e5ede8fb2cdb1e3b291d64332bd906cfa0[m[33m ([m[1;31morigin/issue-40[m[33m)[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Sun Apr 13 17:52:14 2025 +0900
+
+    fix: lintエラーを修正.
+
+[33mcommit 1a7387d1ed318ed369a0be1a033210a0705fe6dc[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Sun Apr 13 17:51:23 2025 +0900
+
+    fix: go-importsのloc al-prefixesを修正.
+
+[33mcommit 73d1dc837fe2543e764718ff5d7a2f6138aac2ac[m
+Merge: ab343ac b06dbd3
+Author: あつまるくん <106739028+atsumarukun@users.noreply.github.com>
+Date:   Sun Apr 13 17:50:06 2025 +0900
+
+    Merge pull request #41 from atsumarukun/issue-31
+    
+    【認可】実装
+
+[33mcommit b06dbd3ab3753657937adca511a0a1791fc62522[m[33m ([m[1;31morigin/issue-31[m[33m)[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Sun Apr 13 17:45:12 2025 +0900
+
+    refactor: Interface層でのエラーハンドリングを変更.
+
+[33mcommit 587ba93893a29611951dc9e0c0740454dfc56e52[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Sun Apr 13 17:43:58 2025 +0900
+
+    fix: lintエラーを修正.
+
+[33mcommit c4d89983bb0434121ba7c56b62ca1ba33dfbaaa4[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Sun Apr 13 17:43:25 2025 +0900
+
+    refactor: Interface層でのエラーハンドリングを変更.
+
+[33mcommit a41f33dacc7dd4a2e084a13f2953c57adbdb167f[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Sun Apr 13 17:32:15 2025 +0900
+
+    refactor: 認可ミドルウェア内の変数名を変更.
+
+[33mcommit 59172ada56ad03f567c3b621c41f4e2f5db70df0[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Sun Apr 13 17:23:57 2025 +0900
+
+    refactor: アカウントリポジトリのテストコード内credentialを変更.
+
+[33mcommit be43c5257f2b1fc550bd8a9ebc4ee63255685c62[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Sun Apr 13 17:19:38 2025 +0900
+
+    update: 認可時のエラーメッセージをそのまま返却するよう変更.
+
+[33mcommit a5cd5f16f4fb3bffc30864c6199814e142faaf5a[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Sun Apr 13 16:47:42 2025 +0900
+
+    refactor: 認可エンティティをアカウントエンティティに変更.
+
+[33mcommit 24ceaa9f54da5ec8ed0cb27e262b1d1b28a5085d[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Sun Apr 13 16:11:19 2025 +0900
+
+    fix: 認可モデルのjsonタグを修正.
+
+[33mcommit 588aa2a7bb6f1e86440c89b8cbf75741a2775a3a[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Sun Apr 13 15:49:04 2025 +0900
+
+    create: 認可ミドルウェアを実装.
+
+[33mcommit 568b3be3bde26d9bc566560cf7e175ee8a642011[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Sun Apr 13 15:24:29 2025 +0900
+
+    create: 認可ミドルウェアのユニットテストコードを作成.
+
+[33mcommit d8a7ebf399c4671950e9fae1b832766918a7c701[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Sun Apr 13 06:39:36 2025 +0900
+
+    create: 認可ミドルウェアを作成.
+
+[33mcommit afdac5677f5e9b6c92e4ff9523004ab0039baea4[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Sun Apr 13 06:21:53 2025 +0900
+
+    create: 認可ユースケースを実装.
+
+[33mcommit 63d518da16e59ab14bce6175dab03d371f1cd24a[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Sun Apr 13 06:19:13 2025 +0900
+
+    create: 認可ユースケースにユニットテストコードを作成.
+
+[33mcommit a702333c3225f023d3e390762008cd53724c4b7a[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Sun Apr 13 06:04:07 2025 +0900
+
+    fix: 認可リポジトリの認可関数でリクエストヘッダに認可情報をセットするよう修正.
+
+[33mcommit 96d2e3bbd2cbdb857e0cbcdae08ea1d63a2e2a15[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Sun Apr 13 05:56:14 2025 +0900
+
+    create: 認可ユースケースを作成.
+
+[33mcommit bc3f8c01d163487866b2ee951ae1189ebe5da84d[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Sun Apr 13 05:44:28 2025 +0900
+
+    update: 認可リポジトリの認可関数ユニットテストコードにテストケースを追加.
+
+[33mcommit 532f09377abf608df23105288dab1f218eef5c73[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Sun Apr 13 05:43:20 2025 +0900
+
+    create: 認可リポジトリの認可関数を実装.
+
+[33mcommit 5d16300cac6670521e2842bfcc8345ca6a809b7e[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Sun Apr 13 05:30:57 2025 +0900
+
+    create: 認可リポジトリのユニットテストコードを作成.
+
+[33mcommit 36453cd674f48eb5164b623e645c3caeab85d7da[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Sun Apr 13 05:17:21 2025 +0900
+
+    create: cmpをインストール.
+
+[33mcommit 9bf49b4051358845202ffdc7943dac305bbe60ce[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Sun Apr 13 02:29:05 2025 +0900
+
+    create: mockを生成.
+
+[33mcommit b03d75435bf849844118480e939bbb1aa18a16ae[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Sun Apr 13 02:28:47 2025 +0900
+
+    create: gomockをインストール.
+
+[33mcommit 31a11885f5bec8d83a39375efabbc647b162de97[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Sun Apr 13 02:27:39 2025 +0900
+
+    create: 認可リポジトリを作成.
+
+[33mcommit 991706d22fec9709c90b3371a5646f1bc60946a7[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Sun Apr 13 02:18:45 2025 +0900
+
+    create: 認可エンティティを作成.
+
+[33mcommit 8bbf46b69f0ca9cf6c64d960d4099b46b6b43e88[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Sun Apr 13 02:15:50 2025 +0900
+
+    create: uuidをインストール.
+
+[33mcommit ab343aced5b3f5709c9fe3d7e699d0b76e917c66[m
+Merge: 6d27921 050c9da
+Author: あつまるくん <106739028+atsumarukun@users.noreply.github.com>
+Date:   Sun Apr 13 01:50:23 2025 +0900
+
+    Merge pull request #39 from atsumarukun/issue-38
+    
+    【ステータス】実装
+
+[33mcommit 050c9da2b77057737139f32004faa37b3b5f5d15[m[33m ([m[1;31morigin/issue-38[m[33m)[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Sun Apr 13 01:48:42 2025 +0900
+
+    create: Statusを実装.
+
+[33mcommit 6d2792127155bf4647da26c264eb7658a7aedd29[m
+Merge: 05e56b9 26d0021
+Author: あつまるくん <106739028+atsumarukun@users.noreply.github.com>
+Date:   Sun Apr 13 01:39:11 2025 +0900
+
+    Merge pull request #37 from atsumarukun/issue-33
+    
+    【ステータス】DesignDocを作成
+
+[33mcommit 26d0021bf3f175240e62f49c6f009b0671dfa93a[m[33m ([m[1;31morigin/issue-33[m[33m)[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Sun Apr 13 01:37:53 2025 +0900
+
+    create: ステータスのDesignDocを作成.
+
+[33mcommit 05e56b9ed063c0b0b68604628430bf774622076d[m
+Merge: c51cb84 34b0a86
+Author: あつまるくん <106739028+atsumarukun@users.noreply.github.com>
+Date:   Sun Apr 13 01:29:40 2025 +0900
+
+    Merge pull request #36 from atsumarukun/issue-35
+    
+    【トランザクション】実装
+
+[33mcommit 34b0a86043ad1885f659646a0ae2eaaffd4935cc[m[33m ([m[1;31morigin/issue-35[m[33m)[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Sun Apr 13 01:26:33 2025 +0900
+
+    create: DatabaseTransactionを実装.
+
+[33mcommit c51cb84270d2f7f672b1a750993d5db6171ca011[m
+Merge: d3a79ae c22baa5
+Author: あつまるくん <106739028+atsumarukun@users.noreply.github.com>
+Date:   Sun Apr 13 00:33:49 2025 +0900
+
+    Merge pull request #34 from atsumarukun/issue-33
+    
+    【トランザクション】DesignDocを作成
+
+[33mcommit c22baa54f9a15563f8a28020c1cb122bd0d38711[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Sun Apr 13 00:31:59 2025 +0900
+
+    create: データベーストランザクションのDesignDocを作成.
+
+[33mcommit d3a79ae9c2abae80ed07449d427d038bfa4c4287[m
+Merge: 516e447 4cd00e1
+Author: あつまるくん <106739028+atsumarukun@users.noreply.github.com>
+Date:   Wed Apr 9 22:38:46 2025 +0900
+
+    Merge pull request #30 from atsumarukun/issue-29
+    
+    【認可】DesignDocを作成
+
+[33mcommit 4cd00e1cc0122640bd722e3f42b7199cbe62c101[m[33m ([m[1;31morigin/issue-29[m[33m)[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Wed Apr 9 22:36:40 2025 +0900
+
+    create: 認可のDesignDocを作成.
+
+[33mcommit 516e447ab78db902ccccd5ecc9d796d1410f370b[m
+Merge: 5396d56 b322884
+Author: あつまるくん <106739028+atsumarukun@users.noreply.github.com>
+Date:   Wed Apr 9 01:51:15 2025 +0900
+
+    Merge pull request #28 from atsumarukun/issue-27
+    
+    【SwaggerUI】タイトルのスペースを削除
+
+[33mcommit b322884f572b5d26e2554859c5dc40000e18d9e9[m[33m ([m[1;31morigin/issue-27[m[33m)[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Wed Apr 9 01:49:20 2025 +0900
+
+    update: SwaggerUIのタイトルからスペースを削除.
+
+[33mcommit 5396d56d59d4534e2962a4fd8c1e7763baa057d3[m
+Merge: 76dd7a0 33700fa
+Author: あつまるくん <106739028+atsumarukun@users.noreply.github.com>
+Date:   Wed Apr 9 01:47:54 2025 +0900
+
+    Merge pull request #26 from atsumarukun/issue-25
+    
+    【GitHubリポジトリ】README.mdのタイトルを修正
+
+[33mcommit 33700fa983bd76349a18a4fb5a15ab41f0d65e4d[m[33m ([m[1;31morigin/issue-25[m[33m)[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Wed Apr 9 01:44:40 2025 +0900
+
+    fix: README.mdのタイトルを修正.
+
+[33mcommit 76dd7a0ffb3fe80dd03e47a8fb401a02f45b155e[m
+Merge: 8e04c79 dbda580
+Author: あつまるくん <106739028+atsumarukun@users.noreply.github.com>
+Date:   Wed Apr 9 01:26:35 2025 +0900
+
+    Merge pull request #24 from atsumarukun/issue-22
+    
+    【ヘルスチェック】実装
+
+[33mcommit dbda5802f098f548b8f379e7dfddfc9995f94836[m[33m ([m[1;31morigin/issue-22[m[33m)[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Wed Apr 9 01:25:10 2025 +0900
+
+    create: ヘルスチェックエンドポイントを作成.
+
+[33mcommit 15a061bf1338dd115e0cefa20f63de85d0101f21[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Wed Apr 9 01:23:19 2025 +0900
+
+    create: ヘルスチェックハンドラに依存注入.
+
+[33mcommit 05f5773e56d9314d2765c9e69e9f12fa0e6b739f[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Wed Apr 9 01:22:36 2025 +0900
+
+    create: ヘルスチェックハンドラを作成.
+
+[33mcommit 8e04c7969f7d61bb6f50b267c693a4cd85ebd502[m
+Merge: 004de8a b1d4941
+Author: あつまるくん <106739028+atsumarukun@users.noreply.github.com>
+Date:   Wed Apr 9 01:20:31 2025 +0900
+
+    Merge pull request #23 from atsumarukun/issue-21
+    
+    【ヘルスチェック】SwaggerUIを作成
+
+[33mcommit b1d49410bacb9e481da283dec9b9a54b51f77272[m[33m ([m[1;31morigin/issue-21[m[33m)[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Wed Apr 9 01:18:51 2025 +0900
+
+    create: SwaggerUIにヘルスチェックを作成.
+
+[33mcommit 004de8a01db123bc46a45fa57b75788c90e8b188[m
+Merge: ca4fd64 6ff8a60
+Author: あつまるくん <106739028+atsumarukun@users.noreply.github.com>
+Date:   Wed Apr 9 01:12:52 2025 +0900
+
+    Merge pull request #20 from atsumarukun/issue-19
+    
+    【ヘルスチェック】DesignDocを作成
+
+[33mcommit 6ff8a60bca6057ef2d96233cfa82e6c3a4646006[m[33m ([m[1;31morigin/issue-19[m[33m)[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Wed Apr 9 01:09:22 2025 +0900
+
+    create: ヘルスチェックのDesignDocを作成.
+
+[33mcommit ca4fd64a8540c8dd0a80343a5f0d3662de504610[m
+Merge: 5358086 a6fec85
+Author: あつまるくん <106739028+atsumarukun@users.noreply.github.com>
+Date:   Wed Apr 9 00:49:35 2025 +0900
+
+    Merge pull request #18 from atsumarukun/issue-17
+    
+    【サーバー】データベースに接続
+
+[33mcommit a6fec85f204036fea5f6f2d75c16983509e9daaf[m[33m ([m[1;31morigin/issue-17[m[33m)[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Wed Apr 9 00:47:11 2025 +0900
+
+    create: Databaseに接続.
+
+[33mcommit 21e7db807202d58dc6186e6e3d96f80764ba7ab1[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Wed Apr 9 00:19:57 2025 +0900
+
+    create: sqlxとmysqlをインストール.
+
+[33mcommit 29f7b18ed5dcedad4ec807125b1b8fa7c7a1fdc2[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Wed Apr 9 00:18:25 2025 +0900
+
+    create: 環境変数の読み込み関数を作成.
+
+[33mcommit 53580862a64e0926436bd5b60fcc79441de61628[m
+Merge: 0de808e 2b77e12
+Author: あつまるくん <106739028+atsumarukun@users.noreply.github.com>
+Date:   Wed Apr 9 00:08:17 2025 +0900
+
+    Merge pull request #15 from atsumarukun/issue-13
+    
+    【CI/CD】テストワークフローを作成
+
+[33mcommit 2b77e12c4f8b085ba5a5b527b0454bc1d26c3728[m[33m ([m[1;31morigin/issue-13[m[33m)[m
+Merge: 02f2c5a 0de808e
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Wed Apr 9 00:07:04 2025 +0900
+
+    Merge branch 'main' into issue-13
+
+[33mcommit 0de808e6ca65a1092a482470aa75de1dec7e144e[m
+Merge: cfe458b 8b634ae
+Author: あつまるくん <106739028+atsumarukun@users.noreply.github.com>
+Date:   Wed Apr 9 00:06:31 2025 +0900
+
+    Merge pull request #16 from atsumarukun/issue-14
+    
+    【サーバー】GracefulShutdownの導入
+
+[33mcommit 8b634aef05d7c050b49cc9d006f42cfe9575774a[m[33m ([m[1;31morigin/issue-14[m[33m)[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Wed Apr 9 00:01:48 2025 +0900
+
+    create: GracefulShutdownを導入.
+
+[33mcommit 02f2c5a8d5667163a91456b030a235492b2824e4[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Tue Apr 8 23:54:09 2025 +0900
+
+    create: testワークフローを作成.
+
+[33mcommit cfe458b970b5ac2ead426df1a8459c710bc60c90[m
+Merge: 62b8bea ff90924
+Author: あつまるくん <106739028+atsumarukun@users.noreply.github.com>
+Date:   Tue Apr 8 23:47:09 2025 +0900
+
+    Merge pull request #12 from atsumarukun/issue-11
+    
+    Issue 11
+
+[33mcommit ff909246e19d14c689917a09f22b15470415c845[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Tue Apr 8 14:41:13 2025 +0000
+
+    update: README.mdに開発環境を記載.
+
+[33mcommit 574de9281b9902859c9e0181f952777545e31498[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Tue Apr 8 14:39:17 2025 +0000
+
+    create: linterの設定ファイルを作成.
+
+[33mcommit e6b9b98430217ed2e321f56a91d64548bbf17db5[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Tue Apr 8 14:30:58 2025 +0000
+
+    create: VSCodeの設定ファイルを作成.
+
+[33mcommit a375752780c921ad9a4299e95c862fb5d4475e05[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Tue Apr 8 14:29:33 2025 +0000
+
+    create: DevContainerの設定ファイルを作成.
+
+[33mcommit 0e42b2f4481efd945a8237a5b6091dbae657736b[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Tue Apr 8 23:22:33 2025 +0900
+
+    create: Airの設定ファイルを作成.
+
+[33mcommit 936b81d3ce4cce481104f8f8a91ab7333779ef01[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Tue Apr 8 23:20:57 2025 +0900
+
+    create: apiサーバを作成.
+
+[33mcommit 78b4c0e5c69c540c0a1e444747d4f9a5f6fb9df8[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Tue Apr 8 23:19:54 2025 +0900
+
+    create: Ginをインストール.
+
+[33mcommit 2aa928873d5f1c5494d7d0fe944e7d830a4232d9[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Tue Apr 8 23:18:12 2025 +0900
+
+    create: goモジュールを初期化.
+
+[33mcommit ddbec8ddca0e7be94fc255284eba746059f09b18[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Tue Apr 8 23:16:46 2025 +0900
+
+    create: データベースディレクトリをGit管理から除外.
+
+[33mcommit fa425655901d2f89f0c8bf543e30c5b096bd8cbc[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Tue Apr 8 23:14:14 2025 +0900
+
+    create: docker-compose.ymlを作成.
+
+[33mcommit c5c6979b164f7784b5324c9c9b437ef701b957f9[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Tue Apr 8 23:13:15 2025 +0900
+
+    create: 環境変数ファイルを作成.
+
+[33mcommit 3ab04213fc2cd59b8131ca2923b4052978f675a9[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Tue Apr 8 23:10:04 2025 +0900
+
+    create: 開発環境用Dockerfileを作成.
+
+[33mcommit 62b8bea82f768fd1e0cebc71b2e21b1ac042deed[m
+Merge: 7b321a8 4f56e50
+Author: あつまるくん <106739028+atsumarukun@users.noreply.github.com>
+Date:   Tue Apr 8 23:07:10 2025 +0900
+
+    Merge pull request #10 from atsumarukun/issue-9
+    
+    【開発環境】DesignDocを作成
+
+[33mcommit 4f56e50b4396686fcd0a1a50cfb1aab47e4533f7[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Tue Apr 8 23:06:33 2025 +0900
+
+    create: 開発環境のDesignDocを作成.
+
+[33mcommit 7b321a8071c1ce0664a5ccb7efeef0d2459854c6[m
+Merge: 3acfc7b 0f426bb
+Author: あつまるくん <106739028+atsumarukun@users.noreply.github.com>
+Date:   Tue Apr 8 23:02:04 2025 +0900
+
+    Merge pull request #8 from atsumarukun/issue-7
+    
+    【ドキュメント】DesignDocのテンプレートを作成
+
+[33mcommit 0f426bb7fdb7e0d30bbea8d30c61bdb3f5d58be5[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Tue Apr 8 23:01:25 2025 +0900
+
+    create: DesignDocのテンプレートを作成.
+
+[33mcommit 3acfc7bfa40d42a45f0c5fb82c77bfa06120a471[m
+Merge: 2db5145 d522546
+Author: あつまるくん <106739028+atsumarukun@users.noreply.github.com>
+Date:   Tue Apr 8 22:58:56 2025 +0900
+
+    Merge pull request #6 from atsumarukun/issue-4
+    
+    【GitHubリポジトリ】PullRequestテンプレートを作成
+
+[33mcommit d52254659eb80ced1a9f10840b2fbd73f0b87921[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Tue Apr 8 22:58:08 2025 +0900
+
+    create: PullRequestのテンプレートを作成.
+
+[33mcommit 2db5145f532a93aaeabe480161a46a9bfafda639[m
+Merge: 788f744 4d7b19b
+Author: あつまるくん <106739028+atsumarukun@users.noreply.github.com>
+Date:   Tue Apr 8 22:55:49 2025 +0900
+
+    Merge pull request #5 from atsumarukun/issue-3
+    
+    【GitHubリポジトリ】Issueテンプレートを作成
+
+[33mcommit 4d7b19b5476c71925e79103cd1964d1fed60597c[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Tue Apr 8 22:54:53 2025 +0900
+
+    create: ドキュメント作成用Issueテンプレートを作成.
+
+[33mcommit a883cf042500162313a66d3e06b0dee84319bce1[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Tue Apr 8 22:54:37 2025 +0900
+
+    create: 機能作成用Issueテンプレートを作成.
+
+[33mcommit a2abed9a044843be912d92ac6922c4e06917e272[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Tue Apr 8 22:54:14 2025 +0900
+
+    create: 不具合修正用Issueテンプレートを作成.
+
+[33mcommit c69799f850e9ae2836ba5d123e89ba941c53d85d[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Tue Apr 8 22:52:57 2025 +0900
+
+    create: Issueテンプレートの設定ファイルを作成.
+
+[33mcommit 788f7448206489cf2009ce9b06b316c958a0444f[m
+Merge: dc188e2 d1642de
+Author: あつまるくん <106739028+atsumarukun@users.noreply.github.com>
+Date:   Tue Apr 8 21:39:30 2025 +0900
+
+    Merge pull request #2 from atsumarukun/issue-1
+    
+    【GitHubリポジトリ】README.mdにリポジトリのルールを記載
+
+[33mcommit d1642decccec405b9f0946f4bd02e40b9791236f[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Tue Apr 8 21:38:46 2025 +0900
+
+    create: README.mdにリポジトリのルールを記載.
+
+[33mcommit dc188e265c0c0cb7acbdd1d00d938895aea612e5[m
+Author: atsumarukun <atys.smz@gmail.com>
+Date:   Tue Apr 8 21:35:14 2025 +0900
+
+    create: リポジトリを作成.
