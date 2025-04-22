@@ -6,9 +6,31 @@ import (
 	"testing"
 	"time"
 
-	"github.com/atsumarukun/holos-storage-api/internal/app/api/domain/entity"
 	"github.com/google/uuid"
+
+	"github.com/atsumarukun/holos-storage-api/internal/app/api/domain/entity"
 )
+
+func assertVolume(t *testing.T, v *entity.Volume) {
+	if v.ID == uuid.Nil {
+		t.Error("id is not set")
+	}
+	if v.AccountID == uuid.Nil {
+		t.Error("account_id is not set")
+	}
+	if v.Name == "" {
+		t.Error("name is not set")
+	}
+	if v.CreatedAt.IsZero() {
+		t.Error("created_at is not set")
+	}
+	if v.UpdatedAt.IsZero() {
+		t.Error("updated_at is not set")
+	}
+	if !v.CreatedAt.Equal(v.UpdatedAt) {
+		t.Error("expect created_at and updated_at to be equal")
+	}
+}
 
 func TestNewVolume(t *testing.T) {
 	tests := []struct {
@@ -33,24 +55,7 @@ func TestNewVolume(t *testing.T) {
 				if volume == nil {
 					t.Error("volume is nil")
 				} else {
-					if volume.ID == uuid.Nil {
-						t.Error("id is not set")
-					}
-					if volume.AccountID == uuid.Nil {
-						t.Error("account_id is not set")
-					}
-					if volume.Name == "" {
-						t.Error("name is not set")
-					}
-					if volume.CreatedAt.IsZero() {
-						t.Error("created_at is not set")
-					}
-					if volume.UpdatedAt.IsZero() {
-						t.Error("updated_at is not set")
-					}
-					if !volume.CreatedAt.Equal(volume.UpdatedAt) {
-						t.Error("expect created_at and updated_at to be equal")
-					}
+					assertVolume(t, volume)
 				}
 			}
 		})

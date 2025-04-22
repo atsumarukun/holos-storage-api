@@ -3,9 +3,10 @@ package parameter
 import (
 	"fmt"
 
+	"github.com/gin-gonic/gin"
+
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/pkg/status"
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/pkg/status/code"
-	"github.com/gin-gonic/gin"
 )
 
 func GetContextParameter[T any](c *gin.Context, name string) (T, error) {

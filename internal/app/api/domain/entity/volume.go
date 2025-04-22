@@ -4,9 +4,10 @@ import (
 	"regexp"
 	"time"
 
+	"github.com/google/uuid"
+
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/pkg/status"
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/pkg/status/code"
-	"github.com/google/uuid"
 )
 
 var (
@@ -46,7 +47,7 @@ func NewVolume(accountID uuid.UUID, name string, isPublic bool) (*Volume, error)
 	return &volume, nil
 }
 
-func RestoreVolume(id uuid.UUID, accountID uuid.UUID, name string, isPublic bool, createdAt time.Time, updatedAt time.Time) *Volume {
+func RestoreVolume(id, accountID uuid.UUID, name string, isPublic bool, createdAt, updatedAt time.Time) *Volume {
 	return &Volume{
 		ID:        id,
 		AccountID: accountID,
