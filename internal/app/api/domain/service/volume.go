@@ -10,7 +10,10 @@ import (
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/pkg/status/code"
 )
 
-var ErrVolumeAlreadyExists = status.Error(code.Conflict, "volume already exists")
+var (
+	ErrRequiredVolume      = status.Error(code.Internal, "volume is required")
+	ErrVolumeAlreadyExists = status.Error(code.Conflict, "volume already exists")
+)
 
 type VolumeService interface {
 	Exists(context.Context, *entity.Volume) error
@@ -27,6 +30,10 @@ func NewVolumeService(volumeRepo repository.VolumeRepository) VolumeService {
 }
 
 func (s *volumeService) Exists(ctx context.Context, volume *entity.Volume) error {
+	if volume == nil {
+		return ErrRequiredVolume
+	}
+
 	vol, err := s.volumeRepo.FindOneByNameAndAccountID(ctx, volume.Name, volume.AccountID)
 	if err != nil {
 		return err

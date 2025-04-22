@@ -55,6 +55,12 @@ func TestVolume_Exists(t *testing.T) {
 			},
 		},
 		{
+			name:              "volume is nil",
+			inputVolume:       nil,
+			expectError:       service.ErrRequiredVolume,
+			setMockVolumeRepo: func(context.Context, *repository.MockVolumeRepository) {},
+		},
+		{
 			name:        "find error",
 			inputVolume: volume,
 			expectError: sql.ErrConnDone,
