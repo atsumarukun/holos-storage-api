@@ -251,3 +251,108 @@ func TestVolume_Update(t *testing.T) {
 		})
 	}
 }
+
+func TestVolume_Delete(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	id := uuid.New()
+	accountID := uuid.New()
+
+	tests := []struct {
+		name            string
+		isSetID         bool
+		isSetAccountID  bool
+		expectCode      int
+		expectResponse  *map[string]any
+		setMockVolumeUC func(context.Context, *mockUsecase.MockVolumeUsecase)
+	}{
+		{
+			name:           "success",
+			isSetID:        true,
+			isSetAccountID: true,
+			expectCode:     http.StatusNoContent,
+			expectResponse: nil,
+			setMockVolumeUC: func(ctx context.Context, volumeUC *mockUsecase.MockVolumeUsecase) {
+				volumeUC.
+					EXPECT().
+					Delete(ctx, gomock.Any(), gomock.Any()).
+					Return(nil).
+					Times(1)
+			},
+		},
+		{
+			name:            "id not found",
+			isSetID:         false,
+			isSetAccountID:  true,
+			expectCode:      http.StatusBadRequest,
+			expectResponse:  &map[string]any{"message": "invalid id"},
+			setMockVolumeUC: func(context.Context, *mockUsecase.MockVolumeUsecase) {},
+		},
+		{
+			name:            "account id not found",
+			isSetID:         true,
+			isSetAccountID:  false,
+			expectCode:      http.StatusInternalServerError,
+			expectResponse:  &map[string]any{"message": "internal server error"},
+			setMockVolumeUC: func(context.Context, *mockUsecase.MockVolumeUsecase) {},
+		},
+		{
+			name:           "delete error",
+			isSetID:        true,
+			isSetAccountID: true,
+			expectCode:     http.StatusInternalServerError,
+			expectResponse: &map[string]any{"message": "internal server error"},
+			setMockVolumeUC: func(ctx context.Context, volumeUC *mockUsecase.MockVolumeUsecase) {
+				volumeUC.
+					EXPECT().
+					Delete(ctx, gomock.Any(), gomock.Any()).
+					Return(sql.ErrConnDone).
+					Times(1)
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := t.Context()
+			w := httptest.NewRecorder()
+
+			c, _ := gin.CreateTestContext(w)
+			var err error
+			c.Request, err = http.NewRequestWithContext(ctx, "DELETE", "/volumes/"+id.String(), http.NoBody)
+			if err != nil {
+				t.Error(err)
+			}
+			if tt.isSetID {
+				c.Params = append(c.Params, gin.Param{Key: "id", Value: id.String()})
+			}
+			if tt.isSetAccountID {
+				c.Set("accountID", accountID)
+			}
+
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			volumeUC := mockUsecase.NewMockVolumeUsecase(ctrl)
+			tt.setMockVolumeUC(ctx, volumeUC)
+
+			hdl := handler.NewVolumeHandler(volumeUC)
+			hdl.Delete(c)
+
+			c.Writer.WriteHeaderNow()
+
+			if w.Code != tt.expectCode {
+				t.Errorf("\nexpect: %v\ngot: %v", tt.expectCode, w.Code)
+			}
+
+			if tt.expectCode != http.StatusNoContent {
+				var response map[string]any
+				if err := json.Unmarshal(w.Body.Bytes(), &response); err != nil {
+					t.Error(err)
+				}
+				if diff := cmp.Diff(&response, tt.expectResponse); diff != "" {
+					t.Error(diff)
+				}
+			}
+		})
+	}
+}

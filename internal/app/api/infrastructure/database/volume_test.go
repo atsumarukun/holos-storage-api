@@ -80,7 +80,7 @@ func TestVolume_Create(t *testing.T) {
 	}
 }
 
-func TestVolume_Updated(t *testing.T) {
+func TestVolume_Update(t *testing.T) {
 	volume := &entity.Volume{
 		ID:        uuid.New(),
 		AccountID: uuid.New(),
@@ -134,6 +134,70 @@ func TestVolume_Updated(t *testing.T) {
 
 			repo := database.NewVolumeRepository(db)
 			if err := repo.Update(t.Context(), tt.inputVolume); !errors.Is(err, tt.expectError) {
+				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
+			}
+
+			if err := mock.ExpectationsWereMet(); err != nil {
+				t.Error(err)
+			}
+		})
+	}
+}
+
+func TestVolume_Delete(t *testing.T) {
+	volume := &entity.Volume{
+		ID:        uuid.New(),
+		AccountID: uuid.New(),
+		Name:      "name",
+		IsPublic:  false,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
+
+	tests := []struct {
+		name        string
+		inputVolume *entity.Volume
+		expectError error
+		setMockDB   func(mock sqlmock.Sqlmock)
+	}{
+		{
+			name:        "success",
+			inputVolume: volume,
+			expectError: nil,
+			setMockDB: func(mock sqlmock.Sqlmock) {
+				mock.ExpectExec(regexp.QuoteMeta(`DELETE FROM volumes WHERE id = ? LIMIT 1;`)).
+					WithArgs(volume.ID).
+					WillReturnResult(sqlmock.NewResult(1, 1)).
+					WillReturnError(nil)
+			},
+		},
+		{
+			name:        "volume is nil",
+			inputVolume: nil,
+			expectError: database.ErrRequiredVolume,
+			setMockDB:   func(sqlmock.Sqlmock) {},
+		},
+		{
+			name:        "delete error",
+			inputVolume: volume,
+			expectError: sql.ErrConnDone,
+			setMockDB: func(mock sqlmock.Sqlmock) {
+				mock.ExpectExec(regexp.QuoteMeta(`DELETE FROM volumes WHERE id = ? LIMIT 1;`)).
+					WithArgs(volume.ID).
+					WillReturnResult(sqlmock.NewResult(1, 1)).
+					WillReturnError(sql.ErrConnDone)
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			db, mock := mockDatabase.NewMockDatabase(t)
+			defer db.Close()
+
+			tt.setMockDB(mock)
+
+			repo := database.NewVolumeRepository(db)
+			if err := repo.Delete(t.Context(), tt.inputVolume); !errors.Is(err, tt.expectError) {
 				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
 			}
 
