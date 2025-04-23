@@ -59,7 +59,7 @@ func TestVolume_Create(t *testing.T) {
 			requestJSON:     nil,
 			isSetAccountID:  true,
 			expectCode:      http.StatusBadRequest,
-			expectResponse:  map[string]any{"message": "bad request"},
+			expectResponse:  map[string]any{"message": "failed to parse json"},
 			setMockVolumeUC: func(context.Context, *mockUsecase.MockVolumeUsecase) {},
 		},
 		{
