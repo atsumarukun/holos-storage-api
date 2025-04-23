@@ -32,7 +32,7 @@ func NewVolumeHandler(volumeUC usecase.VolumeUsecase) VolumeHandler {
 func (h *volumeHandler) Create(c *gin.Context) {
 	var req schema.CreateVolumeRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		errors.Handle(c, status.Error(code.BadRequest, "bad request"))
+		errors.Handle(c, status.Error(code.BadRequest, "failed to parse json"))
 		return
 	}
 
