@@ -3,7 +3,6 @@ package usecase
 
 import (
 	"context"
-	"errors"
 
 	"github.com/google/uuid"
 
@@ -86,5 +85,12 @@ func (u *volumeUsecase) Update(ctx context.Context, accountID, id uuid.UUID, nam
 }
 
 func (u *volumeUsecase) Delete(ctx context.Context, accountID, id uuid.UUID) error {
-	return errors.New("not implemented")
+	return u.transactionObj.Transaction(ctx, func(ctx context.Context) error {
+		volume, err := u.volumeRepo.FindOneByIDAndAccountID(ctx, id, accountID)
+		if err != nil {
+			return err
+		}
+
+		return u.volumeRepo.Delete(ctx, volume)
+	})
 }
