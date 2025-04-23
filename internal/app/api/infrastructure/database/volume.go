@@ -41,11 +41,26 @@ func (r *volumeRepository) Create(ctx context.Context, volume *entity.Volume) er
 }
 
 func (r *volumeRepository) Update(ctx context.Context, volume *entity.Volume) error {
-	return errors.New("not implemented")
+	if volume == nil {
+		return ErrRequiredVolume
+	}
+
+	driver := transaction.GetDriver(ctx, r.db)
+	model := transformer.ToVolumeModel(volume)
+	_, err := driver.NamedExecContext(ctx, "UPDATE volumes SET account_id = :account_id, name = :name, is_public = :is_public, updated_at = :updated_at WHERE id = :id LIMIT 1;", model)
+	return err
 }
 
 func (r *volumeRepository) FindOneByIDAndAccountID(ctx context.Context, id uuid.UUID, accountID uuid.UUID) (*entity.Volume, error) {
-	return nil, errors.New("not implemented")
+	driver := transaction.GetDriver(ctx, r.db)
+	var model model.VolumeModel
+	if err := driver.QueryRowxContext(ctx, `SELECT id, account_id, name, is_public, created_at, updated_at FROM volumes WHERE id = ? AND account_id = ? LIMIT 1;`, id, accountID).StructScan(&model); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return transformer.ToVolumeEntity(&model), nil
 }
 
 func (r *volumeRepository) FindOneByNameAndAccountID(ctx context.Context, name string, accountID uuid.UUID) (*entity.Volume, error) {
