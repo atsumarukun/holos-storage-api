@@ -17,6 +17,7 @@ import (
 
 type VolumeHandler interface {
 	Create(*gin.Context)
+	Update(*gin.Context)
 }
 
 type volumeHandler struct {
@@ -52,3 +53,5 @@ func (h *volumeHandler) Create(c *gin.Context) {
 
 	c.JSON(http.StatusCreated, builder.ToVolumeResponse(volume))
 }
+
+func (h *volumeHandler) Update(c *gin.Context) {}
