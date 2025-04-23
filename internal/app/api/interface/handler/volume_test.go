@@ -155,12 +155,12 @@ func TestVolume_Update(t *testing.T) {
 			requestJSON:    []byte(`{"name": "name", "is_public": false}`),
 			isSetID:        true,
 			isSetAccountID: true,
-			expectCode:     http.StatusCreated,
+			expectCode:     http.StatusOK,
 			expectResponse: map[string]any{"id": volumeDTO.ID.String(), "account_id": volumeDTO.AccountID.String(), "name": volumeDTO.Name, "is_public": volumeDTO.IsPublic, "created_at": volumeDTO.CreatedAt.Format(time.RFC3339Nano), "updated_at": volumeDTO.UpdatedAt.Format(time.RFC3339Nano)},
 			setMockVolumeUC: func(ctx context.Context, volumeUC *mockUsecase.MockVolumeUsecase) {
 				volumeUC.
 					EXPECT().
-					Update(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any).
+					Update(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 					Return(volumeDTO, nil).
 					Times(1)
 			},
@@ -202,7 +202,7 @@ func TestVolume_Update(t *testing.T) {
 			setMockVolumeUC: func(ctx context.Context, volumeUC *mockUsecase.MockVolumeUsecase) {
 				volumeUC.
 					EXPECT().
-					Update(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any).
+					Update(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 					Return(nil, sql.ErrConnDone).
 					Times(1)
 			},
