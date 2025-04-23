@@ -94,7 +94,7 @@ func TestVolume_SetName(t *testing.T) {
 		{name: "include vertical bar", inputName: "volume|name", expectError: entity.ErrInvalidVolumeName},
 		{name: "hiragana", inputName: "なまえ", expectError: entity.ErrInvalidVolumeName},
 		{name: "katakana", inputName: "ナマエ", expectError: entity.ErrInvalidVolumeName},
-		{name: "kanji", inputName: "ナマエ", expectError: entity.ErrInvalidVolumeName},
+		{name: "kanji", inputName: "名前", expectError: entity.ErrInvalidVolumeName},
 		{name: "0 characters", inputName: strings.Repeat("a", 0), expectError: entity.ErrShortVolumeName},
 		{name: "1 characters", inputName: strings.Repeat("a", 1), expectError: nil},
 		{name: "255 characters", inputName: strings.Repeat("a", 255), expectError: nil},
