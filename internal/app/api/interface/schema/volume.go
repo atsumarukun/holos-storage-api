@@ -18,7 +18,6 @@ type UpdateVolumeRequest struct {
 
 type VolumeResponse struct {
 	ID        uuid.UUID `json:"id"`
-	AccountID uuid.UUID `json:"account_id"`
 	Name      string    `json:"name"`
 	IsPublic  bool      `json:"is_public"`
 	CreatedAt time.Time `json:"created_at"`
