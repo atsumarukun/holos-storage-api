@@ -56,6 +56,21 @@ func (mr *MockVolumeRepositoryMockRecorder) Create(arg0, arg1 any) *gomock.Call 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockVolumeRepository)(nil).Create), arg0, arg1)
 }
 
+// FindOneByIDAndAccountID mocks base method.
+func (m *MockVolumeRepository) FindOneByIDAndAccountID(arg0 context.Context, arg1, arg2 uuid.UUID) (*entity.Volume, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FindOneByIDAndAccountID", arg0, arg1, arg2)
+	ret0, _ := ret[0].(*entity.Volume)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FindOneByIDAndAccountID indicates an expected call of FindOneByIDAndAccountID.
+func (mr *MockVolumeRepositoryMockRecorder) FindOneByIDAndAccountID(arg0, arg1, arg2 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindOneByIDAndAccountID", reflect.TypeOf((*MockVolumeRepository)(nil).FindOneByIDAndAccountID), arg0, arg1, arg2)
+}
+
 // FindOneByNameAndAccountID mocks base method.
 func (m *MockVolumeRepository) FindOneByNameAndAccountID(arg0 context.Context, arg1 string, arg2 uuid.UUID) (*entity.Volume, error) {
 	m.ctrl.T.Helper()
@@ -69,4 +84,18 @@ func (m *MockVolumeRepository) FindOneByNameAndAccountID(arg0 context.Context, a
 func (mr *MockVolumeRepositoryMockRecorder) FindOneByNameAndAccountID(arg0, arg1, arg2 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindOneByNameAndAccountID", reflect.TypeOf((*MockVolumeRepository)(nil).FindOneByNameAndAccountID), arg0, arg1, arg2)
+}
+
+// Update mocks base method.
+func (m *MockVolumeRepository) Update(arg0 context.Context, arg1 *entity.Volume) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Update", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Update indicates an expected call of Update.
+func (mr *MockVolumeRepositoryMockRecorder) Update(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockVolumeRepository)(nil).Update), arg0, arg1)
 }

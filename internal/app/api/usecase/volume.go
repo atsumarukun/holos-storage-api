@@ -16,6 +16,7 @@ import (
 
 type VolumeUsecase interface {
 	Create(context.Context, uuid.UUID, string, bool) (*dto.VolumeDTO, error)
+	Update(context.Context, uuid.UUID, uuid.UUID, string, bool) (*dto.VolumeDTO, error)
 }
 
 type volumeUsecase struct {
@@ -48,6 +49,33 @@ func (u *volumeUsecase) Create(ctx context.Context, accountID uuid.UUID, name st
 		}
 
 		return u.volumeRepo.Create(ctx, volume)
+	}); err != nil {
+		return nil, err
+	}
+
+	return mapper.ToVolumeDTO(volume), nil
+}
+
+func (u *volumeUsecase) Update(ctx context.Context, accountID, id uuid.UUID, name string, isPublic bool) (*dto.VolumeDTO, error) {
+	var volume *entity.Volume
+
+	if err := u.transactionObj.Transaction(ctx, func(ctx context.Context) error {
+		var err error
+		volume, err = u.volumeRepo.FindOneByIDAndAccountID(ctx, id, accountID)
+		if err != nil {
+			return err
+		}
+
+		if err := volume.SetName(name); err != nil {
+			return err
+		}
+		volume.SetIsPublic(isPublic)
+
+		if err := u.volumeServ.Exists(ctx, volume); err != nil {
+			return err
+		}
+
+		return u.volumeRepo.Update(ctx, volume)
 	}); err != nil {
 		return nil, err
 	}

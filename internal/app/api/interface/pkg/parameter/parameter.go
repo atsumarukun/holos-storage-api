@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/pkg/status"
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/pkg/status/code"
@@ -23,4 +24,24 @@ func GetContextParameter[T any](c *gin.Context, name string) (T, error) {
 	}
 
 	return v, nil
+}
+
+func GetPathParameter[T any](c *gin.Context, name string) (T, error) {
+	var zero T
+	param := c.Param(name)
+
+	switch any(zero).(type) {
+	case uuid.UUID:
+		v, err := uuid.Parse(param)
+		if err != nil {
+			return zero, status.Error(code.BadRequest, err.Error())
+		}
+		result, ok := any(v).(T)
+		if !ok {
+			return zero, status.Error(code.BadRequest, "failed to parse to uuid")
+		}
+		return result, nil
+	default:
+		return zero, status.Error(code.Internal, "invalid path parameter type")
+	}
 }

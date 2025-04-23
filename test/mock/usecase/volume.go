@@ -56,3 +56,18 @@ func (mr *MockVolumeUsecaseMockRecorder) Create(arg0, arg1, arg2, arg3 any) *gom
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockVolumeUsecase)(nil).Create), arg0, arg1, arg2, arg3)
 }
+
+// Update mocks base method.
+func (m *MockVolumeUsecase) Update(arg0 context.Context, arg1, arg2 uuid.UUID, arg3 string, arg4 bool) (*dto.VolumeDTO, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Update", arg0, arg1, arg2, arg3, arg4)
+	ret0, _ := ret[0].(*dto.VolumeDTO)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Update indicates an expected call of Update.
+func (mr *MockVolumeUsecaseMockRecorder) Update(arg0, arg1, arg2, arg3, arg4 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockVolumeUsecase)(nil).Update), arg0, arg1, arg2, arg3, arg4)
+}

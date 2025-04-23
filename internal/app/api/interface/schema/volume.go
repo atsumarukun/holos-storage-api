@@ -11,6 +11,11 @@ type CreateVolumeRequest struct {
 	IsPublic bool   `json:"is_public"`
 }
 
+type UpdateVolumeRequest struct {
+	Name     string `json:"name"`
+	IsPublic bool   `json:"is_public"`
+}
+
 type VolumeResponse struct {
 	ID        uuid.UUID `json:"id"`
 	AccountID uuid.UUID `json:"account_id"`

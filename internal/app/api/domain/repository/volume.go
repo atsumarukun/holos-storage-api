@@ -11,5 +11,7 @@ import (
 
 type VolumeRepository interface {
 	Create(context.Context, *entity.Volume) error
+	Update(context.Context, *entity.Volume) error
+	FindOneByIDAndAccountID(context.Context, uuid.UUID, uuid.UUID) (*entity.Volume, error)
 	FindOneByNameAndAccountID(context.Context, string, uuid.UUID) (*entity.Volume, error)
 }

@@ -17,6 +17,7 @@ import (
 
 type VolumeHandler interface {
 	Create(*gin.Context)
+	Update(*gin.Context)
 }
 
 type volumeHandler struct {
@@ -51,4 +52,34 @@ func (h *volumeHandler) Create(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, builder.ToVolumeResponse(volume))
+}
+
+func (h *volumeHandler) Update(c *gin.Context) {
+	var req schema.UpdateVolumeRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		errors.Handle(c, status.Error(code.BadRequest, "failed to parse json"))
+		return
+	}
+
+	id, err := parameter.GetPathParameter[uuid.UUID](c, "id")
+	if err != nil {
+		errors.Handle(c, status.Error(code.BadRequest, "invalid id"))
+		return
+	}
+
+	accountID, err := parameter.GetContextParameter[uuid.UUID](c, "accountID")
+	if err != nil {
+		errors.Handle(c, err)
+		return
+	}
+
+	ctx := c.Request.Context()
+
+	volume, err := h.volumeUC.Update(ctx, accountID, id, req.Name, req.IsPublic)
+	if err != nil {
+		errors.Handle(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, builder.ToVolumeResponse(volume))
 }
