@@ -3,7 +3,6 @@ package usecase
 
 import (
 	"context"
-	"errors"
 
 	"github.com/google/uuid"
 
@@ -58,5 +57,28 @@ func (u *volumeUsecase) Create(ctx context.Context, accountID uuid.UUID, name st
 }
 
 func (u *volumeUsecase) Update(ctx context.Context, accountID uuid.UUID, id uuid.UUID, name string, isPublic bool) (*dto.VolumeDTO, error) {
-	return nil, errors.New("not implemented")
+	var volume *entity.Volume
+
+	if err := u.transactionObj.Transaction(ctx, func(ctx context.Context) error {
+		var err error
+		volume, err = u.volumeRepo.FindOneByIDAndAccountID(ctx, id, accountID)
+		if err != nil {
+			return err
+		}
+
+		if err := volume.SetName(name); err != nil {
+			return err
+		}
+		volume.SetIsPublic(isPublic)
+
+		if err := u.volumeServ.Exists(ctx, volume); err != nil {
+			return err
+		}
+
+		return u.volumeRepo.Update(ctx, volume)
+	}); err != nil {
+		return nil, err
+	}
+
+	return mapper.ToVolumeDTO(volume), nil
 }
