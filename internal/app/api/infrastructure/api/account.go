@@ -7,9 +7,9 @@ import (
 
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/domain/entity"
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/domain/repository"
+	"github.com/atsumarukun/holos-storage-api/internal/app/api/infrastructure/api/model"
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/infrastructure/api/pkg/errors"
-	"github.com/atsumarukun/holos-storage-api/internal/app/api/infrastructure/model"
-	"github.com/atsumarukun/holos-storage-api/internal/app/api/infrastructure/transformer"
+	"github.com/atsumarukun/holos-storage-api/internal/app/api/infrastructure/api/transformer"
 )
 
 type accountRepository struct {
