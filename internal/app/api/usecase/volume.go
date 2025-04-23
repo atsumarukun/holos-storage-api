@@ -56,7 +56,7 @@ func (u *volumeUsecase) Create(ctx context.Context, accountID uuid.UUID, name st
 	return mapper.ToVolumeDTO(volume), nil
 }
 
-func (u *volumeUsecase) Update(ctx context.Context, accountID uuid.UUID, id uuid.UUID, name string, isPublic bool) (*dto.VolumeDTO, error) {
+func (u *volumeUsecase) Update(ctx context.Context, accountID, id uuid.UUID, name string, isPublic bool) (*dto.VolumeDTO, error) {
 	var volume *entity.Volume
 
 	if err := u.transactionObj.Transaction(ctx, func(ctx context.Context) error {

@@ -51,7 +51,7 @@ func (r *volumeRepository) Update(ctx context.Context, volume *entity.Volume) er
 	return err
 }
 
-func (r *volumeRepository) FindOneByIDAndAccountID(ctx context.Context, id uuid.UUID, accountID uuid.UUID) (*entity.Volume, error) {
+func (r *volumeRepository) FindOneByIDAndAccountID(ctx context.Context, id, accountID uuid.UUID) (*entity.Volume, error) {
 	driver := transaction.GetDriver(ctx, r.db)
 	var model model.VolumeModel
 	if err := driver.QueryRowxContext(ctx, `SELECT id, account_id, name, is_public, created_at, updated_at FROM volumes WHERE id = ? AND account_id = ? LIMIT 1;`, id, accountID).StructScan(&model); err != nil {

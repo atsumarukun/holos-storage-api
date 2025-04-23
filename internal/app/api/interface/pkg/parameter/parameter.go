@@ -36,7 +36,11 @@ func GetPathParameter[T any](c *gin.Context, name string) (T, error) {
 		if err != nil {
 			return zero, status.Error(code.BadRequest, err.Error())
 		}
-		return any(v).(T), nil
+		result, ok := any(v).(T)
+		if !ok {
+			return zero, status.Error(code.BadRequest, "failed to parse to uuid")
+		}
+		return result, nil
 	default:
 		return zero, status.Error(code.Internal, "invalid path parameter type")
 	}
