@@ -52,7 +52,14 @@ func (r *volumeRepository) Update(ctx context.Context, volume *entity.Volume) er
 }
 
 func (r *volumeRepository) Delete(ctx context.Context, volume *entity.Volume) error {
-	return errors.New("not implemented")
+	if volume == nil {
+		return ErrRequiredVolume
+	}
+
+	driver := transaction.GetDriver(ctx, r.db)
+	model := transformer.ToVolumeModel(volume)
+	_, err := driver.NamedExecContext(ctx, "DELETE FROM volumes WHERE id = :id LIMIT 1;", model)
+	return err
 }
 
 func (r *volumeRepository) FindOneByIDAndAccountID(ctx context.Context, id, accountID uuid.UUID) (*entity.Volume, error) {
