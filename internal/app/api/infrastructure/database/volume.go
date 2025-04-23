@@ -40,6 +40,14 @@ func (r *volumeRepository) Create(ctx context.Context, volume *entity.Volume) er
 	return err
 }
 
+func (r *volumeRepository) Update(ctx context.Context, volume *entity.Volume) error {
+	return errors.New("not implemented")
+}
+
+func (r *volumeRepository) FindOneByIDAndAccountID(ctx context.Context, id uuid.UUID, accountID uuid.UUID) (*entity.Volume, error) {
+	return nil, errors.New("not implemented")
+}
+
 func (r *volumeRepository) FindOneByNameAndAccountID(ctx context.Context, name string, accountID uuid.UUID) (*entity.Volume, error) {
 	driver := transaction.GetDriver(ctx, r.db)
 	var model model.VolumeModel
