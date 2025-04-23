@@ -12,7 +12,7 @@ import (
 
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/domain/entity"
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/domain/service"
-	"github.com/atsumarukun/holos-storage-api/test/mock/domain/repository"
+	mockRepository "github.com/atsumarukun/holos-storage-api/test/mock/domain/repository"
 )
 
 func TestVolume_Exists(t *testing.T) {
@@ -29,13 +29,13 @@ func TestVolume_Exists(t *testing.T) {
 		name              string
 		inputVolume       *entity.Volume
 		expectError       error
-		setMockVolumeRepo func(context.Context, *repository.MockVolumeRepository)
+		setMockVolumeRepo func(context.Context, *mockRepository.MockVolumeRepository)
 	}{
 		{
 			name:        "not exists",
 			inputVolume: volume,
 			expectError: nil,
-			setMockVolumeRepo: func(ctx context.Context, volumeRepo *repository.MockVolumeRepository) {
+			setMockVolumeRepo: func(ctx context.Context, volumeRepo *mockRepository.MockVolumeRepository) {
 				volumeRepo.
 					EXPECT().
 					FindOneByNameAndAccountID(ctx, volume.Name, volume.AccountID).
@@ -47,7 +47,7 @@ func TestVolume_Exists(t *testing.T) {
 			name:        "exists",
 			inputVolume: volume,
 			expectError: service.ErrVolumeAlreadyExists,
-			setMockVolumeRepo: func(ctx context.Context, volumeRepo *repository.MockVolumeRepository) {
+			setMockVolumeRepo: func(ctx context.Context, volumeRepo *mockRepository.MockVolumeRepository) {
 				volumeRepo.
 					EXPECT().
 					FindOneByNameAndAccountID(ctx, volume.Name, volume.AccountID).
@@ -59,13 +59,13 @@ func TestVolume_Exists(t *testing.T) {
 			name:              "volume is nil",
 			inputVolume:       nil,
 			expectError:       service.ErrRequiredVolume,
-			setMockVolumeRepo: func(context.Context, *repository.MockVolumeRepository) {},
+			setMockVolumeRepo: func(context.Context, *mockRepository.MockVolumeRepository) {},
 		},
 		{
 			name:        "find error",
 			inputVolume: volume,
 			expectError: sql.ErrConnDone,
-			setMockVolumeRepo: func(ctx context.Context, volumeRepo *repository.MockVolumeRepository) {
+			setMockVolumeRepo: func(ctx context.Context, volumeRepo *mockRepository.MockVolumeRepository) {
 				volumeRepo.
 					EXPECT().
 					FindOneByNameAndAccountID(ctx, volume.Name, volume.AccountID).
@@ -81,7 +81,7 @@ func TestVolume_Exists(t *testing.T) {
 
 			ctx := t.Context()
 
-			volumeRepo := repository.NewMockVolumeRepository(ctrl)
+			volumeRepo := mockRepository.NewMockVolumeRepository(ctrl)
 			tt.setMockVolumeRepo(ctx, volumeRepo)
 
 			serv := service.NewVolumeService(volumeRepo)

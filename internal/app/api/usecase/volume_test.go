@@ -16,8 +16,8 @@ import (
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/domain/service"
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/usecase"
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/usecase/dto"
-	"github.com/atsumarukun/holos-storage-api/test/mock/domain/repository"
-	"github.com/atsumarukun/holos-storage-api/test/mock/domain/repository/pkg/transaction"
+	mockRepository "github.com/atsumarukun/holos-storage-api/test/mock/domain/repository"
+	mockTransaction "github.com/atsumarukun/holos-storage-api/test/mock/domain/repository/pkg/transaction"
 	mockService "github.com/atsumarukun/holos-storage-api/test/mock/domain/service"
 )
 
@@ -39,8 +39,8 @@ func TestVolume_Create(t *testing.T) {
 		inputIsPublic         bool
 		expectResult          *dto.VolumeDTO
 		expectError           error
-		setMockTransactionObj func(context.Context, *transaction.MockTransactionObject)
-		setMockVolumeRepo     func(context.Context, *repository.MockVolumeRepository)
+		setMockTransactionObj func(context.Context, *mockTransaction.MockTransactionObject)
+		setMockVolumeRepo     func(context.Context, *mockRepository.MockVolumeRepository)
 		setMockVolumeServ     func(context.Context, *mockService.MockVolumeService)
 	}{
 		{
@@ -50,7 +50,7 @@ func TestVolume_Create(t *testing.T) {
 			inputIsPublic:  false,
 			expectResult:   volumeDTO,
 			expectError:    nil,
-			setMockTransactionObj: func(ctx context.Context, transactionObj *transaction.MockTransactionObject) {
+			setMockTransactionObj: func(ctx context.Context, transactionObj *mockTransaction.MockTransactionObject) {
 				transactionObj.
 					EXPECT().
 					Transaction(ctx, gomock.Any()).
@@ -59,7 +59,7 @@ func TestVolume_Create(t *testing.T) {
 					}).
 					Times(1)
 			},
-			setMockVolumeRepo: func(ctx context.Context, volumeRepo *repository.MockVolumeRepository) {
+			setMockVolumeRepo: func(ctx context.Context, volumeRepo *mockRepository.MockVolumeRepository) {
 				volumeRepo.
 					EXPECT().
 					Create(ctx, gomock.Any()).
@@ -81,8 +81,8 @@ func TestVolume_Create(t *testing.T) {
 			inputIsPublic:         false,
 			expectResult:          nil,
 			expectError:           entity.ErrShortVolumeName,
-			setMockTransactionObj: func(context.Context, *transaction.MockTransactionObject) {},
-			setMockVolumeRepo:     func(context.Context, *repository.MockVolumeRepository) {},
+			setMockTransactionObj: func(context.Context, *mockTransaction.MockTransactionObject) {},
+			setMockVolumeRepo:     func(context.Context, *mockRepository.MockVolumeRepository) {},
 			setMockVolumeServ:     func(context.Context, *mockService.MockVolumeService) {},
 		},
 		{
@@ -92,7 +92,7 @@ func TestVolume_Create(t *testing.T) {
 			inputIsPublic:  false,
 			expectResult:   nil,
 			expectError:    service.ErrVolumeAlreadyExists,
-			setMockTransactionObj: func(ctx context.Context, transactionObj *transaction.MockTransactionObject) {
+			setMockTransactionObj: func(ctx context.Context, transactionObj *mockTransaction.MockTransactionObject) {
 				transactionObj.
 					EXPECT().
 					Transaction(ctx, gomock.Any()).
@@ -101,7 +101,7 @@ func TestVolume_Create(t *testing.T) {
 					}).
 					Times(1)
 			},
-			setMockVolumeRepo: func(context.Context, *repository.MockVolumeRepository) {},
+			setMockVolumeRepo: func(context.Context, *mockRepository.MockVolumeRepository) {},
 			setMockVolumeServ: func(ctx context.Context, volumeServ *mockService.MockVolumeService) {
 				volumeServ.
 					EXPECT().
@@ -117,7 +117,7 @@ func TestVolume_Create(t *testing.T) {
 			inputIsPublic:  false,
 			expectResult:   nil,
 			expectError:    sql.ErrConnDone,
-			setMockTransactionObj: func(ctx context.Context, transactionObj *transaction.MockTransactionObject) {
+			setMockTransactionObj: func(ctx context.Context, transactionObj *mockTransaction.MockTransactionObject) {
 				transactionObj.
 					EXPECT().
 					Transaction(ctx, gomock.Any()).
@@ -126,7 +126,7 @@ func TestVolume_Create(t *testing.T) {
 					}).
 					Times(1)
 			},
-			setMockVolumeRepo: func(ctx context.Context, volumeRepo *repository.MockVolumeRepository) {
+			setMockVolumeRepo: func(ctx context.Context, volumeRepo *mockRepository.MockVolumeRepository) {
 				volumeRepo.
 					EXPECT().
 					Create(ctx, gomock.Any()).
@@ -149,10 +149,10 @@ func TestVolume_Create(t *testing.T) {
 
 			ctx := t.Context()
 
-			transactionObj := transaction.NewMockTransactionObject(ctrl)
+			transactionObj := mockTransaction.NewMockTransactionObject(ctrl)
 			tt.setMockTransactionObj(ctx, transactionObj)
 
-			volumeRepo := repository.NewMockVolumeRepository(ctrl)
+			volumeRepo := mockRepository.NewMockVolumeRepository(ctrl)
 			tt.setMockVolumeRepo(ctx, volumeRepo)
 
 			volumeServ := mockService.NewMockVolumeService(ctrl)

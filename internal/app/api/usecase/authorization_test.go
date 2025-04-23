@@ -13,7 +13,7 @@ import (
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/domain/entity"
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/usecase"
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/usecase/dto"
-	"github.com/atsumarukun/holos-storage-api/test/mock/domain/repository"
+	mockRepository "github.com/atsumarukun/holos-storage-api/test/mock/domain/repository"
 )
 
 func TestAuthorization_Authorize(t *testing.T) {
@@ -29,14 +29,14 @@ func TestAuthorization_Authorize(t *testing.T) {
 		inputCredential    string
 		expectResult       *dto.AccountDTO
 		expectError        error
-		setMockAccountRepo func(context.Context, *repository.MockAccountRepository)
+		setMockAccountRepo func(context.Context, *mockRepository.MockAccountRepository)
 	}{
 		{
 			name:            "success",
 			inputCredential: "Session: YNDNun_KFu1uFmS691yJ6eqJ9eczRVKn",
 			expectResult:    accountDTO,
 			expectError:     nil,
-			setMockAccountRepo: func(ctx context.Context, accountRepo *repository.MockAccountRepository) {
+			setMockAccountRepo: func(ctx context.Context, accountRepo *mockRepository.MockAccountRepository) {
 				accountRepo.EXPECT().
 					FindOneByCredential(ctx, gomock.Any()).
 					Return(account, nil).
@@ -48,7 +48,7 @@ func TestAuthorization_Authorize(t *testing.T) {
 			inputCredential: "Session: YNDNun_KFu1uFmS691yJ6eqJ9eczRVKn",
 			expectResult:    nil,
 			expectError:     http.ErrServerClosed,
-			setMockAccountRepo: func(ctx context.Context, accountRepo *repository.MockAccountRepository) {
+			setMockAccountRepo: func(ctx context.Context, accountRepo *mockRepository.MockAccountRepository) {
 				accountRepo.EXPECT().
 					FindOneByCredential(ctx, gomock.Any()).
 					Return(nil, http.ErrServerClosed).
@@ -63,7 +63,7 @@ func TestAuthorization_Authorize(t *testing.T) {
 
 			ctx := t.Context()
 
-			accountRepo := repository.NewMockAccountRepository(ctrl)
+			accountRepo := mockRepository.NewMockAccountRepository(ctrl)
 			tt.setMockAccountRepo(ctx, accountRepo)
 
 			uc := usecase.NewAuthorizationUsecase(accountRepo)

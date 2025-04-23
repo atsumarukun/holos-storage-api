@@ -13,7 +13,7 @@ import (
 
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/interface/middleware"
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/usecase/dto"
-	"github.com/atsumarukun/holos-storage-api/test/mock/usecase"
+	mockUsecase "github.com/atsumarukun/holos-storage-api/test/mock/usecase"
 )
 
 func TestAuthorization_Authorize(t *testing.T) {
@@ -27,13 +27,13 @@ func TestAuthorization_Authorize(t *testing.T) {
 		name                   string
 		authorizationHeader    string
 		expectResult           uuid.UUID
-		setMockAuthorizationUC func(context.Context, *usecase.MockAuthorizationUsecase)
+		setMockAuthorizationUC func(context.Context, *mockUsecase.MockAuthorizationUsecase)
 	}{
 		{
 			name:                "success",
 			authorizationHeader: "Session 1Ty1HKTPKTt8xEi-_3HTbWf2SCHOdqOS",
 			expectResult:        accountDTO.ID,
-			setMockAuthorizationUC: func(ctx context.Context, authorizationUC *usecase.MockAuthorizationUsecase) {
+			setMockAuthorizationUC: func(ctx context.Context, authorizationUC *mockUsecase.MockAuthorizationUsecase) {
 				authorizationUC.EXPECT().
 					Authorize(ctx, gomock.Any()).
 					Return(accountDTO, nil).
@@ -44,13 +44,13 @@ func TestAuthorization_Authorize(t *testing.T) {
 			name:                   "invalid authorization header",
 			authorizationHeader:    "",
 			expectResult:           uuid.Nil,
-			setMockAuthorizationUC: func(context.Context, *usecase.MockAuthorizationUsecase) {},
+			setMockAuthorizationUC: func(context.Context, *mockUsecase.MockAuthorizationUsecase) {},
 		},
 		{
 			name:                "authorize error",
 			authorizationHeader: "Session 1Ty1HKTPKTt8xEi-_3HTbWf2SCHOdqOS",
 			expectResult:        uuid.Nil,
-			setMockAuthorizationUC: func(ctx context.Context, authorizationUC *usecase.MockAuthorizationUsecase) {
+			setMockAuthorizationUC: func(ctx context.Context, authorizationUC *mockUsecase.MockAuthorizationUsecase) {
 				authorizationUC.EXPECT().
 					Authorize(ctx, gomock.Any()).
 					Return(nil, http.ErrServerClosed).
@@ -74,7 +74,7 @@ func TestAuthorization_Authorize(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			authorizationUC := usecase.NewMockAuthorizationUsecase(ctrl)
+			authorizationUC := mockUsecase.NewMockAuthorizationUsecase(ctrl)
 			tt.setMockAuthorizationUC(ctx, authorizationUC)
 
 			mw := middleware.NewAuthorizationMiddleware(authorizationUC)

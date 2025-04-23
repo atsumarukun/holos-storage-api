@@ -17,7 +17,7 @@ import (
 
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/interface/handler"
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/usecase/dto"
-	"github.com/atsumarukun/holos-storage-api/test/mock/usecase"
+	mockUsecase "github.com/atsumarukun/holos-storage-api/test/mock/usecase"
 )
 
 func TestVolume_Create(t *testing.T) {
@@ -38,7 +38,7 @@ func TestVolume_Create(t *testing.T) {
 		isSetAccountID  bool
 		expectCode      int
 		expectResponse  map[string]any
-		setMockVolumeUC func(context.Context, *usecase.MockVolumeUsecase)
+		setMockVolumeUC func(context.Context, *mockUsecase.MockVolumeUsecase)
 	}{
 		{
 			name:           "success",
@@ -46,7 +46,7 @@ func TestVolume_Create(t *testing.T) {
 			isSetAccountID: true,
 			expectCode:     http.StatusCreated,
 			expectResponse: map[string]any{"id": volumeDTO.ID.String(), "account_id": volumeDTO.AccountID.String(), "name": volumeDTO.Name, "is_public": volumeDTO.IsPublic, "created_at": volumeDTO.CreatedAt.Format(time.RFC3339Nano), "updated_at": volumeDTO.UpdatedAt.Format(time.RFC3339Nano)},
-			setMockVolumeUC: func(ctx context.Context, volumeUC *usecase.MockVolumeUsecase) {
+			setMockVolumeUC: func(ctx context.Context, volumeUC *mockUsecase.MockVolumeUsecase) {
 				volumeUC.
 					EXPECT().
 					Create(ctx, gomock.Any(), gomock.Any(), gomock.Any()).
@@ -60,7 +60,7 @@ func TestVolume_Create(t *testing.T) {
 			isSetAccountID:  true,
 			expectCode:      http.StatusBadRequest,
 			expectResponse:  map[string]any{"message": "bad request"},
-			setMockVolumeUC: func(context.Context, *usecase.MockVolumeUsecase) {},
+			setMockVolumeUC: func(context.Context, *mockUsecase.MockVolumeUsecase) {},
 		},
 		{
 			name:            "account id not found",
@@ -68,7 +68,7 @@ func TestVolume_Create(t *testing.T) {
 			isSetAccountID:  false,
 			expectCode:      http.StatusInternalServerError,
 			expectResponse:  map[string]any{"message": "internal server error"},
-			setMockVolumeUC: func(context.Context, *usecase.MockVolumeUsecase) {},
+			setMockVolumeUC: func(context.Context, *mockUsecase.MockVolumeUsecase) {},
 		},
 		{
 			name:           "create error",
@@ -76,7 +76,7 @@ func TestVolume_Create(t *testing.T) {
 			isSetAccountID: true,
 			expectCode:     http.StatusInternalServerError,
 			expectResponse: map[string]any{"message": "internal server error"},
-			setMockVolumeUC: func(ctx context.Context, volumeUC *usecase.MockVolumeUsecase) {
+			setMockVolumeUC: func(ctx context.Context, volumeUC *mockUsecase.MockVolumeUsecase) {
 				volumeUC.
 					EXPECT().
 					Create(ctx, gomock.Any(), gomock.Any(), gomock.Any()).
@@ -103,7 +103,7 @@ func TestVolume_Create(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			volumeUC := usecase.NewMockVolumeUsecase(ctrl)
+			volumeUC := mockUsecase.NewMockVolumeUsecase(ctrl)
 			tt.setMockVolumeUC(ctx, volumeUC)
 
 			hdl := handler.NewVolumeHandler(volumeUC)
