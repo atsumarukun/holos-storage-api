@@ -3,7 +3,6 @@ package usecase
 
 import (
 	"context"
-	"errors"
 
 	"github.com/google/uuid"
 
@@ -120,5 +119,9 @@ func (u *volumeUsecase) GetOne(ctx context.Context, accountID, id uuid.UUID) (*d
 }
 
 func (u *volumeUsecase) GetAll(ctx context.Context, accountID uuid.UUID) ([]*dto.VolumeDTO, error) {
-	return nil, errors.New("not implemented")
+	volumes, err := u.volumeRepo.FindByAccountID(ctx, accountID)
+	if err != nil {
+		return nil, err
+	}
+	return mapper.ToVolumeDTOs(volumes), nil
 }

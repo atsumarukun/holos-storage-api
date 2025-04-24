@@ -15,3 +15,11 @@ func ToVolumeDTO(volume *entity.Volume) *dto.VolumeDTO {
 		UpdatedAt: volume.UpdatedAt,
 	}
 }
+
+func ToVolumeDTOs(volumes []*entity.Volume) []*dto.VolumeDTO {
+	dtos := make([]*dto.VolumeDTO, len(volumes))
+	for i, volume := range volumes {
+		dtos[i] = ToVolumeDTO(volume)
+	}
+	return dtos
+}
