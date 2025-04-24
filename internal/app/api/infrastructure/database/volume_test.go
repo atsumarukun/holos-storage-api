@@ -372,3 +372,81 @@ func TestVolume_FindOneByNameAndAccountID(t *testing.T) {
 		})
 	}
 }
+
+func TestVolume_FindByAccountID(t *testing.T) {
+	accountID := uuid.New()
+	volume := &entity.Volume{
+		ID:        uuid.New(),
+		AccountID: accountID,
+		Name:      "name",
+		IsPublic:  false,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
+
+	tests := []struct {
+		name           string
+		inputAccountID uuid.UUID
+		expectResult   []*entity.Volume
+		expectError    error
+		setMockDB      func(mock sqlmock.Sqlmock)
+	}{
+		{
+			name:           "success",
+			inputAccountID: accountID,
+			expectResult:   []*entity.Volume{volume},
+			expectError:    nil,
+			setMockDB: func(mock sqlmock.Sqlmock) {
+				mock.ExpectQuery(regexp.QuoteMeta(`SELECT id, account_id, name, is_public, created_at, updated_at FROM volumes WHERE account_id = ?;`)).
+					WithArgs(accountID).
+					WillReturnRows(sqlmock.NewRows([]string{"id", "account_id", "name", "is_public", "created_at", "updated_at"}).AddRow(volume.ID, volume.AccountID, volume.Name, volume.IsPublic, volume.CreatedAt, volume.UpdatedAt)).
+					WillReturnError(nil)
+			},
+		},
+		{
+			name:           "not found",
+			inputAccountID: accountID,
+			expectResult:   []*entity.Volume{},
+			expectError:    nil,
+			setMockDB: func(mock sqlmock.Sqlmock) {
+				mock.ExpectQuery(regexp.QuoteMeta(`SELECT id, account_id, name, is_public, created_at, updated_at FROM volumes WHERE account_id = ?;`)).
+					WithArgs(accountID).
+					WillReturnRows(sqlmock.NewRows([]string{"id", "account_id", "name", "is_public", "created_at", "updated_at"})).
+					WillReturnError(nil)
+			},
+		},
+		{
+			name:           "find error",
+			inputAccountID: accountID,
+			expectResult:   nil,
+			expectError:    sql.ErrConnDone,
+			setMockDB: func(mock sqlmock.Sqlmock) {
+				mock.ExpectQuery(regexp.QuoteMeta(`SELECT id, account_id, name, is_public, created_at, updated_at FROM volumes WHERE account_id = ?;`)).
+					WithArgs(accountID).
+					WillReturnRows(sqlmock.NewRows([]string{"id", "account_id", "name", "is_public", "created_at", "updated_at"})).
+					WillReturnError(sql.ErrConnDone)
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			db, mock := mockDatabase.NewMockDatabase(t)
+
+			tt.setMockDB(mock)
+
+			repo := database.NewVolumeRepository(db)
+			result, err := repo.FindByAccountID(t.Context(), tt.inputAccountID)
+			if !errors.Is(err, tt.expectError) {
+				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
+			}
+
+			if diff := cmp.Diff(result, tt.expectResult); diff != "" {
+				t.Error(diff)
+			}
+
+			if err := mock.ExpectationsWereMet(); err != nil {
+				t.Error(err)
+			}
+		})
+	}
+}
