@@ -3,6 +3,7 @@ package usecase
 
 import (
 	"context"
+	"errors"
 
 	"github.com/google/uuid"
 
@@ -18,6 +19,7 @@ type VolumeUsecase interface {
 	Create(context.Context, uuid.UUID, string, bool) (*dto.VolumeDTO, error)
 	Update(context.Context, uuid.UUID, uuid.UUID, string, bool) (*dto.VolumeDTO, error)
 	Delete(context.Context, uuid.UUID, uuid.UUID) error
+	GetOne(context.Context, uuid.UUID, uuid.UUID) (*dto.VolumeDTO, error)
 }
 
 type volumeUsecase struct {
@@ -93,4 +95,8 @@ func (u *volumeUsecase) Delete(ctx context.Context, accountID, id uuid.UUID) err
 
 		return u.volumeRepo.Delete(ctx, volume)
 	})
+}
+
+func (u *volumeUsecase) GetOne(ctx context.Context, accountID, id uuid.UUID) (*dto.VolumeDTO, error) {
+	return nil, errors.New("not implemented")
 }
