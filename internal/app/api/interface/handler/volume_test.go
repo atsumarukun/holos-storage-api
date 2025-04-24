@@ -485,14 +485,14 @@ func TestVolume_GetAll(t *testing.T) {
 		name            string
 		isSetAccountID  bool
 		expectCode      int
-		expectResponse  map[string]any
+		expectResponse  any
 		setMockVolumeUC func(context.Context, *mockUsecase.MockVolumeUsecase)
 	}{
 		{
 			name:           "success",
 			isSetAccountID: true,
 			expectCode:     http.StatusOK,
-			expectResponse: map[string]any{"volumes": []map[string]any{{"id": volumeDTO.ID.String(), "name": volumeDTO.Name, "is_public": volumeDTO.IsPublic, "created_at": volumeDTO.CreatedAt.Format(time.RFC3339Nano), "updated_at": volumeDTO.UpdatedAt.Format(time.RFC3339Nano)}}},
+			expectResponse: map[string][]map[string]any{"volumes": {{"id": volumeDTO.ID.String(), "name": volumeDTO.Name, "is_public": volumeDTO.IsPublic, "created_at": volumeDTO.CreatedAt.Format(time.RFC3339Nano), "updated_at": volumeDTO.UpdatedAt.Format(time.RFC3339Nano)}}},
 			setMockVolumeUC: func(ctx context.Context, volumeUC *mockUsecase.MockVolumeUsecase) {
 				volumeUC.
 					EXPECT().
@@ -505,7 +505,7 @@ func TestVolume_GetAll(t *testing.T) {
 			name:           "not found",
 			isSetAccountID: true,
 			expectCode:     http.StatusOK,
-			expectResponse: map[string]any{"volumes": []map[string]any{}},
+			expectResponse: map[string][]map[string]any{"volumes": {}},
 			setMockVolumeUC: func(ctx context.Context, volumeUC *mockUsecase.MockVolumeUsecase) {
 				volumeUC.
 					EXPECT().
@@ -565,12 +565,22 @@ func TestVolume_GetAll(t *testing.T) {
 				t.Errorf("\nexpect: %v\ngot: %v", tt.expectCode, w.Code)
 			}
 
-			var response map[string]any
-			if err := json.Unmarshal(w.Body.Bytes(), &response); err != nil {
-				t.Error(err)
-			}
-			if diff := cmp.Diff(response, tt.expectResponse); diff != "" {
-				t.Error(diff)
+			if tt.expectCode == http.StatusOK {
+				var response map[string][]map[string]any
+				if err := json.Unmarshal(w.Body.Bytes(), &response); err != nil {
+					t.Error(err)
+				}
+				if diff := cmp.Diff(response, tt.expectResponse); diff != "" {
+					t.Error(diff)
+				}
+			} else {
+				var response map[string]any
+				if err := json.Unmarshal(w.Body.Bytes(), &response); err != nil {
+					t.Error(err)
+				}
+				if diff := cmp.Diff(response, tt.expectResponse); diff != "" {
+					t.Error(diff)
+				}
 			}
 		})
 	}
