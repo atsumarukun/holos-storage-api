@@ -123,6 +123,8 @@ paths:
       responses:
         204:
           $ref: "#/components/responses/204"
+        400:
+          $ref: "#/components/responses/400"
         401:
           $ref: "#/components/responses/401"
         403:
@@ -147,6 +149,8 @@ paths:
       responses:
         200:
           $ref: "#/components/responses/get_volume"
+        400:
+          $ref: "#/components/responses/400"
         401:
           $ref: "#/components/responses/401"
         403:
