@@ -3,7 +3,6 @@ package usecase
 
 import (
 	"context"
-	"errors"
 
 	"github.com/google/uuid"
 
@@ -102,5 +101,12 @@ func (u *volumeUsecase) Delete(ctx context.Context, accountID, id uuid.UUID) err
 }
 
 func (u *volumeUsecase) GetOne(ctx context.Context, accountID, id uuid.UUID) (*dto.VolumeDTO, error) {
-	return nil, errors.New("not implemented")
+	volume, err := u.volumeRepo.FindOneByIDAndAccountID(ctx, id, accountID)
+	if err != nil {
+		return nil, err
+	}
+	if volume == nil {
+		return nil, ErrVolumeNotFound
+	}
+	return mapper.ToVolumeDTO(volume), nil
 }
