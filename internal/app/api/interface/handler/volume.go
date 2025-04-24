@@ -19,6 +19,7 @@ type VolumeHandler interface {
 	Create(*gin.Context)
 	Update(*gin.Context)
 	Delete(*gin.Context)
+	GetOne(*gin.Context)
 }
 
 type volumeHandler struct {
@@ -106,4 +107,28 @@ func (h *volumeHandler) Delete(c *gin.Context) {
 	}
 
 	c.Status(http.StatusNoContent)
+}
+
+func (h *volumeHandler) GetOne(c *gin.Context) {
+	id, err := parameter.GetPathParameter[uuid.UUID](c, "id")
+	if err != nil {
+		errors.Handle(c, status.Error(code.BadRequest, "invalid id"))
+		return
+	}
+
+	accountID, err := parameter.GetContextParameter[uuid.UUID](c, "accountID")
+	if err != nil {
+		errors.Handle(c, err)
+		return
+	}
+
+	ctx := c.Request.Context()
+
+	volume, err := h.volumeUC.GetOne(ctx, accountID, id)
+	if err != nil {
+		errors.Handle(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, builder.ToVolumeResponse(volume))
 }
