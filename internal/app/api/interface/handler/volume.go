@@ -19,6 +19,7 @@ type VolumeHandler interface {
 	Create(*gin.Context)
 	Update(*gin.Context)
 	Delete(*gin.Context)
+	GetOne(*gin.Context)
 }
 
 type volumeHandler struct {
@@ -107,3 +108,5 @@ func (h *volumeHandler) Delete(c *gin.Context) {
 
 	c.Status(http.StatusNoContent)
 }
+
+func (h *volumeHandler) GetOne(c *gin.Context) {}
