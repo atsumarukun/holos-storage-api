@@ -302,6 +302,30 @@ func TestVolume_Update(t *testing.T) {
 			},
 		},
 		{
+			name:           "not found",
+			inputAccountID: accountID,
+			inputID:        id,
+			expectResult:   nil,
+			expectError:    usecase.ErrVolumeNotFound,
+			setMockTransactionObj: func(ctx context.Context, transactionObj *mockTransaction.MockTransactionObject) {
+				transactionObj.
+					EXPECT().
+					Transaction(ctx, gomock.Any()).
+					DoAndReturn(func(ctx context.Context, fn func(context.Context) error) error {
+						return fn(ctx)
+					}).
+					Times(1)
+			},
+			setMockVolumeRepo: func(ctx context.Context, volumeRepo *mockRepository.MockVolumeRepository) {
+				volumeRepo.
+					EXPECT().
+					FindOneByIDAndAccountID(ctx, gomock.Any(), gomock.Any()).
+					Return(nil, nil).
+					Times(1)
+			},
+			setMockVolumeServ: func(context.Context, *mockService.MockVolumeService) {},
+		},
+		{
 			name:           "find error",
 			inputAccountID: accountID,
 			inputID:        id,
@@ -441,6 +465,28 @@ func TestVolume_Delete(t *testing.T) {
 					EXPECT().
 					Delete(ctx, gomock.Any()).
 					Return(nil).
+					Times(1)
+			},
+		},
+		{
+			name:           "not found",
+			inputAccountID: accountID,
+			inputID:        id,
+			expectError:    usecase.ErrVolumeNotFound,
+			setMockTransactionObj: func(ctx context.Context, transactionObj *mockTransaction.MockTransactionObject) {
+				transactionObj.
+					EXPECT().
+					Transaction(ctx, gomock.Any()).
+					DoAndReturn(func(ctx context.Context, fn func(context.Context) error) error {
+						return fn(ctx)
+					}).
+					Times(1)
+			},
+			setMockVolumeRepo: func(ctx context.Context, volumeRepo *mockRepository.MockVolumeRepository) {
+				volumeRepo.
+					EXPECT().
+					FindOneByIDAndAccountID(ctx, gomock.Any(), gomock.Any()).
+					Return(nil, nil).
 					Times(1)
 			},
 		},
