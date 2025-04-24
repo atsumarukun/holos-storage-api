@@ -384,7 +384,7 @@ func TestVolume_GetOne(t *testing.T) {
 			isSetID:        true,
 			isSetAccountID: true,
 			expectCode:     http.StatusOK,
-			expectResponse: map[string]any{"id": volumeDTO.ID.String(), "account_id": volumeDTO.AccountID.String(), "name": volumeDTO.Name, "is_public": volumeDTO.IsPublic, "created_at": volumeDTO.CreatedAt.Format(time.RFC3339Nano), "updated_at": volumeDTO.UpdatedAt.Format(time.RFC3339Nano)},
+			expectResponse: map[string]any{"id": volumeDTO.ID.String(), "name": volumeDTO.Name, "is_public": volumeDTO.IsPublic, "created_at": volumeDTO.CreatedAt.Format(time.RFC3339Nano), "updated_at": volumeDTO.UpdatedAt.Format(time.RFC3339Nano)},
 			setMockVolumeUC: func(ctx context.Context, volumeUC *mockUsecase.MockVolumeUsecase) {
 				volumeUC.
 					EXPECT().
