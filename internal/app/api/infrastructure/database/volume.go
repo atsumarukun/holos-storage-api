@@ -86,13 +86,15 @@ func (r *volumeRepository) FindOneByNameAndAccountID(ctx context.Context, name s
 	return transformer.ToVolumeEntity(&model), nil
 }
 
-func (r *volumeRepository) FindByAccountID(ctx context.Context, accountID uuid.UUID) ([]*entity.Volume, error) {
+func (r *volumeRepository) FindByAccountID(ctx context.Context, accountID uuid.UUID) (volumes []*entity.Volume, err error) {
 	driver := transaction.GetDriver(ctx, r.db)
 	rows, err := driver.QueryxContext(ctx, `SELECT id, account_id, name, is_public, created_at, updated_at FROM volumes WHERE account_id = ?;`, accountID)
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() {
+		err = rows.Close()
+	}()
 
 	var models []*model.VolumeModel
 	for rows.Next() {
