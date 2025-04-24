@@ -71,6 +71,9 @@ func (u *volumeUsecase) Update(ctx context.Context, accountID, id uuid.UUID, nam
 		if err != nil {
 			return err
 		}
+		if volume == nil {
+			return ErrVolumeNotFound
+		}
 
 		if err := volume.SetName(name); err != nil {
 			return err
@@ -94,6 +97,9 @@ func (u *volumeUsecase) Delete(ctx context.Context, accountID, id uuid.UUID) err
 		volume, err := u.volumeRepo.FindOneByIDAndAccountID(ctx, id, accountID)
 		if err != nil {
 			return err
+		}
+		if volume == nil {
+			return ErrVolumeNotFound
 		}
 
 		return u.volumeRepo.Delete(ctx, volume)
