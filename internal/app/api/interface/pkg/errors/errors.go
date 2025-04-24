@@ -19,6 +19,7 @@ var responseMap = map[code.StatusCode]response{
 	code.BadRequest:   {code: http.StatusBadRequest, message: "bad request"},
 	code.Unauthorized: {code: http.StatusUnauthorized, message: "unauthorized"},
 	code.Forbidden:    {code: http.StatusForbidden, message: "forbidden"},
+	code.NotFound:     {code: http.StatusNotFound, message: "not found"},
 	code.Conflict:     {code: http.StatusConflict, message: "conflict"},
 	code.Internal:     {code: http.StatusInternalServerError, message: "internal server error"},
 }
@@ -28,7 +29,7 @@ func Handle(c *gin.Context, err error) {
 
 	if v, ok := err.(*status.Status); ok {
 		resp := responseMap[v.Code()]
-		if v.Code() == code.BadRequest || v.Code() == code.Conflict {
+		if v.Code() == code.BadRequest || v.Code() == code.NotFound || v.Code() == code.Conflict {
 			c.JSON(resp.code, map[string]string{"message": v.Message()})
 			return
 		}
