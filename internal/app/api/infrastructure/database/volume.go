@@ -85,3 +85,24 @@ func (r *volumeRepository) FindOneByNameAndAccountID(ctx context.Context, name s
 	}
 	return transformer.ToVolumeEntity(&model), nil
 }
+
+func (r *volumeRepository) FindByAccountID(ctx context.Context, accountID uuid.UUID) (volumes []*entity.Volume, err error) {
+	driver := transaction.GetDriver(ctx, r.db)
+	rows, err := driver.QueryxContext(ctx, `SELECT id, account_id, name, is_public, created_at, updated_at FROM volumes WHERE account_id = ?;`, accountID)
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		err = rows.Close()
+	}()
+
+	var models []*model.VolumeModel
+	for rows.Next() {
+		var model model.VolumeModel
+		if err := rows.StructScan(&model); err != nil {
+			return nil, err
+		}
+		models = append(models, &model)
+	}
+	return transformer.ToVolumeEntities(models), nil
+}

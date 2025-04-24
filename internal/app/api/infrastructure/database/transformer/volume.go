@@ -26,3 +26,11 @@ func ToVolumeEntity(volume *model.VolumeModel) *entity.Volume {
 		volume.UpdatedAt,
 	)
 }
+
+func ToVolumeEntities(volumes []*model.VolumeModel) []*entity.Volume {
+	entities := make([]*entity.Volume, len(volumes))
+	for i, volume := range volumes {
+		entities[i] = ToVolumeEntity(volume)
+	}
+	return entities
+}

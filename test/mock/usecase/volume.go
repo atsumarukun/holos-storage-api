@@ -71,6 +71,21 @@ func (mr *MockVolumeUsecaseMockRecorder) Delete(arg0, arg1, arg2 any) *gomock.Ca
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockVolumeUsecase)(nil).Delete), arg0, arg1, arg2)
 }
 
+// GetAll mocks base method.
+func (m *MockVolumeUsecase) GetAll(arg0 context.Context, arg1 uuid.UUID) ([]*dto.VolumeDTO, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAll", arg0, arg1)
+	ret0, _ := ret[0].([]*dto.VolumeDTO)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAll indicates an expected call of GetAll.
+func (mr *MockVolumeUsecaseMockRecorder) GetAll(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAll", reflect.TypeOf((*MockVolumeUsecase)(nil).GetAll), arg0, arg1)
+}
+
 // GetOne mocks base method.
 func (m *MockVolumeUsecase) GetOne(arg0 context.Context, arg1, arg2 uuid.UUID) (*dto.VolumeDTO, error) {
 	m.ctrl.T.Helper()

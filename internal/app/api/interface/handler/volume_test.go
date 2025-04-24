@@ -134,7 +134,7 @@ func TestVolume_Update(t *testing.T) {
 	accountID := uuid.New()
 	volumeDTO := &dto.VolumeDTO{
 		ID:        id,
-		AccountID: uuid.New(),
+		AccountID: accountID,
 		Name:      "name",
 		IsPublic:  false,
 		CreatedAt: time.Now(),
@@ -364,7 +364,7 @@ func TestVolume_GetOne(t *testing.T) {
 	accountID := uuid.New()
 	volumeDTO := &dto.VolumeDTO{
 		ID:        id,
-		AccountID: uuid.New(),
+		AccountID: accountID,
 		Name:      "name",
 		IsPublic:  false,
 		CreatedAt: time.Now(),
@@ -463,6 +463,124 @@ func TestVolume_GetOne(t *testing.T) {
 			}
 			if diff := cmp.Diff(response, tt.expectResponse); diff != "" {
 				t.Error(diff)
+			}
+		})
+	}
+}
+
+func TestVolume_GetAll(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	accountID := uuid.New()
+	volumeDTO := &dto.VolumeDTO{
+		ID:        uuid.New(),
+		AccountID: accountID,
+		Name:      "name",
+		IsPublic:  false,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
+
+	tests := []struct {
+		name            string
+		isSetAccountID  bool
+		expectCode      int
+		expectResponse  any
+		setMockVolumeUC func(context.Context, *mockUsecase.MockVolumeUsecase)
+	}{
+		{
+			name:           "success",
+			isSetAccountID: true,
+			expectCode:     http.StatusOK,
+			expectResponse: map[string][]map[string]any{"volumes": {{"id": volumeDTO.ID.String(), "name": volumeDTO.Name, "is_public": volumeDTO.IsPublic, "created_at": volumeDTO.CreatedAt.Format(time.RFC3339Nano), "updated_at": volumeDTO.UpdatedAt.Format(time.RFC3339Nano)}}},
+			setMockVolumeUC: func(ctx context.Context, volumeUC *mockUsecase.MockVolumeUsecase) {
+				volumeUC.
+					EXPECT().
+					GetAll(ctx, gomock.Any()).
+					Return([]*dto.VolumeDTO{volumeDTO}, nil).
+					Times(1)
+			},
+		},
+		{
+			name:           "not found",
+			isSetAccountID: true,
+			expectCode:     http.StatusOK,
+			expectResponse: map[string][]map[string]any{"volumes": {}},
+			setMockVolumeUC: func(ctx context.Context, volumeUC *mockUsecase.MockVolumeUsecase) {
+				volumeUC.
+					EXPECT().
+					GetAll(ctx, gomock.Any()).
+					Return([]*dto.VolumeDTO{}, nil).
+					Times(1)
+			},
+		},
+		{
+			name:            "account id not found",
+			isSetAccountID:  false,
+			expectCode:      http.StatusInternalServerError,
+			expectResponse:  map[string]any{"message": "internal server error"},
+			setMockVolumeUC: func(context.Context, *mockUsecase.MockVolumeUsecase) {},
+		},
+		{
+			name:           "get error",
+			isSetAccountID: true,
+			expectCode:     http.StatusInternalServerError,
+			expectResponse: map[string]any{"message": "internal server error"},
+			setMockVolumeUC: func(ctx context.Context, volumeUC *mockUsecase.MockVolumeUsecase) {
+				volumeUC.
+					EXPECT().
+					GetAll(ctx, gomock.Any()).
+					Return(nil, sql.ErrConnDone).
+					Times(1)
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := t.Context()
+			w := httptest.NewRecorder()
+
+			c, _ := gin.CreateTestContext(w)
+			var err error
+			c.Request, err = http.NewRequestWithContext(ctx, "GET", "/volumes", http.NoBody)
+			if err != nil {
+				t.Error(err)
+			}
+			if tt.isSetAccountID {
+				c.Set("accountID", accountID)
+			}
+
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			volumeUC := mockUsecase.NewMockVolumeUsecase(ctrl)
+			tt.setMockVolumeUC(ctx, volumeUC)
+
+			hdl := handler.NewVolumeHandler(volumeUC)
+			hdl.GetAll(c)
+
+			c.Writer.WriteHeaderNow()
+
+			if w.Code != tt.expectCode {
+				t.Errorf("\nexpect: %v\ngot: %v", tt.expectCode, w.Code)
+			}
+
+			if tt.expectCode == http.StatusOK {
+				var response map[string][]map[string]any
+				if err := json.Unmarshal(w.Body.Bytes(), &response); err != nil {
+					t.Error(err)
+				}
+				if diff := cmp.Diff(response, tt.expectResponse); diff != "" {
+					t.Error(diff)
+				}
+			} else {
+				var response map[string]any
+				if err := json.Unmarshal(w.Body.Bytes(), &response); err != nil {
+					t.Error(err)
+				}
+				if diff := cmp.Diff(response, tt.expectResponse); diff != "" {
+					t.Error(diff)
+				}
 			}
 		})
 	}

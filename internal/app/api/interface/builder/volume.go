@@ -14,3 +14,11 @@ func ToVolumeResponse(volume *dto.VolumeDTO) *schema.VolumeResponse {
 		UpdatedAt: volume.UpdatedAt,
 	}
 }
+
+func ToVolumeResponses(volumes []*dto.VolumeDTO) []*schema.VolumeResponse {
+	responses := make([]*schema.VolumeResponse, len(volumes))
+	for i, volume := range volumes {
+		responses[i] = ToVolumeResponse(volume)
+	}
+	return responses
+}
