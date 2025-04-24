@@ -514,3 +514,100 @@ func TestVolume_Delete(t *testing.T) {
 		})
 	}
 }
+
+func TestVolume_GetOne(t *testing.T) {
+	id := uuid.New()
+	accountID := uuid.New()
+	volume := &entity.Volume{
+		ID:        id,
+		AccountID: accountID,
+		Name:      "name",
+		IsPublic:  false,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
+	volumeDTO := &dto.VolumeDTO{
+		ID:        id,
+		AccountID: accountID,
+		Name:      "name",
+		IsPublic:  false,
+		CreatedAt: volume.CreatedAt,
+		UpdatedAt: volume.UpdatedAt,
+	}
+
+	tests := []struct {
+		name              string
+		inputAccountID    uuid.UUID
+		inputID           uuid.UUID
+		expectResult      *dto.VolumeDTO
+		expectError       error
+		setMockVolumeRepo func(context.Context, *mockRepository.MockVolumeRepository)
+	}{
+		{
+			name:           "success",
+			inputAccountID: accountID,
+			inputID:        id,
+			expectResult:   volumeDTO,
+			expectError:    nil,
+			setMockVolumeRepo: func(ctx context.Context, volumeRepo *mockRepository.MockVolumeRepository) {
+				volumeRepo.
+					EXPECT().
+					FindOneByIDAndAccountID(ctx, gomock.Any(), gomock.Any()).
+					Return(volume, nil).
+					Times(1)
+			},
+		},
+		{
+			name:           "not found",
+			inputAccountID: accountID,
+			inputID:        id,
+			expectResult:   nil,
+			expectError:    usecase.ErrVolumeNotFound,
+			setMockVolumeRepo: func(ctx context.Context, volumeRepo *mockRepository.MockVolumeRepository) {
+				volumeRepo.
+					EXPECT().
+					FindOneByIDAndAccountID(ctx, gomock.Any(), gomock.Any()).
+					Return(nil, nil).
+					Times(1)
+			},
+		},
+		{
+			name:           "find error",
+			inputAccountID: accountID,
+			inputID:        id,
+			expectResult:   nil,
+			expectError:    sql.ErrConnDone,
+			setMockVolumeRepo: func(ctx context.Context, volumeRepo *mockRepository.MockVolumeRepository) {
+				volumeRepo.
+					EXPECT().
+					FindOneByIDAndAccountID(ctx, gomock.Any(), gomock.Any()).
+					Return(nil, sql.ErrConnDone).
+					Times(1)
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			ctx := t.Context()
+
+			volumeRepo := mockRepository.NewMockVolumeRepository(ctrl)
+			tt.setMockVolumeRepo(ctx, volumeRepo)
+
+			uc := usecase.NewVolumeUsecase(nil, volumeRepo, nil)
+			result, err := uc.GetOne(ctx, tt.inputAccountID, tt.inputID)
+			if !errors.Is(err, tt.expectError) {
+				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
+			}
+
+			opts := cmp.Options{
+				cmpopts.IgnoreFields(dto.VolumeDTO{}, "ID", "UpdatedAt"),
+			}
+			if diff := cmp.Diff(result, tt.expectResult, opts...); diff != "" {
+				t.Error(diff)
+			}
+		})
+	}
+}

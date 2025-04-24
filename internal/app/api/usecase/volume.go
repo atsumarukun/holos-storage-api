@@ -11,9 +11,13 @@ import (
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/domain/repository"
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/domain/repository/pkg/transaction"
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/domain/service"
+	"github.com/atsumarukun/holos-storage-api/internal/app/api/pkg/status"
+	"github.com/atsumarukun/holos-storage-api/internal/app/api/pkg/status/code"
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/usecase/dto"
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/usecase/mapper"
 )
+
+var ErrVolumeNotFound = status.Error(code.NotFound, "volume not found")
 
 type VolumeUsecase interface {
 	Create(context.Context, uuid.UUID, string, bool) (*dto.VolumeDTO, error)
