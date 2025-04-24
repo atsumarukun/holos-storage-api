@@ -20,6 +20,7 @@ type VolumeHandler interface {
 	Update(*gin.Context)
 	Delete(*gin.Context)
 	GetOne(*gin.Context)
+	GetAll(*gin.Context)
 }
 
 type volumeHandler struct {
@@ -132,3 +133,5 @@ func (h *volumeHandler) GetOne(c *gin.Context) {
 
 	c.JSON(http.StatusOK, builder.ToVolumeResponse(volume))
 }
+
+func (h *volumeHandler) GetAll(c *gin.Context) {}
