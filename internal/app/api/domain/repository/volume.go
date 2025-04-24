@@ -15,4 +15,5 @@ type VolumeRepository interface {
 	Delete(context.Context, *entity.Volume) error
 	FindOneByIDAndAccountID(context.Context, uuid.UUID, uuid.UUID) (*entity.Volume, error)
 	FindOneByNameAndAccountID(context.Context, string, uuid.UUID) (*entity.Volume, error)
+	FindByAccountID(context.Context, uuid.UUID) ([]*entity.Volume, error)
 }

@@ -85,3 +85,7 @@ func (r *volumeRepository) FindOneByNameAndAccountID(ctx context.Context, name s
 	}
 	return transformer.ToVolumeEntity(&model), nil
 }
+
+func (r *volumeRepository) FindByAccountID(ctx context.Context, accountID uuid.UUID) ([]*entity.Volume, error) {
+	return nil, errors.New("not implemented")
+}
