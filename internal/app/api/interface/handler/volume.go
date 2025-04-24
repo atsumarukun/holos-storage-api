@@ -134,4 +134,20 @@ func (h *volumeHandler) GetOne(c *gin.Context) {
 	c.JSON(http.StatusOK, builder.ToVolumeResponse(volume))
 }
 
-func (h *volumeHandler) GetAll(c *gin.Context) {}
+func (h *volumeHandler) GetAll(c *gin.Context) {
+	accountID, err := parameter.GetContextParameter[uuid.UUID](c, "accountID")
+	if err != nil {
+		errors.Handle(c, err)
+		return
+	}
+
+	ctx := c.Request.Context()
+
+	volumes, err := h.volumeUC.GetAll(ctx, accountID)
+	if err != nil {
+		errors.Handle(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, map[string][]*schema.VolumeResponse{"volumes": builder.ToVolumeResponses(volumes)})
+}
