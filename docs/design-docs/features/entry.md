@@ -64,7 +64,7 @@
 | account_id | char(36) | | | アカウントID |
 | volume_id | char(36) | FK | | ボリュームID |
 | key | varchar(255) | | | キー |
-| size | unsigned bigint | | | サイズ |
+| size | bigint unsigned | | | サイズ |
 | type | varchar(255) | | | タイプ |
 | is_public | tinyint(1) | | | 公開フラグ |
 | created_at | datetime(6) | | | 作成日時 |
