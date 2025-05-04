@@ -4,9 +4,10 @@ import (
 	"regexp"
 	"time"
 
+	"github.com/google/uuid"
+
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/pkg/status"
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/pkg/status/code"
-	"github.com/google/uuid"
 )
 
 var (
