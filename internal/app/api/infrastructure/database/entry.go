@@ -9,7 +9,11 @@ import (
 
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/domain/entity"
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/domain/repository"
+	"github.com/atsumarukun/holos-storage-api/internal/app/api/pkg/status"
+	"github.com/atsumarukun/holos-storage-api/internal/app/api/pkg/status/code"
 )
+
+var ErrRequiredEntry = status.Error(code.Internal, "entry is required")
 
 type entryRepository struct {
 	db *sqlx.DB
