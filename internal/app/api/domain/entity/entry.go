@@ -4,7 +4,17 @@ import (
 	"errors"
 	"time"
 
+	"github.com/atsumarukun/holos-storage-api/internal/app/api/pkg/status"
+	"github.com/atsumarukun/holos-storage-api/internal/app/api/pkg/status/code"
 	"github.com/google/uuid"
+)
+
+var (
+	ErrRequiredentryAccountID = status.Error(code.Internal, "account id for entry is required")
+	ErrRequiredentryVolumeID  = status.Error(code.Internal, "volume id for entry is required")
+	ErrShortEntryKey          = status.Error(code.BadRequest, "entry key is too short")
+	ErrLongEntryKey           = status.Error(code.BadRequest, "entry key is too long")
+	ErrInvalidEntryKey        = status.Error(code.BadRequest, "entry key contains invalid characters")
 )
 
 type Entry struct {
