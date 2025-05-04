@@ -116,7 +116,7 @@ func TestEntry_FindOneByKeyAndVolumeIDAndAccountID(t *testing.T) {
 			setMockDB: func(mock sqlmock.Sqlmock) {
 				mock.ExpectQuery(regexp.QuoteMeta(`SELECT id, account_id, volume_id, key, size, type, is_public, created_at, updated_at FROM entries WHERE key = ? AND volume_id = ? AND account_id = ? LIMIT 1;`)).
 					WithArgs("key", volumeID, accountID).
-					WillReturnRows(sqlmock.NewRows([]string{"id", "account_id", "volume_id", "key", "size", "type", "is_public", "created_at", "updated_at"}).AddRow(entry.ID, entry.AccountID, entry.Key, entry.Size, entry.Type, entry.IsPublic, entry.CreatedAt, entry.UpdatedAt)).
+					WillReturnRows(sqlmock.NewRows([]string{"id", "account_id", "volume_id", "key", "size", "type", "is_public", "created_at", "updated_at"}).AddRow(entry.ID, entry.AccountID, entry.VolumeID, entry.Key, entry.Size, entry.Type, entry.IsPublic, entry.CreatedAt, entry.UpdatedAt)).
 					WillReturnError(nil)
 			},
 		},
