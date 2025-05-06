@@ -89,6 +89,9 @@ func (s entryService) Create(ctx context.Context, volume *entity.Volume, entry *
 
 func (s entryService) extractDirs(key string) []string {
 	dirKey := filepath.Dir(key)
+	if dirKey == "." {
+		return nil
+	}
 
 	dirs := make([]string, strings.Count(dirKey, "/")+1)
 	var current string
