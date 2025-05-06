@@ -20,17 +20,20 @@ type EntryUsecase interface {
 type entryUsecase struct {
 	transactionObj transaction.TransactionObject
 	entryRepo      repository.EntryRepository
+	volumeRepo     repository.VolumeRepository
 	entryServ      service.EntryService
 }
 
 func NewEntryUsecase(
 	transactionObj transaction.TransactionObject,
 	entryRepo repository.EntryRepository,
+	volumeRepo repository.VolumeRepository,
 	entryServ service.EntryService,
 ) EntryUsecase {
 	return &entryUsecase{
 		transactionObj: transactionObj,
 		entryRepo:      entryRepo,
+		volumeRepo:     volumeRepo,
 		entryServ:      entryServ,
 	}
 }
