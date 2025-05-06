@@ -45,6 +45,17 @@ func TestEntry_Create(t *testing.T) {
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	}
+	folderEntryDTO := &dto.EntryDTO{
+		ID:        uuid.New(),
+		AccountID: accountID,
+		VolumeID:  volumeID,
+		Key:       "test/sample/",
+		Size:      0,
+		Type:      "folder",
+		IsPublic:  false,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
 
 	tests := []struct {
 		name                  string
@@ -126,6 +137,45 @@ func TestEntry_Create(t *testing.T) {
 					Times(1)
 			},
 			setMockEntryServ: func(context.Context, *mockService.MockEntryService) {},
+		},
+		{
+			name:           "body is nil",
+			inputAccountID: accountID,
+			inputVolumeID:  volumeID,
+			inputKey:       "test/sample/",
+			inputSize:      0,
+			inputIsPublic:  false,
+			inputBody:      nil,
+			expectResult:   folderEntryDTO,
+			expectError:    nil,
+			setMockTransactionObj: func(ctx context.Context, transactionObj *mockTransaction.MockTransactionObject) {
+				transactionObj.
+					EXPECT().
+					Transaction(ctx, gomock.Any()).
+					DoAndReturn(func(ctx context.Context, fn func(context.Context) error) error {
+						return fn(ctx)
+					}).
+					Times(1)
+			},
+			setMockVolumeRepo: func(ctx context.Context, volumeRepo *mockRepository.MockVolumeRepository) {
+				volumeRepo.
+					EXPECT().
+					FindOneByIDAndAccountID(ctx, gomock.Any(), gomock.Any()).
+					Return(volume, nil).
+					Times(1)
+			},
+			setMockEntryServ: func(ctx context.Context, entryServ *mockService.MockEntryService) {
+				entryServ.
+					EXPECT().
+					Exists(ctx, gomock.Any()).
+					Return(nil).
+					Times(1)
+				entryServ.
+					EXPECT().
+					Create(ctx, gomock.Any(), gomock.Any(), gomock.Any()).
+					Return(nil).
+					Times(1)
+			},
 		},
 		{
 			name:           "entry already exists",

@@ -183,13 +183,24 @@ func TestEntry_Create(t *testing.T) {
 			setMockBodyRepo:  func(context.Context, *mockRepository.MockBodyRepository) {},
 		},
 		{
-			name:             "body is nil",
-			inputVolume:      volume,
-			inputEntry:       entry,
-			inputBody:        nil,
-			expectError:      service.ErrRequiredBody,
-			setMockEntryRepo: func(context.Context, *mockRepository.MockEntryRepository) {},
-			setMockBodyRepo:  func(context.Context, *mockRepository.MockBodyRepository) {},
+			name:        "body is nil",
+			inputVolume: volume,
+			inputEntry:  entry,
+			inputBody:   nil,
+			expectError: nil,
+			setMockEntryRepo: func(ctx context.Context, entryRepo *mockRepository.MockEntryRepository) {
+				entryRepo.
+					EXPECT().
+					FindOneByKeyAndVolumeIDAndAccountID(ctx, parentEntry.Key, parentEntry.VolumeID, parentEntry.AccountID).
+					Return(parentEntry, nil).
+					AnyTimes()
+				entryRepo.
+					EXPECT().
+					Create(ctx, gomock.Any()).
+					Return(nil).
+					AnyTimes()
+			},
+			setMockBodyRepo: func(context.Context, *mockRepository.MockBodyRepository) {},
 		},
 		{
 			name:        "parent entry already exists",

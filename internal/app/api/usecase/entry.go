@@ -53,13 +53,17 @@ func (u *entryUsecase) Create(ctx context.Context, accountID, volumeID uuid.UUID
 			return ErrVolumeNotFound
 		}
 
-		buf := make([]byte, 512)
-		n, err := body.Read(buf)
-		if err != nil && err != io.EOF {
-			return err
+		entryType := "folder"
+		bodyReader := body
+		if body != nil {
+			buf := make([]byte, 512)
+			n, err := body.Read(buf)
+			if err != nil && err != io.EOF {
+				return err
+			}
+			entryType = http.DetectContentType(buf[:n])
+			bodyReader = io.MultiReader(bytes.NewReader(buf[:n]), body)
 		}
-		entryType := http.DetectContentType(buf[:n])
-		bodyReader := io.MultiReader(bytes.NewReader(buf[:n]), body)
 
 		entry, err = entity.NewEntry(accountID, volumeID, key, size, entryType, isPublic)
 		if err != nil {

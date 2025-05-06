@@ -17,7 +17,6 @@ import (
 var (
 	ErrRequiredEntry      = status.Error(code.Internal, "entry is required")
 	ErrEntryAlreadyExists = status.Error(code.Conflict, "entry name already used")
-	ErrRequiredBody       = status.Error(code.Internal, "Body is required")
 )
 
 type EntryService interface {
@@ -59,9 +58,6 @@ func (s entryService) Create(ctx context.Context, volume *entity.Volume, entry *
 	if entry == nil {
 		return ErrRequiredEntry
 	}
-	if body == nil {
-		return ErrRequiredBody
-	}
 
 	for _, dir := range s.extractDirs(entry.Key) {
 		ent, err := entity.NewEntry(entry.AccountID, volume.ID, dir, 0, "folder", entry.IsPublic)
@@ -84,8 +80,11 @@ func (s entryService) Create(ctx context.Context, volume *entity.Volume, entry *
 		return err
 	}
 
-	path := volume.Name + "/" + entry.Key
-	return s.bodyRepo.Create(path, body)
+	if body != nil {
+		path := volume.Name + "/" + entry.Key
+		return s.bodyRepo.Create(path, body)
+	}
+	return nil
 }
 
 func (s entryService) extractDirs(key string) []string {
