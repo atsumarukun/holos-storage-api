@@ -5,6 +5,8 @@ import (
 	"context"
 	"errors"
 	"io"
+	"path/filepath"
+	"strings"
 
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/domain/entity"
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/domain/repository"
@@ -36,9 +38,66 @@ func NewEntryService(entryRepo repository.EntryRepository, bodyRepo repository.B
 }
 
 func (s *entryService) Exists(ctx context.Context, entry *entity.Entry) error {
-	return errors.New("not implemented")
+	if entry == nil {
+		return ErrRequiredEntry
+	}
+
+	ent, err := s.entryRepo.FindOneByKeyAndVolumeIDAndAccountID(ctx, entry.Key, entry.VolumeID, entry.AccountID)
+	if err != nil {
+		return err
+	}
+	if ent == nil {
+		return nil
+	}
+	return ErrEntryAlreadyExists
 }
 
 func (s entryService) Create(ctx context.Context, volume *entity.Volume, entry *entity.Entry, body io.Reader) error {
-	return errors.New("not implemented")
+	if volume == nil {
+		return ErrRequiredVolume
+	}
+	if entry == nil {
+		return ErrRequiredEntry
+	}
+	if body == nil {
+		return ErrRequiredBody
+	}
+
+	for _, dir := range s.extractDirs(entry.Key) {
+		ent, err := entity.NewEntry(entry.AccountID, volume.ID, dir, 0, "folder", entry.IsPublic)
+		if err != nil {
+			return err
+		}
+		if err := s.Exists(ctx, ent); err != nil {
+			if errors.Is(err, ErrEntryAlreadyExists) {
+				continue
+			} else {
+				return err
+			}
+		}
+		if err := s.entryRepo.Create(ctx, ent); err != nil {
+			return err
+		}
+	}
+
+	if err := s.entryRepo.Create(ctx, entry); err != nil {
+		return err
+	}
+
+	path := volume.Name + "/" + entry.Key
+	return s.bodyRepo.Create(path, body)
+}
+
+func (s entryService) extractDirs(key string) []string {
+	dirKey := filepath.Dir(key)
+
+	dirs := make([]string, strings.Count(dirKey, "/")+1)
+	var current string
+
+	for i, part := range strings.Split(dirKey, "/") {
+		current += part + "/"
+		dirs[i] = current
+	}
+
+	return dirs
 }
