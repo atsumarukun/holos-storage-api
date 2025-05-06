@@ -36,14 +36,14 @@ func (r *entryRepository) Create(ctx context.Context, entry *entity.Entry) error
 
 	driver := transaction.GetDriver(ctx, r.db)
 	model := transformer.ToEntryModel(entry)
-	_, err := driver.NamedExecContext(ctx, "INSERT INTO entries (id, account_id, volume_id, key, size, type, is_public, created_at, updated_at) VALUES (:id, :account_id, :volume_id, :key, :size, :type, :is_public, :created_at, :updated_at);", model)
+	_, err := driver.NamedExecContext(ctx, "INSERT INTO entries (id, account_id, volume_id, `key`, size, type, is_public, created_at, updated_at) VALUES (:id, :account_id, :volume_id, :key, :size, :type, :is_public, :created_at, :updated_at);", model)
 	return err
 }
 
 func (r *entryRepository) FindOneByKeyAndVolumeIDAndAccountID(ctx context.Context, key string, volumeID uuid.UUID, accountID uuid.UUID) (*entity.Entry, error) {
 	driver := transaction.GetDriver(ctx, r.db)
 	var model model.EntryModel
-	if err := driver.QueryRowxContext(ctx, `SELECT id, account_id, volume_id, key, size, type, is_public, created_at, updated_at FROM entries WHERE key = ? AND volume_id = ? AND account_id = ? LIMIT 1;`, key, volumeID, accountID).StructScan(&model); err != nil {
+	if err := driver.QueryRowxContext(ctx, "SELECT id, account_id, volume_id, `key`, size, type, is_public, created_at, updated_at FROM entries WHERE `key` = ? AND volume_id = ? AND account_id = ? LIMIT 1;", key, volumeID, accountID).StructScan(&model); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}

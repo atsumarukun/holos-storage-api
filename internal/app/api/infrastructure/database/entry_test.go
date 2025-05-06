@@ -39,7 +39,7 @@ func TestEntry_Create(t *testing.T) {
 			inputEntry:  entry,
 			expectError: nil,
 			setMockDB: func(mock sqlmock.Sqlmock) {
-				mock.ExpectExec(regexp.QuoteMeta(`INSERT INTO entries (id, account_id, volume_id, key, size, type, is_public, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);`)).
+				mock.ExpectExec(regexp.QuoteMeta("INSERT INTO entries (id, account_id, volume_id, `key`, size, type, is_public, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);")).
 					WithArgs(entry.ID, entry.AccountID, entry.VolumeID, entry.Key, entry.Size, entry.Type, entry.IsPublic, entry.CreatedAt, entry.UpdatedAt).
 					WillReturnResult(sqlmock.NewResult(1, 1)).
 					WillReturnError(nil)
@@ -56,7 +56,7 @@ func TestEntry_Create(t *testing.T) {
 			inputEntry:  entry,
 			expectError: sql.ErrConnDone,
 			setMockDB: func(mock sqlmock.Sqlmock) {
-				mock.ExpectExec(regexp.QuoteMeta(`INSERT INTO entries (id, account_id, volume_id, key, size, type, is_public, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);`)).
+				mock.ExpectExec(regexp.QuoteMeta("INSERT INTO entries (id, account_id, volume_id, `key`, size, type, is_public, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);")).
 					WithArgs(entry.ID, entry.AccountID, entry.VolumeID, entry.Key, entry.Size, entry.Type, entry.IsPublic, entry.CreatedAt, entry.UpdatedAt).
 					WillReturnResult(sqlmock.NewResult(1, 1)).
 					WillReturnError(sql.ErrConnDone)
@@ -114,7 +114,7 @@ func TestEntry_FindOneByKeyAndVolumeIDAndAccountID(t *testing.T) {
 			expectResult:   entry,
 			expectError:    nil,
 			setMockDB: func(mock sqlmock.Sqlmock) {
-				mock.ExpectQuery(regexp.QuoteMeta(`SELECT id, account_id, volume_id, key, size, type, is_public, created_at, updated_at FROM entries WHERE key = ? AND volume_id = ? AND account_id = ? LIMIT 1;`)).
+				mock.ExpectQuery(regexp.QuoteMeta("SELECT id, account_id, volume_id, `key`, size, type, is_public, created_at, updated_at FROM entries WHERE `key` = ? AND volume_id = ? AND account_id = ? LIMIT 1;")).
 					WithArgs("key", volumeID, accountID).
 					WillReturnRows(sqlmock.NewRows([]string{"id", "account_id", "volume_id", "key", "size", "type", "is_public", "created_at", "updated_at"}).AddRow(entry.ID, entry.AccountID, entry.VolumeID, entry.Key, entry.Size, entry.Type, entry.IsPublic, entry.CreatedAt, entry.UpdatedAt)).
 					WillReturnError(nil)
@@ -128,7 +128,7 @@ func TestEntry_FindOneByKeyAndVolumeIDAndAccountID(t *testing.T) {
 			expectResult:   nil,
 			expectError:    nil,
 			setMockDB: func(mock sqlmock.Sqlmock) {
-				mock.ExpectQuery(regexp.QuoteMeta(`SELECT id, account_id, volume_id, key, size, type, is_public, created_at, updated_at FROM entries WHERE key = ? AND volume_id = ? AND account_id = ? LIMIT 1;`)).
+				mock.ExpectQuery(regexp.QuoteMeta("SELECT id, account_id, volume_id, `key`, size, type, is_public, created_at, updated_at FROM entries WHERE `key` = ? AND volume_id = ? AND account_id = ? LIMIT 1;")).
 					WithArgs("key", volumeID, accountID).
 					WillReturnRows(sqlmock.NewRows([]string{"id", "account_id", "volume_id", "key", "size", "type", "is_public", "created_at", "updated_at"})).
 					WillReturnError(nil)
@@ -142,7 +142,7 @@ func TestEntry_FindOneByKeyAndVolumeIDAndAccountID(t *testing.T) {
 			expectResult:   nil,
 			expectError:    sql.ErrConnDone,
 			setMockDB: func(mock sqlmock.Sqlmock) {
-				mock.ExpectQuery(regexp.QuoteMeta(`SELECT id, account_id, volume_id, key, size, type, is_public, created_at, updated_at FROM entries WHERE key = ? AND volume_id = ? AND account_id = ? LIMIT 1;`)).
+				mock.ExpectQuery(regexp.QuoteMeta("SELECT id, account_id, volume_id, `key`, size, type, is_public, created_at, updated_at FROM entries WHERE `key` = ? AND volume_id = ? AND account_id = ? LIMIT 1;")).
 					WithArgs("key", volumeID, accountID).
 					WillReturnRows(sqlmock.NewRows([]string{"id", "account_id", "volume_id", "key", "size", "type", "is_public", "created_at", "updated_at"})).
 					WillReturnError(sql.ErrConnDone)
