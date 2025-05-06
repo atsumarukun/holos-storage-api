@@ -4,8 +4,9 @@ import (
 	"io"
 	"path/filepath"
 
-	"github.com/atsumarukun/holos-storage-api/internal/app/api/domain/repository"
 	"github.com/spf13/afero"
+
+	"github.com/atsumarukun/holos-storage-api/internal/app/api/domain/repository"
 )
 
 type bodyRepository struct {
@@ -21,7 +22,7 @@ func NewBodyRepository(fs afero.Fs, basePath string) repository.BodyRepository {
 }
 
 func (r bodyRepository) Create(path string, reader io.Reader) (err error) {
-	if err := r.fs.MkdirAll(r.basePath+filepath.Dir(path), 0755); err != nil {
+	if err := r.fs.MkdirAll(r.basePath+filepath.Dir(path), 0o755); err != nil {
 		return err
 	}
 

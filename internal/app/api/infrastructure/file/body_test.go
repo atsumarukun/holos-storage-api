@@ -6,8 +6,9 @@ import (
 	"io"
 	"testing"
 
-	"github.com/atsumarukun/holos-storage-api/internal/app/api/infrastructure/file"
 	"github.com/spf13/afero"
+
+	"github.com/atsumarukun/holos-storage-api/internal/app/api/infrastructure/file"
 )
 
 type errReader struct{}

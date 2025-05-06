@@ -23,9 +23,9 @@ import (
 	mockUsecase "github.com/atsumarukun/holos-storage-api/test/mock/usecase"
 )
 
-func buildMultipartBody(t *testing.T, volumeID uuid.UUID) (io.Reader, string) {
-	body := &bytes.Buffer{}
-	writer := multipart.NewWriter(body)
+func buildMultipartBody(t *testing.T, volumeID uuid.UUID) (body io.Reader, contentType string) {
+	buffer := &bytes.Buffer{}
+	writer := multipart.NewWriter(buffer)
 	defer writer.Close()
 	if err := writer.WriteField("volume_id", volumeID.String()); err != nil {
 		t.Error(err)
@@ -44,7 +44,7 @@ func buildMultipartBody(t *testing.T, volumeID uuid.UUID) (io.Reader, string) {
 	if err != nil {
 		t.Error(err)
 	}
-	return body, writer.FormDataContentType()
+	return buffer, writer.FormDataContentType()
 }
 
 func TestEntry_Create(t *testing.T) {
