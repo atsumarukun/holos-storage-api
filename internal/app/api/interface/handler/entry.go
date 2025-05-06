@@ -55,7 +55,7 @@ func (h *entryHandler) Create(c *gin.Context) {
 		size = uint64(fileHeader.Size)
 		body = file
 	} else if !errs.Is(err, http.ErrMissingFile) {
-		errors.Handle(c, status.Error(code.BadRequest, "failed to get file"))
+		errors.Handle(c, err)
 		return
 	}
 

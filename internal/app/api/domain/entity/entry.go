@@ -78,8 +78,8 @@ func (e *Entry) SetKey(key string) error {
 	if key[0] == '/' {
 		key = key[1:]
 	}
-	if e.IsFolder() && key[len(key)-1:] != "/" {
-		key += "/"
+	if key[len(key)-1:] == "/" {
+		key = key[:len(key)-1]
 	}
 	if 255 < len(key) {
 		return ErrLongEntryKey

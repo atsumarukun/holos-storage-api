@@ -122,7 +122,7 @@ func TestEntry_Create(t *testing.T) {
 		ID:        uuid.New(),
 		AccountID: accountID,
 		VolumeID:  volume.ID,
-		Key:       "test/",
+		Key:       "test",
 		Size:      0,
 		Type:      "folder",
 		IsPublic:  false,

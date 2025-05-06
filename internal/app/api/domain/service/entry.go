@@ -76,10 +76,8 @@ func (s entryService) Create(ctx context.Context, volume *entity.Volume, entry *
 		}
 	}
 
-	if !entry.IsFolder() {
-		if err := s.entryRepo.Create(ctx, entry); err != nil {
-			return err
-		}
+	if err := s.entryRepo.Create(ctx, entry); err != nil {
+		return err
 	}
 
 	path := volume.Name + "/" + entry.Key

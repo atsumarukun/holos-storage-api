@@ -26,7 +26,9 @@ func (r bodyRepository) Create(path string, reader io.Reader) (err error) {
 		return err
 	}
 
-	if reader != nil {
+	if reader == nil {
+		return r.fs.Mkdir(r.basePath+path, 0o755)
+	} else {
 		file, err := r.fs.Create(r.basePath + path)
 		if err != nil {
 			return err
@@ -40,6 +42,4 @@ func (r bodyRepository) Create(path string, reader io.Reader) (err error) {
 		_, err = io.Copy(file, reader)
 		return err
 	}
-
-	return nil
 }
