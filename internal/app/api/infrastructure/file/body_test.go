@@ -13,7 +13,7 @@ import (
 type errReader struct{}
 
 func (e *errReader) Read([]byte) (int, error) {
-	return 0, io.EOF
+	return 0, io.ErrNoProgress
 }
 
 func TestBody_Create(t *testing.T) {
@@ -24,9 +24,9 @@ func TestBody_Create(t *testing.T) {
 		expectResult bool
 		expectError  error
 	}{
-		{name: "success", inputPath: "test.txt", inputReader: bytes.NewBufferString("test"), expectResult: true, expectError: nil},
-		{name: "reader is nil", inputPath: "test.txt", inputReader: nil, expectResult: false, expectError: file.ErrRequiredReader},
-		{name: "create error", inputPath: "test.txt", inputReader: &errReader{}, expectResult: true, expectError: io.EOF},
+		{name: "success", inputPath: "sample/test.txt", inputReader: bytes.NewBufferString("test"), expectResult: true, expectError: nil},
+		{name: "reader is nil", inputPath: "sample/test.txt", inputReader: nil, expectResult: false, expectError: file.ErrRequiredReader},
+		{name: "create error", inputPath: "sample/test.txt", inputReader: &errReader{}, expectResult: true, expectError: io.ErrNoProgress},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
