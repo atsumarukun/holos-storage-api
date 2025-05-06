@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/spf13/afero"
 )
 
 func Serve() {
@@ -20,7 +21,7 @@ func Serve() {
 		log.Fatalln(err.Error())
 	}
 
-	inject(db)
+	inject(db, afero.NewOsFs(), conf)
 
 	r := gin.Default()
 	registerRouter(r)

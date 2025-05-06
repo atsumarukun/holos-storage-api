@@ -6,3 +6,6 @@ db/data/
 
 # temporary build files
 tmp/
+
+# storage directory
+storage/
