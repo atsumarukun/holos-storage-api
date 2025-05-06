@@ -72,16 +72,16 @@ func RestoreEntry(id, accountID, volumeID uuid.UUID, key string, size uint64, en
 }
 
 func (e *Entry) SetKey(key string) error {
-	if key[0] != '/' {
-		key = "/" + key
+	if len(key) < 1 || (len(key) == 1 && key[0] == '/') {
+		return ErrShortEntryKey
+	}
+	if key[0] == '/' {
+		key = key[1:]
 	}
 	if e.IsFolder() && key[len(key)-1:] != "/" {
 		key += "/"
 	}
-
-	if len(key) < 1 {
-		return ErrShortEntryKey
-	} else if 255 < len(key) {
+	if 255 < len(key) {
 		return ErrLongEntryKey
 	}
 

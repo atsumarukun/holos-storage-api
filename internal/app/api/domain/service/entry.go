@@ -84,7 +84,7 @@ func (s entryService) Create(ctx context.Context, volume *entity.Volume, entry *
 		return err
 	}
 
-	path := volume.Name + entry.Key
+	path := volume.Name + "/" + entry.Key
 	return s.bodyRepo.Create(path, body)
 }
 
