@@ -1,8 +1,8 @@
 package file
 
 import (
-	"errors"
 	"io"
+	"path/filepath"
 
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/domain/repository"
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/pkg/status"
@@ -24,6 +24,25 @@ func NewBodyRepository(fs afero.Fs, basePath string) repository.BodyRepository {
 	}
 }
 
-func (r bodyRepository) Create(path string, reader io.Reader) error {
-	return errors.New("not implemented")
+func (r bodyRepository) Create(path string, reader io.Reader) (err error) {
+	if reader == nil {
+		return ErrRequiredReader
+	}
+
+	if err := r.fs.MkdirAll(r.basePath+filepath.Dir(path), 0755); err != nil {
+		return err
+	}
+
+	file, err := r.fs.Create(r.basePath + path)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if closeErr := file.Close(); closeErr != nil {
+			err = closeErr
+		}
+	}()
+
+	_, err = io.Copy(file, reader)
+	return err
 }
