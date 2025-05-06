@@ -200,7 +200,13 @@ func TestEntry_Create(t *testing.T) {
 					Return(nil).
 					AnyTimes()
 			},
-			setMockBodyRepo: func(context.Context, *mockRepository.MockBodyRepository) {},
+			setMockBodyRepo: func(_ context.Context, bodyRepo *mockRepository.MockBodyRepository) {
+				bodyRepo.
+					EXPECT().
+					Create(gomock.Any(), gomock.Any()).
+					Return(nil).
+					Times(1)
+			},
 		},
 		{
 			name:        "parent entry already exists",

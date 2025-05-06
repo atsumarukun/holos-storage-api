@@ -1,6 +1,8 @@
 package handler
 
 import (
+	errs "errors"
+	"io"
 	"log"
 	"net/http"
 	"strconv"
@@ -50,21 +52,28 @@ func (h *entryHandler) Create(c *gin.Context) {
 		return
 	}
 
+	var size uint64
+	var body io.Reader
 	fileHeader, err := c.FormFile("file")
-	if err != nil {
-		errors.Handle(c, status.Error(code.BadRequest, "failed to get file"))
-		return
-	}
-	file, err := fileHeader.Open()
-	if err != nil {
-		errors.Handle(c, status.Error(code.BadRequest, "failed to open file"))
-		return
-	}
-	defer func() {
-		if err := file.Close(); err != nil {
-			errors.Handle(c, err)
+	if err == nil {
+		file, err := fileHeader.Open()
+		if err != nil {
+			errors.Handle(c, status.Error(code.BadRequest, "failed to open file"))
+			return
 		}
-	}()
+		defer func() {
+			if err := file.Close(); err != nil {
+				errors.Handle(c, err)
+			}
+		}()
+		size = uint64(fileHeader.Size)
+		body = file
+	} else {
+		if !errs.Is(err, http.ErrMissingFile) {
+			errors.Handle(c, status.Error(code.BadRequest, "failed to get file"))
+			return
+		}
+	}
 
 	accountID, err := parameter.GetContextParameter[uuid.UUID](c, "accountID")
 	if err != nil {
@@ -74,7 +83,7 @@ func (h *entryHandler) Create(c *gin.Context) {
 
 	ctx := c.Request.Context()
 
-	entry, err := h.entryUC.Create(ctx, accountID, volumeID, req.Key, uint64(fileHeader.Size), isPublic, file)
+	entry, err := h.entryUC.Create(ctx, accountID, volumeID, req.Key, size, isPublic, body)
 	if err != nil {
 		errors.Handle(c, err)
 		return

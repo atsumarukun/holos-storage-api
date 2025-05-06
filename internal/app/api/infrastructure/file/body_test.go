@@ -25,7 +25,7 @@ func TestBody_Create(t *testing.T) {
 		expectError  error
 	}{
 		{name: "success", inputPath: "sample/test.txt", inputReader: bytes.NewBufferString("test"), expectResult: true, expectError: nil},
-		{name: "reader is nil", inputPath: "sample/test.txt", inputReader: nil, expectResult: false, expectError: file.ErrRequiredReader},
+		{name: "reader is nil", inputPath: "sample/", inputReader: nil, expectResult: true, expectError: nil},
 		{name: "create error", inputPath: "sample/test.txt", inputReader: &errReader{}, expectResult: true, expectError: io.ErrNoProgress},
 	}
 	for _, tt := range tests {
