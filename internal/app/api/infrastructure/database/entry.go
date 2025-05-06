@@ -40,10 +40,10 @@ func (r *entryRepository) Create(ctx context.Context, entry *entity.Entry) error
 	return err
 }
 
-func (r *entryRepository) FindOneByKeyAndVolumeIDAndAccountID(ctx context.Context, key string, volumeID, accountID uuid.UUID) (*entity.Entry, error) {
+func (r *entryRepository) FindOneByKeyAndVolumeID(ctx context.Context, key string, volumeID uuid.UUID) (*entity.Entry, error) {
 	driver := transaction.GetDriver(ctx, r.db)
 	var model model.EntryModel
-	if err := driver.QueryRowxContext(ctx, "SELECT id, account_id, volume_id, `key`, size, type, is_public, created_at, updated_at FROM entries WHERE `key` = ? AND volume_id = ? AND account_id = ? LIMIT 1;", key, volumeID, accountID).StructScan(&model); err != nil {
+	if err := driver.QueryRowxContext(ctx, "SELECT id, account_id, volume_id, `key`, size, type, is_public, created_at, updated_at FROM entries WHERE `key` = ? AND volume_id = ? LIMIT 1;", key, volumeID).StructScan(&model); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}

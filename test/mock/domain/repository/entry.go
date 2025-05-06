@@ -56,17 +56,17 @@ func (mr *MockEntryRepositoryMockRecorder) Create(arg0, arg1 any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockEntryRepository)(nil).Create), arg0, arg1)
 }
 
-// FindOneByKeyAndVolumeIDAndAccountID mocks base method.
-func (m *MockEntryRepository) FindOneByKeyAndVolumeIDAndAccountID(arg0 context.Context, arg1 string, arg2, arg3 uuid.UUID) (*entity.Entry, error) {
+// FindOneByKeyAndVolumeID mocks base method.
+func (m *MockEntryRepository) FindOneByKeyAndVolumeID(arg0 context.Context, arg1 string, arg2 uuid.UUID) (*entity.Entry, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FindOneByKeyAndVolumeIDAndAccountID", arg0, arg1, arg2, arg3)
+	ret := m.ctrl.Call(m, "FindOneByKeyAndVolumeID", arg0, arg1, arg2)
 	ret0, _ := ret[0].(*entity.Entry)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// FindOneByKeyAndVolumeIDAndAccountID indicates an expected call of FindOneByKeyAndVolumeIDAndAccountID.
-func (mr *MockEntryRepositoryMockRecorder) FindOneByKeyAndVolumeIDAndAccountID(arg0, arg1, arg2, arg3 any) *gomock.Call {
+// FindOneByKeyAndVolumeID indicates an expected call of FindOneByKeyAndVolumeID.
+func (mr *MockEntryRepositoryMockRecorder) FindOneByKeyAndVolumeID(arg0, arg1, arg2 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindOneByKeyAndVolumeIDAndAccountID", reflect.TypeOf((*MockEntryRepository)(nil).FindOneByKeyAndVolumeIDAndAccountID), arg0, arg1, arg2, arg3)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindOneByKeyAndVolumeID", reflect.TypeOf((*MockEntryRepository)(nil).FindOneByKeyAndVolumeID), arg0, arg1, arg2)
 }

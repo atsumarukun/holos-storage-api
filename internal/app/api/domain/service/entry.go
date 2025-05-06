@@ -41,7 +41,7 @@ func (s *entryService) Exists(ctx context.Context, entry *entity.Entry) error {
 		return ErrRequiredEntry
 	}
 
-	ent, err := s.entryRepo.FindOneByKeyAndVolumeIDAndAccountID(ctx, entry.Key, entry.VolumeID, entry.AccountID)
+	ent, err := s.entryRepo.FindOneByKeyAndVolumeID(ctx, entry.Key, entry.VolumeID)
 	if err != nil {
 		return err
 	}

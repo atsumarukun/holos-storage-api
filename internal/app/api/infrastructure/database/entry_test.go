@@ -83,7 +83,7 @@ func TestEntry_Create(t *testing.T) {
 	}
 }
 
-func TestEntry_FindOneByKeyAndVolumeIDAndAccountID(t *testing.T) {
+func TestEntry_FindOneByKeyAndVolumeID(t *testing.T) {
 	accountID := uuid.New()
 	volumeID := uuid.New()
 	entry := &entity.Entry{
@@ -99,52 +99,48 @@ func TestEntry_FindOneByKeyAndVolumeIDAndAccountID(t *testing.T) {
 	}
 
 	tests := []struct {
-		name           string
-		inputKey       string
-		inputVolumeID  uuid.UUID
-		inputAccountID uuid.UUID
-		expectResult   *entity.Entry
-		expectError    error
-		setMockDB      func(mock sqlmock.Sqlmock)
+		name          string
+		inputKey      string
+		inputVolumeID uuid.UUID
+		expectResult  *entity.Entry
+		expectError   error
+		setMockDB     func(mock sqlmock.Sqlmock)
 	}{
 		{
-			name:           "success",
-			inputKey:       "key",
-			inputVolumeID:  volumeID,
-			inputAccountID: accountID,
-			expectResult:   entry,
-			expectError:    nil,
+			name:          "success",
+			inputKey:      "key",
+			inputVolumeID: volumeID,
+			expectResult:  entry,
+			expectError:   nil,
 			setMockDB: func(mock sqlmock.Sqlmock) {
-				mock.ExpectQuery(regexp.QuoteMeta("SELECT id, account_id, volume_id, `key`, size, type, is_public, created_at, updated_at FROM entries WHERE `key` = ? AND volume_id = ? AND account_id = ? LIMIT 1;")).
-					WithArgs("key", volumeID, accountID).
+				mock.ExpectQuery(regexp.QuoteMeta("SELECT id, account_id, volume_id, `key`, size, type, is_public, created_at, updated_at FROM entries WHERE `key` = ? AND volume_id = ? LIMIT 1;")).
+					WithArgs("key", volumeID).
 					WillReturnRows(sqlmock.NewRows([]string{"id", "account_id", "volume_id", "key", "size", "type", "is_public", "created_at", "updated_at"}).AddRow(entry.ID, entry.AccountID, entry.VolumeID, entry.Key, entry.Size, entry.Type, entry.IsPublic, entry.CreatedAt, entry.UpdatedAt)).
 					WillReturnError(nil)
 			},
 		},
 		{
-			name:           "not found",
-			inputKey:       "key",
-			inputVolumeID:  volumeID,
-			inputAccountID: accountID,
-			expectResult:   nil,
-			expectError:    nil,
+			name:          "not found",
+			inputKey:      "key",
+			inputVolumeID: volumeID,
+			expectResult:  nil,
+			expectError:   nil,
 			setMockDB: func(mock sqlmock.Sqlmock) {
-				mock.ExpectQuery(regexp.QuoteMeta("SELECT id, account_id, volume_id, `key`, size, type, is_public, created_at, updated_at FROM entries WHERE `key` = ? AND volume_id = ? AND account_id = ? LIMIT 1;")).
-					WithArgs("key", volumeID, accountID).
+				mock.ExpectQuery(regexp.QuoteMeta("SELECT id, account_id, volume_id, `key`, size, type, is_public, created_at, updated_at FROM entries WHERE `key` = ? AND volume_id = ? LIMIT 1;")).
+					WithArgs("key", volumeID).
 					WillReturnRows(sqlmock.NewRows([]string{"id", "account_id", "volume_id", "key", "size", "type", "is_public", "created_at", "updated_at"})).
 					WillReturnError(nil)
 			},
 		},
 		{
-			name:           "find error",
-			inputKey:       "key",
-			inputVolumeID:  volumeID,
-			inputAccountID: accountID,
-			expectResult:   nil,
-			expectError:    sql.ErrConnDone,
+			name:          "find error",
+			inputKey:      "key",
+			inputVolumeID: volumeID,
+			expectResult:  nil,
+			expectError:   sql.ErrConnDone,
 			setMockDB: func(mock sqlmock.Sqlmock) {
-				mock.ExpectQuery(regexp.QuoteMeta("SELECT id, account_id, volume_id, `key`, size, type, is_public, created_at, updated_at FROM entries WHERE `key` = ? AND volume_id = ? AND account_id = ? LIMIT 1;")).
-					WithArgs("key", volumeID, accountID).
+				mock.ExpectQuery(regexp.QuoteMeta("SELECT id, account_id, volume_id, `key`, size, type, is_public, created_at, updated_at FROM entries WHERE `key` = ? AND volume_id = ? LIMIT 1;")).
+					WithArgs("key", volumeID).
 					WillReturnRows(sqlmock.NewRows([]string{"id", "account_id", "volume_id", "key", "size", "type", "is_public", "created_at", "updated_at"})).
 					WillReturnError(sql.ErrConnDone)
 			},
@@ -157,7 +153,7 @@ func TestEntry_FindOneByKeyAndVolumeIDAndAccountID(t *testing.T) {
 			tt.setMockDB(mock)
 
 			repo := database.NewEntryRepository(db)
-			result, err := repo.FindOneByKeyAndVolumeIDAndAccountID(t.Context(), tt.inputKey, tt.inputVolumeID, tt.inputAccountID)
+			result, err := repo.FindOneByKeyAndVolumeID(t.Context(), tt.inputKey, tt.inputVolumeID)
 			if !errors.Is(err, tt.expectError) {
 				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
 			}

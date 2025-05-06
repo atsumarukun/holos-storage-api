@@ -43,7 +43,7 @@ func TestEntry_Exists(t *testing.T) {
 			setMockEntryRepo: func(ctx context.Context, entryRepo *mockRepository.MockEntryRepository) {
 				entryRepo.
 					EXPECT().
-					FindOneByKeyAndVolumeIDAndAccountID(ctx, entry.Key, entry.VolumeID, entry.AccountID).
+					FindOneByKeyAndVolumeID(ctx, entry.Key, entry.VolumeID).
 					Return(nil, nil).
 					Times(1)
 			},
@@ -55,7 +55,7 @@ func TestEntry_Exists(t *testing.T) {
 			setMockEntryRepo: func(ctx context.Context, entryRepo *mockRepository.MockEntryRepository) {
 				entryRepo.
 					EXPECT().
-					FindOneByKeyAndVolumeIDAndAccountID(ctx, entry.Key, entry.VolumeID, entry.AccountID).
+					FindOneByKeyAndVolumeID(ctx, entry.Key, entry.VolumeID).
 					Return(entry, nil).
 					Times(1)
 			},
@@ -73,7 +73,7 @@ func TestEntry_Exists(t *testing.T) {
 			setMockEntryRepo: func(ctx context.Context, entryRepo *mockRepository.MockEntryRepository) {
 				entryRepo.
 					EXPECT().
-					FindOneByKeyAndVolumeIDAndAccountID(ctx, entry.Key, entry.VolumeID, entry.AccountID).
+					FindOneByKeyAndVolumeID(ctx, entry.Key, entry.VolumeID).
 					Return(nil, sql.ErrConnDone).
 					Times(1)
 			},
@@ -148,7 +148,7 @@ func TestEntry_Create(t *testing.T) {
 			setMockEntryRepo: func(ctx context.Context, entryRepo *mockRepository.MockEntryRepository) {
 				entryRepo.
 					EXPECT().
-					FindOneByKeyAndVolumeIDAndAccountID(ctx, parentEntry.Key, parentEntry.VolumeID, parentEntry.AccountID).
+					FindOneByKeyAndVolumeID(ctx, parentEntry.Key, parentEntry.VolumeID).
 					Return(nil, nil).
 					AnyTimes()
 				entryRepo.
@@ -192,7 +192,7 @@ func TestEntry_Create(t *testing.T) {
 			setMockEntryRepo: func(ctx context.Context, entryRepo *mockRepository.MockEntryRepository) {
 				entryRepo.
 					EXPECT().
-					FindOneByKeyAndVolumeIDAndAccountID(ctx, parentEntry.Key, parentEntry.VolumeID, parentEntry.AccountID).
+					FindOneByKeyAndVolumeID(ctx, parentEntry.Key, parentEntry.VolumeID).
 					Return(parentEntry, nil).
 					AnyTimes()
 				entryRepo.
@@ -218,7 +218,7 @@ func TestEntry_Create(t *testing.T) {
 			setMockEntryRepo: func(ctx context.Context, entryRepo *mockRepository.MockEntryRepository) {
 				entryRepo.
 					EXPECT().
-					FindOneByKeyAndVolumeIDAndAccountID(ctx, parentEntry.Key, parentEntry.VolumeID, parentEntry.AccountID).
+					FindOneByKeyAndVolumeID(ctx, parentEntry.Key, parentEntry.VolumeID).
 					Return(parentEntry, nil).
 					AnyTimes()
 				entryRepo.
@@ -244,7 +244,7 @@ func TestEntry_Create(t *testing.T) {
 			setMockEntryRepo: func(ctx context.Context, entryRepo *mockRepository.MockEntryRepository) {
 				entryRepo.
 					EXPECT().
-					FindOneByKeyAndVolumeIDAndAccountID(ctx, parentEntry.Key, parentEntry.VolumeID, parentEntry.AccountID).
+					FindOneByKeyAndVolumeID(ctx, parentEntry.Key, parentEntry.VolumeID).
 					Return(nil, sql.ErrConnDone).
 					AnyTimes()
 			},
@@ -259,7 +259,7 @@ func TestEntry_Create(t *testing.T) {
 			setMockEntryRepo: func(ctx context.Context, entryRepo *mockRepository.MockEntryRepository) {
 				entryRepo.
 					EXPECT().
-					FindOneByKeyAndVolumeIDAndAccountID(ctx, parentEntry.Key, parentEntry.VolumeID, parentEntry.AccountID).
+					FindOneByKeyAndVolumeID(ctx, parentEntry.Key, parentEntry.VolumeID).
 					Return(nil, nil).
 					AnyTimes()
 				entryRepo.
@@ -279,7 +279,7 @@ func TestEntry_Create(t *testing.T) {
 			setMockEntryRepo: func(ctx context.Context, entryRepo *mockRepository.MockEntryRepository) {
 				entryRepo.
 					EXPECT().
-					FindOneByKeyAndVolumeIDAndAccountID(ctx, parentEntry.Key, parentEntry.VolumeID, parentEntry.AccountID).
+					FindOneByKeyAndVolumeID(ctx, parentEntry.Key, parentEntry.VolumeID).
 					Return(nil, nil).
 					AnyTimes()
 				entryRepo.
