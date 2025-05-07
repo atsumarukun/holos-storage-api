@@ -25,12 +25,11 @@ type Entry struct {
 	Key       string
 	Size      uint64
 	Type      string
-	IsPublic  bool
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }
 
-func NewEntry(accountID, volumeID uuid.UUID, key string, size uint64, entryType string, isPublic bool) (*Entry, error) {
+func NewEntry(accountID, volumeID uuid.UUID, key string, size uint64, entryType string) (*Entry, error) {
 	entry := Entry{
 		Size: size,
 		Type: entryType,
@@ -48,7 +47,6 @@ func NewEntry(accountID, volumeID uuid.UUID, key string, size uint64, entryType 
 	if err := entry.SetKey(key); err != nil {
 		return nil, err
 	}
-	entry.SetIsPublic(isPublic)
 
 	now := time.Now()
 	entry.CreatedAt = now
@@ -57,7 +55,7 @@ func NewEntry(accountID, volumeID uuid.UUID, key string, size uint64, entryType 
 	return &entry, nil
 }
 
-func RestoreEntry(id, accountID, volumeID uuid.UUID, key string, size uint64, entryType string, isPublic bool, createdAt, updatedAt time.Time) *Entry {
+func RestoreEntry(id, accountID, volumeID uuid.UUID, key string, size uint64, entryType string, createdAt, updatedAt time.Time) *Entry {
 	return &Entry{
 		ID:        id,
 		AccountID: accountID,
@@ -65,7 +63,6 @@ func RestoreEntry(id, accountID, volumeID uuid.UUID, key string, size uint64, en
 		Key:       key,
 		Size:      size,
 		Type:      entryType,
-		IsPublic:  isPublic,
 		CreatedAt: createdAt,
 		UpdatedAt: updatedAt,
 	}
@@ -96,11 +93,6 @@ func (e *Entry) SetKey(key string) error {
 	e.Key = key
 	e.UpdatedAt = time.Now()
 	return nil
-}
-
-func (e *Entry) SetIsPublic(isPublic bool) {
-	e.IsPublic = isPublic
-	e.UpdatedAt = time.Now()
 }
 
 func (e *Entry) IsFolder() bool {

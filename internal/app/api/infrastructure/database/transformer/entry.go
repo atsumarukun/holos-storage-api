@@ -13,7 +13,6 @@ func ToEntryModel(entry *entity.Entry) *model.EntryModel {
 		Key:       entry.Key,
 		Size:      entry.Size,
 		Type:      entry.Type,
-		IsPublic:  entry.IsPublic,
 		CreatedAt: entry.CreatedAt,
 		UpdatedAt: entry.UpdatedAt,
 	}
@@ -27,7 +26,6 @@ func ToEntryEntity(entry *model.EntryModel) *entity.Entry {
 		entry.Key,
 		entry.Size,
 		entry.Type,
-		entry.IsPublic,
 		entry.CreatedAt,
 		entry.UpdatedAt,
 	)

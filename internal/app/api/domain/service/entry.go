@@ -60,7 +60,7 @@ func (s entryService) Create(ctx context.Context, volume *entity.Volume, entry *
 	}
 
 	for _, dir := range s.extractDirs(entry.Key) {
-		ent, err := entity.NewEntry(entry.AccountID, volume.ID, dir, 0, "folder", entry.IsPublic)
+		ent, err := entity.NewEntry(entry.AccountID, volume.ID, dir, 0, "folder")
 		if err != nil {
 			return err
 		}

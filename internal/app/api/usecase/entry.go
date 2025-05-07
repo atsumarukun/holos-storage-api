@@ -18,7 +18,7 @@ import (
 )
 
 type EntryUsecase interface {
-	Create(context.Context, uuid.UUID, uuid.UUID, string, uint64, bool, io.Reader) (*dto.EntryDTO, error)
+	Create(context.Context, uuid.UUID, uuid.UUID, string, uint64, io.Reader) (*dto.EntryDTO, error)
 }
 
 type entryUsecase struct {
@@ -42,7 +42,7 @@ func NewEntryUsecase(
 	}
 }
 
-func (u *entryUsecase) Create(ctx context.Context, accountID, volumeID uuid.UUID, key string, size uint64, isPublic bool, body io.Reader) (*dto.EntryDTO, error) {
+func (u *entryUsecase) Create(ctx context.Context, accountID, volumeID uuid.UUID, key string, size uint64, body io.Reader) (*dto.EntryDTO, error) {
 	var entry *entity.Entry
 
 	if err := u.transactionObj.Transaction(ctx, func(ctx context.Context) error {
@@ -66,7 +66,7 @@ func (u *entryUsecase) Create(ctx context.Context, accountID, volumeID uuid.UUID
 			bodyReader = io.MultiReader(bytes.NewReader(buf[:n]), body)
 		}
 
-		entry, err = entity.NewEntry(accountID, volumeID, key, size, entryType, isPublic)
+		entry, err = entity.NewEntry(accountID, volumeID, key, size, entryType)
 		if err != nil {
 			return err
 		}

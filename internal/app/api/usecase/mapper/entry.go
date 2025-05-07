@@ -13,7 +13,6 @@ func ToEntryDTO(entry *entity.Entry) *dto.EntryDTO {
 		Key:       entry.Key,
 		Size:      entry.Size,
 		Type:      entry.Type,
-		IsPublic:  entry.IsPublic,
 		CreatedAt: entry.CreatedAt,
 		UpdatedAt: entry.UpdatedAt,
 	}
