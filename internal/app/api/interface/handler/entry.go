@@ -36,7 +36,7 @@ func NewEntryHandler(entryUC usecase.EntryUsecase) EntryHandler {
 func (h *entryHandler) Create(c *gin.Context) {
 	var size uint64
 	var body io.Reader
-	volumeID, key, isPublic, fileHeader, err := h.parseRequest(c)
+	volumeID, key, isPublic, fileHeader, err := h.parseCreateRequest(c)
 	if err == nil {
 		file, err := fileHeader.Open()
 		if err != nil {
@@ -76,7 +76,7 @@ func (h *entryHandler) Create(c *gin.Context) {
 	c.JSON(http.StatusCreated, builder.ToEntryResponse(entry))
 }
 
-func (h *entryHandler) parseRequest(c *gin.Context) (volumeID uuid.UUID, key string, isPublic bool, fileHeader *multipart.FileHeader, err error) {
+func (h *entryHandler) parseCreateRequest(c *gin.Context) (volumeID uuid.UUID, key string, isPublic bool, fileHeader *multipart.FileHeader, err error) {
 	var req schema.CreateEntryRequest
 	if err := c.ShouldBind(&req); err != nil {
 		return uuid.Nil, "", false, nil, status.Error(code.BadRequest, "failed to parse multipart/form-data")
