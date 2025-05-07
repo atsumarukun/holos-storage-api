@@ -17,7 +17,6 @@ entries {
   varchar(255) key
   bigint_unsigned size
   varchar(255) type
-  tinyint(1) is_public
   datetime(6) created_at
   datetime(6) updated_at
 }
