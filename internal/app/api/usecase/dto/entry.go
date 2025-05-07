@@ -13,7 +13,6 @@ type EntryDTO struct {
 	Key       string
 	Size      uint64
 	Type      string
-	IsPublic  bool
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }

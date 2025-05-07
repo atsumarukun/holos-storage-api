@@ -41,7 +41,6 @@ func TestEntry_Create(t *testing.T) {
 		Key:       "test/sample.txt",
 		Size:      4,
 		Type:      "text/plain; charset=utf-8",
-		IsPublic:  false,
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	}
@@ -52,7 +51,6 @@ func TestEntry_Create(t *testing.T) {
 		Key:       "test/sample",
 		Size:      0,
 		Type:      "folder",
-		IsPublic:  false,
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	}
@@ -63,7 +61,6 @@ func TestEntry_Create(t *testing.T) {
 		inputVolumeID         uuid.UUID
 		inputKey              string
 		inputSize             uint64
-		inputIsPublic         bool
 		inputBody             io.Reader
 		expectResult          *dto.EntryDTO
 		expectError           error
@@ -77,7 +74,6 @@ func TestEntry_Create(t *testing.T) {
 			inputVolumeID:  volumeID,
 			inputKey:       "test/sample.txt",
 			inputSize:      4,
-			inputIsPublic:  false,
 			inputBody:      bytes.NewBufferString("test"),
 			expectResult:   entryDTO,
 			expectError:    nil,
@@ -116,7 +112,6 @@ func TestEntry_Create(t *testing.T) {
 			inputVolumeID:  volumeID,
 			inputKey:       "",
 			inputSize:      4,
-			inputIsPublic:  false,
 			inputBody:      bytes.NewBufferString("test"),
 			expectResult:   nil,
 			expectError:    entity.ErrShortEntryKey,
@@ -144,7 +139,6 @@ func TestEntry_Create(t *testing.T) {
 			inputVolumeID:  volumeID,
 			inputKey:       "test/sample",
 			inputSize:      0,
-			inputIsPublic:  false,
 			inputBody:      nil,
 			expectResult:   folderEntryDTO,
 			expectError:    nil,
@@ -183,7 +177,6 @@ func TestEntry_Create(t *testing.T) {
 			inputVolumeID:  volumeID,
 			inputKey:       "test/sample.txt",
 			inputSize:      4,
-			inputIsPublic:  false,
 			inputBody:      bytes.NewBufferString("test"),
 			expectResult:   nil,
 			expectError:    service.ErrEntryAlreadyExists,
@@ -217,7 +210,6 @@ func TestEntry_Create(t *testing.T) {
 			inputVolumeID:  volumeID,
 			inputKey:       "test/sample.txt",
 			inputSize:      4,
-			inputIsPublic:  false,
 			inputBody:      bytes.NewBufferString("test"),
 			expectResult:   nil,
 			expectError:    usecase.ErrVolumeNotFound,
@@ -245,7 +237,6 @@ func TestEntry_Create(t *testing.T) {
 			inputVolumeID:  volumeID,
 			inputKey:       "test/sample.txt",
 			inputSize:      4,
-			inputIsPublic:  false,
 			inputBody:      bytes.NewBufferString("test"),
 			expectResult:   nil,
 			expectError:    sql.ErrConnDone,
@@ -296,7 +287,7 @@ func TestEntry_Create(t *testing.T) {
 			tt.setMockEntryServ(ctx, entryServ)
 
 			uc := usecase.NewEntryUsecase(transactionObj, nil, volumeRepo, entryServ)
-			result, err := uc.Create(ctx, tt.inputAccountID, tt.inputVolumeID, tt.inputKey, tt.inputSize, tt.inputIsPublic, tt.inputBody)
+			result, err := uc.Create(ctx, tt.inputAccountID, tt.inputVolumeID, tt.inputKey, tt.inputSize, tt.inputBody)
 			if !errors.Is(err, tt.expectError) {
 				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
 			}

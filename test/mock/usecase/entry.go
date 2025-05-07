@@ -44,16 +44,16 @@ func (m *MockEntryUsecase) EXPECT() *MockEntryUsecaseMockRecorder {
 }
 
 // Create mocks base method.
-func (m *MockEntryUsecase) Create(arg0 context.Context, arg1, arg2 uuid.UUID, arg3 string, arg4 uint64, arg5 bool, arg6 io.Reader) (*dto.EntryDTO, error) {
+func (m *MockEntryUsecase) Create(arg0 context.Context, arg1, arg2 uuid.UUID, arg3 string, arg4 uint64, arg5 io.Reader) (*dto.EntryDTO, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Create", arg0, arg1, arg2, arg3, arg4, arg5, arg6)
+	ret := m.ctrl.Call(m, "Create", arg0, arg1, arg2, arg3, arg4, arg5)
 	ret0, _ := ret[0].(*dto.EntryDTO)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Create indicates an expected call of Create.
-func (mr *MockEntryUsecaseMockRecorder) Create(arg0, arg1, arg2, arg3, arg4, arg5, arg6 any) *gomock.Call {
+func (mr *MockEntryUsecaseMockRecorder) Create(arg0, arg1, arg2, arg3, arg4, arg5 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockEntryUsecase)(nil).Create), arg0, arg1, arg2, arg3, arg4, arg5, arg6)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockEntryUsecase)(nil).Create), arg0, arg1, arg2, arg3, arg4, arg5)
 }

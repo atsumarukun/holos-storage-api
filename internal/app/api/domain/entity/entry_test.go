@@ -46,17 +46,16 @@ func TestNewEntry(t *testing.T) {
 		inputKey       string
 		inputSize      uint64
 		inputType      string
-		inputIsPublic  bool
 		expectError    error
 	}{
-		{name: "success", inputAccountID: uuid.New(), inputVolumeID: uuid.New(), inputKey: "key", inputSize: 1000, inputType: "folder", inputIsPublic: false, expectError: nil},
-		{name: "account id is nil", inputAccountID: uuid.Nil, inputVolumeID: uuid.New(), inputKey: "key", inputSize: 1000, inputType: "folder", inputIsPublic: false, expectError: entity.ErrRequiredEntryAccountID},
-		{name: "volume id is nil", inputAccountID: uuid.New(), inputVolumeID: uuid.Nil, inputKey: "key", inputSize: 1000, inputType: "folder", inputIsPublic: false, expectError: entity.ErrRequiredEntryVolumeID},
-		{name: "invalid key", inputAccountID: uuid.New(), inputVolumeID: uuid.New(), inputKey: "", inputSize: 1000, inputType: "folder", inputIsPublic: false, expectError: entity.ErrShortEntryKey},
+		{name: "success", inputAccountID: uuid.New(), inputVolumeID: uuid.New(), inputKey: "key", inputSize: 1000, inputType: "folder", expectError: nil},
+		{name: "account id is nil", inputAccountID: uuid.Nil, inputVolumeID: uuid.New(), inputKey: "key", inputSize: 1000, inputType: "folder", expectError: entity.ErrRequiredEntryAccountID},
+		{name: "volume id is nil", inputAccountID: uuid.New(), inputVolumeID: uuid.Nil, inputKey: "key", inputSize: 1000, inputType: "folder", expectError: entity.ErrRequiredEntryVolumeID},
+		{name: "invalid key", inputAccountID: uuid.New(), inputVolumeID: uuid.New(), inputKey: "", inputSize: 1000, inputType: "folder", expectError: entity.ErrShortEntryKey},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			entry, err := entity.NewEntry(tt.inputAccountID, tt.inputVolumeID, tt.inputKey, tt.inputSize, tt.inputType, tt.inputIsPublic)
+			entry, err := entity.NewEntry(tt.inputAccountID, tt.inputVolumeID, tt.inputKey, tt.inputSize, tt.inputType)
 			if !errors.Is(err, tt.expectError) {
 				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
 			}
@@ -80,7 +79,6 @@ func TestEntry_SetKey(t *testing.T) {
 		Key:       "test/sample.jpg",
 		Size:      10000,
 		Type:      "image/jpeg",
-		IsPublic:  false,
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	}

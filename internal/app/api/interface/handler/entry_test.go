@@ -59,7 +59,6 @@ func TestEntry_Create(t *testing.T) {
 		Key:       "test/sample.txt",
 		Size:      4,
 		Type:      "text/plain; charset=utf-8",
-		IsPublic:  false,
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	}
@@ -77,11 +76,11 @@ func TestEntry_Create(t *testing.T) {
 			buildBody:      buildMultipartBody,
 			isSetAccountID: true,
 			expectCode:     http.StatusCreated,
-			expectResponse: map[string]any{"id": entryDTO.ID.String(), "volume_id": entryDTO.VolumeID.String(), "key": entryDTO.Key, "size": entryDTO.Size, "type": entryDTO.Type, "is_public": entryDTO.IsPublic, "created_at": entryDTO.CreatedAt.Format(time.RFC3339Nano), "updated_at": entryDTO.UpdatedAt.Format(time.RFC3339Nano)},
+			expectResponse: map[string]any{"id": entryDTO.ID.String(), "volume_id": entryDTO.VolumeID.String(), "key": entryDTO.Key, "size": entryDTO.Size, "type": entryDTO.Type, "created_at": entryDTO.CreatedAt.Format(time.RFC3339Nano), "updated_at": entryDTO.UpdatedAt.Format(time.RFC3339Nano)},
 			setMockEntryUC: func(ctx context.Context, entryUC *mockUsecase.MockEntryUsecase) {
 				entryUC.
 					EXPECT().
-					Create(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+					Create(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 					Return(entryDTO, nil).
 					Times(1)
 			},
@@ -111,7 +110,7 @@ func TestEntry_Create(t *testing.T) {
 			setMockEntryUC: func(ctx context.Context, entryUC *mockUsecase.MockEntryUsecase) {
 				entryUC.
 					EXPECT().
-					Create(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+					Create(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 					Return(nil, sql.ErrConnDone).
 					Times(1)
 			},

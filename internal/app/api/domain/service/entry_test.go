@@ -25,7 +25,6 @@ func TestEntry_Exists(t *testing.T) {
 		Key:       "test/sample.txt",
 		Size:      10000,
 		Type:      "text/plain",
-		IsPublic:  false,
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	}
@@ -114,7 +113,6 @@ func TestEntry_Create(t *testing.T) {
 		Key:       "test/sample.txt",
 		Size:      10000,
 		Type:      "text/plain",
-		IsPublic:  false,
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	}
@@ -125,7 +123,6 @@ func TestEntry_Create(t *testing.T) {
 		Key:       "test",
 		Size:      0,
 		Type:      "folder",
-		IsPublic:  false,
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	}

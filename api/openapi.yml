@@ -370,10 +370,6 @@ components:
           description: "タイプ"
           example: "image/png"
           readOnly: true
-        is_public:
-          type: "boolean"
-          description: "公開フラグ"
-          example: false
         created_at:
           $ref: "#/components/schemas/created_at"
         updated_at:
@@ -384,7 +380,6 @@ components:
         - "key"
         - "size"
         - "type"
-        - "is_public"
         - "created_at"
         - "updated_at"
 

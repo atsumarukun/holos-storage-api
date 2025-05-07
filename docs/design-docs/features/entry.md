@@ -32,11 +32,10 @@ Bodyはドメインオブジェクトとして扱わず、インフラ層で管�
 
 ## 要件
 
-- ボリュームIDとキー、公開フラグとボディを入力しエントリーの作成を行う
-- キーと公開フラグの更新が行える
+- ボリュームIDとキー、ボディを入力しエントリーの作成を行う
+- キーの更新が行える
 - エントリーの削除が行える
 - エントリーの一覧, 単体取得が行える
-  - 公開フラグがTrueの場合は認証無しでボディの取得が行える
 
 ## 仕様
 
@@ -57,7 +56,6 @@ Bodyはドメインオブジェクトとして扱わず、インフラ層で管�
 | Key | string | 1文字以上255文字以下<br />\\:*?"<>\|は利用不可 |
 | Size | uint64 | |
 | Type | string | MIMEタイプまたはFolder |
-| IsPublic | bool | |
 | CreatedAt | time.Time | |
 | UpdatedAt | time.Time | |
 
@@ -71,7 +69,6 @@ Bodyはドメインオブジェクトとして扱わず、インフラ層で管�
 | key | varchar(255) | | | キー |
 | size | bigint unsigned | | | サイズ |
 | type | varchar(255) | | | タイプ |
-| is_public | tinyint(1) | | | 公開フラグ |
 | created_at | datetime(6) | | | 作成日時 |
 | updated_at | datetime(6) | | | 更新日時 |
 
@@ -122,3 +119,4 @@ Bodyはドメインオブジェクトとして扱わず、インフラ層で管�
 | 変更日 | 変更者 | 変更内容 |
 | --- | --- | --- |
 | 2025/04/26 | @atsumarukun | 初版 |
+| 2025/05/08 | @atsumarukun | is_publicを削除 |

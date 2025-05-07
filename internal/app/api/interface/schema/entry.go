@@ -9,7 +9,6 @@ import (
 type CreateEntryRequest struct {
 	VolumeID string `form:"volume_id" binding:"required"`
 	Key      string `form:"key" binding:"required"`
-	IsPublic string `form:"is_public" binding:"required"`
 }
 
 type EntryResponse struct {
@@ -18,7 +17,6 @@ type EntryResponse struct {
 	Key       string    `json:"key"`
 	Size      uint64    `json:"size"`
 	Type      string    `json:"type"`
-	IsPublic  bool      `json:"is_public"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }

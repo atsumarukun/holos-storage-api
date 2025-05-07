@@ -5,7 +5,6 @@ import (
 	"io"
 	"mime/multipart"
 	"net/http"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -36,7 +35,7 @@ func NewEntryHandler(entryUC usecase.EntryUsecase) EntryHandler {
 func (h *entryHandler) Create(c *gin.Context) {
 	var size uint64
 	var body io.Reader
-	volumeID, key, isPublic, fileHeader, err := h.parseCreateRequest(c)
+	volumeID, key, fileHeader, err := h.parseCreateRequest(c)
 	if err == nil {
 		file, err := fileHeader.Open()
 		if err != nil {
@@ -67,7 +66,7 @@ func (h *entryHandler) Create(c *gin.Context) {
 
 	ctx := c.Request.Context()
 
-	entry, err := h.entryUC.Create(ctx, accountID, volumeID, key, size, isPublic, body)
+	entry, err := h.entryUC.Create(ctx, accountID, volumeID, key, size, body)
 	if err != nil {
 		errors.Handle(c, err)
 		return
@@ -76,22 +75,17 @@ func (h *entryHandler) Create(c *gin.Context) {
 	c.JSON(http.StatusCreated, builder.ToEntryResponse(entry))
 }
 
-func (h *entryHandler) parseCreateRequest(c *gin.Context) (volumeID uuid.UUID, key string, isPublic bool, fileHeader *multipart.FileHeader, err error) {
+func (h *entryHandler) parseCreateRequest(c *gin.Context) (volumeID uuid.UUID, key string, fileHeader *multipart.FileHeader, err error) {
 	var req schema.CreateEntryRequest
 	if err := c.ShouldBind(&req); err != nil {
-		return uuid.Nil, "", false, nil, status.Error(code.BadRequest, "failed to parse multipart/form-data")
-	}
-
-	isPublic, err = strconv.ParseBool(req.IsPublic)
-	if err != nil {
-		return uuid.Nil, "", false, nil, status.Error(code.BadRequest, "failed to parse is_public to bool")
+		return uuid.Nil, "", nil, status.Error(code.BadRequest, "failed to parse multipart/form-data")
 	}
 
 	volumeID, err = uuid.Parse(req.VolumeID)
 	if err != nil {
-		return uuid.Nil, "", false, nil, status.Error(code.BadRequest, "failed to parse volume_id to uuid")
+		return uuid.Nil, "", nil, status.Error(code.BadRequest, "failed to parse volume_id to uuid")
 	}
 
 	fileHeader, err = c.FormFile("file")
-	return volumeID, req.Key, isPublic, fileHeader, err
+	return volumeID, req.Key, fileHeader, err
 }
