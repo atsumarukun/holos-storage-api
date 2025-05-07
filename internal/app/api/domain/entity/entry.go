@@ -72,11 +72,19 @@ func RestoreEntry(id, accountID, volumeID uuid.UUID, key string, size uint64, en
 }
 
 func (e *Entry) SetKey(key string) error {
-	if len(key) < 1 {
+	if len(key) < 1 || (len(key) == 1 && key[0] == '/') {
 		return ErrShortEntryKey
-	} else if 255 < len(key) {
+	}
+	if key[0] == '/' {
+		key = key[1:]
+	}
+	if key[len(key)-1:] == "/" {
+		key = key[:len(key)-1]
+	}
+	if 255 < len(key) {
 		return ErrLongEntryKey
 	}
+
 	matched, err := regexp.MatchString(`^[A-Za-z0-9!@#$%^&()_\-+=\[\]{};',./~ ]*$`, key)
 	if err != nil {
 		return err
@@ -84,6 +92,7 @@ func (e *Entry) SetKey(key string) error {
 	if !matched {
 		return ErrInvalidEntryKey
 	}
+
 	e.Key = key
 	e.UpdatedAt = time.Now()
 	return nil
@@ -92,6 +101,10 @@ func (e *Entry) SetKey(key string) error {
 func (e *Entry) SetIsPublic(isPublic bool) {
 	e.IsPublic = isPublic
 	e.UpdatedAt = time.Now()
+}
+
+func (e *Entry) IsFolder() bool {
+	return e.Type == "folder"
 }
 
 func (e *Entry) generateID() error {
