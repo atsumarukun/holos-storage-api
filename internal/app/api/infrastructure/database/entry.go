@@ -64,5 +64,13 @@ func (r *entryRepository) FindOneByKeyAndVolumeID(ctx context.Context, key strin
 }
 
 func (r *entryRepository) FindOneByIDAndAccountID(ctx context.Context, id, accountID uuid.UUID) (*entity.Entry, error) {
-	return nil, errors.New("not implemented")
+	driver := transaction.GetDriver(ctx, r.db)
+	var model model.EntryModel
+	if err := driver.QueryRowxContext(ctx, "SELECT id, account_id, volume_id, `key`, size, type, created_at, updated_at FROM entries WHERE id = ? AND account_id = ? LIMIT 1;", id, accountID).StructScan(&model); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return transformer.ToEntryEntity(&model), nil
 }
