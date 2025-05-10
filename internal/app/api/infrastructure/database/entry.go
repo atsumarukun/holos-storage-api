@@ -74,3 +74,7 @@ func (r *entryRepository) FindOneByIDAndAccountID(ctx context.Context, id, accou
 	}
 	return transformer.ToEntryEntity(&model), nil
 }
+
+func (r *entryRepository) FindByKeyPrefixAndAccountID(ctx context.Context, keyword string, accountID uuid.UUID) ([]*entity.Entry, error) {
+	return nil, errors.New("not implemented")
+}
