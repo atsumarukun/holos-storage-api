@@ -62,3 +62,7 @@ func (r *entryRepository) FindOneByKeyAndVolumeID(ctx context.Context, key strin
 	}
 	return transformer.ToEntryEntity(&model), nil
 }
+
+func (r *entryRepository) FindOneByIDAndAccountID(ctx context.Context, id, accountID uuid.UUID) (*entity.Entry, error) {
+	return nil, errors.New("not implemented")
+}
