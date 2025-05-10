@@ -41,7 +41,14 @@ func (r *entryRepository) Create(ctx context.Context, entry *entity.Entry) error
 }
 
 func (r *entryRepository) Update(ctx context.Context, entry *entity.Entry) error {
-	return errors.New("not implemented")
+	if entry == nil {
+		return ErrRequiredEntry
+	}
+
+	driver := transaction.GetDriver(ctx, r.db)
+	model := transformer.ToEntryModel(entry)
+	_, err := driver.NamedExecContext(ctx, "UPDATE entries SET account_id = :account_id, volume_id = :volume_id, key = :key, size = :size, type = :type, updated_at = :updated_at WHERE id = :id LIMIT 1;", model)
+	return err
 }
 
 func (r *entryRepository) FindOneByKeyAndVolumeID(ctx context.Context, key string, volumeID uuid.UUID) (*entity.Entry, error) {
