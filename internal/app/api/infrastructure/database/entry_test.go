@@ -315,3 +315,86 @@ func TestEntry_FindOneByIDAndAccountID(t *testing.T) {
 		})
 	}
 }
+
+func TestEntry_FindByKeyPrefixAndAccountID(t *testing.T) {
+	entry := &entity.Entry{
+		ID:        uuid.New(),
+		AccountID: uuid.New(),
+		VolumeID:  uuid.New(),
+		Key:       "test/sample.jpg",
+		Size:      10000,
+		Type:      "image/jpeg",
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
+
+	tests := []struct {
+		name           string
+		inputKeyword   string
+		inputAccountID uuid.UUID
+		expectResult   []*entity.Entry
+		expectError    error
+		setMockDB      func(mock sqlmock.Sqlmock)
+	}{
+		{
+			name:           "success",
+			inputKeyword:   "test/",
+			inputAccountID: entry.AccountID,
+			expectResult:   []*entity.Entry{entry},
+			expectError:    nil,
+			setMockDB: func(mock sqlmock.Sqlmock) {
+				mock.ExpectQuery(regexp.QuoteMeta("SELECT id, account_id, volume_id, `key`, size, type, created_at, updated_at FROM entries WHERE `key` LIKE ? AND account_id = ?;")).
+					WithArgs("test/%", entry.AccountID).
+					WillReturnRows(sqlmock.NewRows([]string{"id", "account_id", "volume_id", "key", "size", "type", "created_at", "updated_at"}).AddRow(entry.ID, entry.AccountID, entry.VolumeID, entry.Key, entry.Size, entry.Type, entry.CreatedAt, entry.UpdatedAt)).
+					WillReturnError(nil)
+			},
+		},
+		{
+			name:           "not found",
+			inputKeyword:   "test/",
+			inputAccountID: entry.AccountID,
+			expectResult:   []*entity.Entry{},
+			expectError:    nil,
+			setMockDB: func(mock sqlmock.Sqlmock) {
+				mock.ExpectQuery(regexp.QuoteMeta("SELECT id, account_id, volume_id, `key`, size, type, created_at, updated_at FROM entries WHERE `key` LIKE ? AND account_id = ?;")).
+					WithArgs("test/%", entry.AccountID).
+					WillReturnRows(sqlmock.NewRows([]string{"id", "account_id", "volume_id", "key", "size", "type", "created_at", "updated_at"})).
+					WillReturnError(nil)
+			},
+		},
+		{
+			name:           "find error",
+			inputKeyword:   "test/",
+			inputAccountID: entry.AccountID,
+			expectResult:   nil,
+			expectError:    sql.ErrConnDone,
+			setMockDB: func(mock sqlmock.Sqlmock) {
+				mock.ExpectQuery(regexp.QuoteMeta("SELECT id, account_id, volume_id, `key`, size, type, created_at, updated_at FROM entries WHERE `key` LIKE ? AND account_id = ?;")).
+					WithArgs("test/%", entry.AccountID).
+					WillReturnRows(sqlmock.NewRows([]string{"id", "account_id", "volume_id", "key", "size", "type", "created_at", "updated_at"})).
+					WillReturnError(sql.ErrConnDone)
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			db, mock := mockDatabase.NewMockDatabase(t)
+
+			tt.setMockDB(mock)
+
+			repo := database.NewEntryRepository(db)
+			result, err := repo.FindByKeyPrefixAndAccountID(t.Context(), tt.inputKeyword, tt.inputAccountID)
+			if !errors.Is(err, tt.expectError) {
+				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
+			}
+
+			if diff := cmp.Diff(result, tt.expectResult); diff != "" {
+				t.Error(diff)
+			}
+
+			if err := mock.ExpectationsWereMet(); err != nil {
+				t.Error(err)
+			}
+		})
+	}
+}
