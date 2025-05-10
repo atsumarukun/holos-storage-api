@@ -82,6 +82,72 @@ func TestEntry_Create(t *testing.T) {
 	}
 }
 
+func TestEntry_Update(t *testing.T) {
+	entry := &entity.Entry{
+		ID:        uuid.New(),
+		AccountID: uuid.New(),
+		VolumeID:  uuid.New(),
+		Key:       "test/sample.jpg",
+		Size:      10000,
+		Type:      "image/jpeg",
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
+
+	tests := []struct {
+		name        string
+		inputEntry  *entity.Entry
+		expectError error
+		setMockDB   func(mock sqlmock.Sqlmock)
+	}{
+		{
+			name:        "success",
+			inputEntry:  entry,
+			expectError: nil,
+			setMockDB: func(mock sqlmock.Sqlmock) {
+				mock.ExpectExec(regexp.QuoteMeta("UPDATE entries SET account_id = ?, volume_id = ?, key = ?, size = ?, type = ?, updated_at = ? WHERE id = ? LIMIT 1;")).
+					WithArgs(entry.AccountID, entry.VolumeID, entry.Key, entry.Size, entry.Type, entry.UpdatedAt, entry.ID).
+					WillReturnResult(sqlmock.NewResult(1, 1)).
+					WillReturnError(nil)
+			},
+		},
+		{
+			name:        "entry is nil",
+			inputEntry:  nil,
+			expectError: database.ErrRequiredEntry,
+			setMockDB:   func(sqlmock.Sqlmock) {},
+		},
+		{
+			name:        "update error",
+			inputEntry:  entry,
+			expectError: sql.ErrConnDone,
+			setMockDB: func(mock sqlmock.Sqlmock) {
+				mock.ExpectExec(regexp.QuoteMeta("UPDATE entries SET account_id = ?, volume_id = ?, key = ?, size = ?, type = ?, updated_at = ? WHERE id = ? LIMIT 1;")).
+					WithArgs(entry.AccountID, entry.VolumeID, entry.Key, entry.Size, entry.Type, entry.UpdatedAt, entry.ID).
+					WillReturnResult(sqlmock.NewResult(1, 1)).
+					WillReturnError(sql.ErrConnDone)
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			db, mock := mockDatabase.NewMockDatabase(t)
+			defer db.Close()
+
+			tt.setMockDB(mock)
+
+			repo := database.NewEntryRepository(db)
+			if err := repo.Update(t.Context(), tt.inputEntry); !errors.Is(err, tt.expectError) {
+				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
+			}
+
+			if err := mock.ExpectationsWereMet(); err != nil {
+				t.Error(err)
+			}
+		})
+	}
+}
+
 func TestEntry_FindOneByKeyAndVolumeID(t *testing.T) {
 	accountID := uuid.New()
 	volumeID := uuid.New()
