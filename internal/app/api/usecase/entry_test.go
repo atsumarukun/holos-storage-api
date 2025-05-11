@@ -301,3 +301,222 @@ func TestEntry_Create(t *testing.T) {
 		})
 	}
 }
+
+func TestEntry_Update(t *testing.T) {
+	entry := &entity.Entry{
+		ID:        uuid.New(),
+		AccountID: uuid.New(),
+		VolumeID:  uuid.New(),
+		Key:       "test/sample.txt",
+		Size:      4,
+		Type:      "text/plain; charset=utf-8",
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
+	entryDTO := &dto.EntryDTO{
+		ID:        entry.ID,
+		AccountID: entry.AccountID,
+		VolumeID:  entry.VolumeID,
+		Key:       "update/sample.txt",
+		Size:      entry.Size,
+		Type:      entry.Type,
+		CreatedAt: entry.CreatedAt,
+		UpdatedAt: entry.UpdatedAt,
+	}
+
+	tests := []struct {
+		name                  string
+		inputAccountID        uuid.UUID
+		inputID               uuid.UUID
+		inputKey              string
+		expectResult          *dto.EntryDTO
+		expectError           error
+		setMockTransactionObj func(context.Context, *mockTransaction.MockTransactionObject)
+		setMockEntryRepo      func(context.Context, *mockRepository.MockEntryRepository)
+		setMockEntryServ      func(context.Context, *mockService.MockEntryService)
+	}{
+		{
+			name:           "success",
+			inputAccountID: entry.AccountID,
+			inputID:        entry.ID,
+			inputKey:       "update/sample.txt",
+			expectResult:   entryDTO,
+			expectError:    nil,
+			setMockTransactionObj: func(ctx context.Context, transactionObj *mockTransaction.MockTransactionObject) {
+				transactionObj.
+					EXPECT().
+					Transaction(ctx, gomock.Any()).
+					DoAndReturn(func(ctx context.Context, fn func(context.Context) error) error {
+						return fn(ctx)
+					}).
+					Times(1)
+			},
+			setMockEntryRepo: func(ctx context.Context, entryRepo *mockRepository.MockEntryRepository) {
+				entryRepo.
+					EXPECT().
+					FindOneByIDAndAccountID(ctx, gomock.Any(), gomock.Any()).
+					Return(entry, nil).
+					Times(1)
+			},
+			setMockEntryServ: func(ctx context.Context, entryServ *mockService.MockEntryService) {
+				entryServ.
+					EXPECT().
+					Exists(ctx, gomock.Any()).
+					Return(nil).
+					Times(1)
+				entryServ.
+					EXPECT().
+					Update(ctx, gomock.Any(), gomock.Any()).
+					Return(nil).
+					Times(1)
+			},
+		},
+		{
+			name:           "invalid key",
+			inputAccountID: entry.AccountID,
+			inputID:        entry.ID,
+			inputKey:       "",
+			expectResult:   nil,
+			expectError:    entity.ErrShortEntryKey,
+			setMockTransactionObj: func(ctx context.Context, transactionObj *mockTransaction.MockTransactionObject) {
+				transactionObj.
+					EXPECT().
+					Transaction(ctx, gomock.Any()).
+					DoAndReturn(func(ctx context.Context, fn func(context.Context) error) error {
+						return fn(ctx)
+					}).
+					Times(1)
+			},
+			setMockEntryRepo: func(ctx context.Context, entryRepo *mockRepository.MockEntryRepository) {
+				entryRepo.
+					EXPECT().
+					FindOneByIDAndAccountID(ctx, gomock.Any(), gomock.Any()).
+					Return(entry, nil).
+					Times(1)
+			},
+			setMockEntryServ: func(context.Context, *mockService.MockEntryService) {},
+		},
+		{
+			name:           "not found",
+			inputAccountID: entry.AccountID,
+			inputID:        entry.ID,
+			inputKey:       "update/sample.txt",
+			expectResult:   nil,
+			expectError:    usecase.ErrEntryNotFound,
+			setMockTransactionObj: func(ctx context.Context, transactionObj *mockTransaction.MockTransactionObject) {
+				transactionObj.
+					EXPECT().
+					Transaction(ctx, gomock.Any()).
+					DoAndReturn(func(ctx context.Context, fn func(context.Context) error) error {
+						return fn(ctx)
+					}).
+					Times(1)
+			},
+			setMockEntryRepo: func(ctx context.Context, entryRepo *mockRepository.MockEntryRepository) {
+				entryRepo.
+					EXPECT().
+					FindOneByIDAndAccountID(ctx, gomock.Any(), gomock.Any()).
+					Return(nil, nil).
+					Times(1)
+			},
+			setMockEntryServ: func(context.Context, *mockService.MockEntryService) {},
+		},
+		{
+			name:           "entry already exists",
+			inputAccountID: entry.AccountID,
+			inputID:        entry.ID,
+			inputKey:       "update/sample.txt",
+			expectResult:   nil,
+			expectError:    service.ErrEntryAlreadyExists,
+			setMockTransactionObj: func(ctx context.Context, transactionObj *mockTransaction.MockTransactionObject) {
+				transactionObj.
+					EXPECT().
+					Transaction(ctx, gomock.Any()).
+					DoAndReturn(func(ctx context.Context, fn func(context.Context) error) error {
+						return fn(ctx)
+					}).
+					Times(1)
+			},
+			setMockEntryRepo: func(ctx context.Context, entryRepo *mockRepository.MockEntryRepository) {
+				entryRepo.
+					EXPECT().
+					FindOneByIDAndAccountID(ctx, gomock.Any(), gomock.Any()).
+					Return(entry, nil).
+					Times(1)
+			},
+			setMockEntryServ: func(ctx context.Context, entryServ *mockService.MockEntryService) {
+				entryServ.
+					EXPECT().
+					Exists(ctx, gomock.Any()).
+					Return(service.ErrEntryAlreadyExists).
+					Times(1)
+			},
+		},
+		{
+			name:           "update error",
+			inputAccountID: entry.AccountID,
+			inputID:        entry.ID,
+			inputKey:       "update/sample.txt",
+			expectResult:   nil,
+			expectError:    sql.ErrConnDone,
+			setMockTransactionObj: func(ctx context.Context, transactionObj *mockTransaction.MockTransactionObject) {
+				transactionObj.
+					EXPECT().
+					Transaction(ctx, gomock.Any()).
+					DoAndReturn(func(ctx context.Context, fn func(context.Context) error) error {
+						return fn(ctx)
+					}).
+					Times(1)
+			},
+			setMockEntryRepo: func(ctx context.Context, entryRepo *mockRepository.MockEntryRepository) {
+				entryRepo.
+					EXPECT().
+					FindOneByIDAndAccountID(ctx, gomock.Any(), gomock.Any()).
+					Return(entry, nil).
+					Times(1)
+			},
+			setMockEntryServ: func(ctx context.Context, entryServ *mockService.MockEntryService) {
+				entryServ.
+					EXPECT().
+					Exists(ctx, gomock.Any()).
+					Return(nil).
+					Times(1)
+				entryServ.
+					EXPECT().
+					Update(ctx, gomock.Any(), gomock.Any()).
+					Return(sql.ErrConnDone).
+					Times(1)
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			ctx := t.Context()
+
+			transactionObj := mockTransaction.NewMockTransactionObject(ctrl)
+			tt.setMockTransactionObj(ctx, transactionObj)
+
+			entryRepo := mockRepository.NewMockEntryRepository(ctrl)
+			tt.setMockEntryRepo(ctx, entryRepo)
+
+			entryServ := mockService.NewMockEntryService(ctrl)
+			tt.setMockEntryServ(ctx, entryServ)
+
+			uc := usecase.NewEntryUsecase(transactionObj, entryRepo, nil, entryServ)
+			result, err := uc.Update(ctx, tt.inputAccountID, tt.inputID, tt.inputKey)
+			if !errors.Is(err, tt.expectError) {
+				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
+			}
+
+			opts := cmp.Options{
+				cmpopts.IgnoreFields(dto.EntryDTO{}, "UpdatedAt"),
+			}
+			if diff := cmp.Diff(result, tt.expectResult, opts...); diff != "" {
+				t.Error(diff)
+			}
+		})
+	}
+}
