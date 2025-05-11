@@ -58,4 +58,7 @@ issues:
         - errcheck
         - gosec
         - dupl
+    - path: .*\/handler\/.*\.go
+      linters:
+        - dupl
   exclude-use-default: false
