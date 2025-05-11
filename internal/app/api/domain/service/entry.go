@@ -22,6 +22,7 @@ var (
 type EntryService interface {
 	Exists(context.Context, *entity.Entry) error
 	Create(context.Context, *entity.Volume, *entity.Entry, io.Reader) error
+	Update(context.Context, *entity.Entry, string) error
 }
 
 type entryService struct {
@@ -51,7 +52,7 @@ func (s *entryService) Exists(ctx context.Context, entry *entity.Entry) error {
 	return ErrEntryAlreadyExists
 }
 
-func (s entryService) Create(ctx context.Context, volume *entity.Volume, entry *entity.Entry, body io.Reader) error {
+func (s *entryService) Create(ctx context.Context, volume *entity.Volume, entry *entity.Entry, body io.Reader) error {
 	if volume == nil {
 		return ErrRequiredVolume
 	}
@@ -84,7 +85,11 @@ func (s entryService) Create(ctx context.Context, volume *entity.Volume, entry *
 	return s.bodyRepo.Create(path, body)
 }
 
-func (s entryService) extractDirs(key string) []string {
+func (s *entryService) Update(ctx context.Context, entry *entity.Entry, src string) error {
+	return errors.New("not implemented")
+}
+
+func (s *entryService) extractDirs(key string) []string {
 	dirKey := filepath.Dir(key)
 	if dirKey == "." {
 		return nil
