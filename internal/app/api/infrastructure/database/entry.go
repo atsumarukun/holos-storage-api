@@ -47,7 +47,7 @@ func (r *entryRepository) Update(ctx context.Context, entry *entity.Entry) error
 
 	driver := transaction.GetDriver(ctx, r.db)
 	model := transformer.ToEntryModel(entry)
-	_, err := driver.NamedExecContext(ctx, "UPDATE entries SET account_id = :account_id, volume_id = :volume_id, key = :key, size = :size, type = :type, updated_at = :updated_at WHERE id = :id LIMIT 1;", model)
+	_, err := driver.NamedExecContext(ctx, "UPDATE entries SET account_id = :account_id, volume_id = :volume_id, `key` = :key, size = :size, type = :type, updated_at = :updated_at WHERE id = :id LIMIT 1;", model)
 	return err
 }
 

@@ -318,11 +318,18 @@ func TestEntry_Create(t *testing.T) {
 
 func TestEntry_Update(t *testing.T) {
 	accountID := uuid.New()
-	volumeID := uuid.New()
+	volume := &entity.Volume{
+		ID:        uuid.New(),
+		AccountID: accountID,
+		Name:      "name",
+		IsPublic:  false,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
 	entry := &entity.Entry{
 		ID:        uuid.New(),
 		AccountID: accountID,
-		VolumeID:  volumeID,
+		VolumeID:  volume.ID,
 		Key:       "test",
 		Size:      0,
 		Type:      "folder",
@@ -332,7 +339,7 @@ func TestEntry_Update(t *testing.T) {
 	childEntry := &entity.Entry{
 		ID:        uuid.New(),
 		AccountID: accountID,
-		VolumeID:  volumeID,
+		VolumeID:  volume.ID,
 		Key:       "test/sample.txt",
 		Size:      10000,
 		Type:      "text/plain",
@@ -342,6 +349,7 @@ func TestEntry_Update(t *testing.T) {
 
 	tests := []struct {
 		name             string
+		inputVolume      *entity.Volume
 		inputEntry       *entity.Entry
 		inputSrc         string
 		expectError      error
@@ -350,6 +358,7 @@ func TestEntry_Update(t *testing.T) {
 	}{
 		{
 			name:        "success",
+			inputVolume: volume,
 			inputEntry:  entry,
 			inputSrc:    "update",
 			expectError: nil,
@@ -374,7 +383,17 @@ func TestEntry_Update(t *testing.T) {
 			},
 		},
 		{
+			name:             "volume is nil",
+			inputVolume:      nil,
+			inputEntry:       entry,
+			inputSrc:         "update",
+			expectError:      service.ErrRequiredVolume,
+			setMockEntryRepo: func(context.Context, *mockRepository.MockEntryRepository) {},
+			setMockBodyRepo:  func(context.Context, *mockRepository.MockBodyRepository) {},
+		},
+		{
 			name:             "entry is nil",
+			inputVolume:      volume,
 			inputEntry:       nil,
 			inputSrc:         "update",
 			expectError:      service.ErrRequiredEntry,
@@ -383,6 +402,7 @@ func TestEntry_Update(t *testing.T) {
 		},
 		{
 			name:        "find entry error",
+			inputVolume: volume,
 			inputEntry:  entry,
 			inputSrc:    "update",
 			expectError: sql.ErrConnDone,
@@ -397,6 +417,7 @@ func TestEntry_Update(t *testing.T) {
 		},
 		{
 			name:        "update entry error",
+			inputVolume: volume,
 			inputEntry:  entry,
 			inputSrc:    "update",
 			expectError: sql.ErrConnDone,
@@ -416,6 +437,7 @@ func TestEntry_Update(t *testing.T) {
 		},
 		{
 			name:        "update body error",
+			inputVolume: volume,
 			inputEntry:  entry,
 			inputSrc:    "update",
 			expectError: afero.ErrFileClosed,
@@ -454,7 +476,7 @@ func TestEntry_Update(t *testing.T) {
 			tt.setMockBodyRepo(ctx, bodyRepo)
 
 			serv := service.NewEntryService(entryRepo, bodyRepo)
-			if err := serv.Update(ctx, tt.inputEntry, tt.inputSrc); !errors.Is(err, tt.expectError) {
+			if err := serv.Update(ctx, tt.inputVolume, tt.inputEntry, tt.inputSrc); !errors.Is(err, tt.expectError) {
 				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
 			}
 		})

@@ -101,6 +101,14 @@ func (u *entryUsecase) Update(ctx context.Context, accountID, id uuid.UUID, key 
 			return ErrEntryNotFound
 		}
 
+		volume, err := u.volumeRepo.FindOneByIDAndAccountID(ctx, entry.VolumeID, accountID)
+		if err != nil {
+			return err
+		}
+		if volume == nil {
+			return ErrVolumeNotFound
+		}
+
 		src := entry.Key
 
 		if err := entry.SetKey(key); err != nil {
@@ -111,7 +119,7 @@ func (u *entryUsecase) Update(ctx context.Context, accountID, id uuid.UUID, key 
 			return err
 		}
 
-		return u.entryServ.Update(ctx, entry, src)
+		return u.entryServ.Update(ctx, volume, entry, src)
 	}); err != nil {
 		return nil, err
 	}

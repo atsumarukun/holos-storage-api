@@ -105,7 +105,7 @@ func TestEntry_Update(t *testing.T) {
 			inputEntry:  entry,
 			expectError: nil,
 			setMockDB: func(mock sqlmock.Sqlmock) {
-				mock.ExpectExec(regexp.QuoteMeta("UPDATE entries SET account_id = ?, volume_id = ?, key = ?, size = ?, type = ?, updated_at = ? WHERE id = ? LIMIT 1;")).
+				mock.ExpectExec(regexp.QuoteMeta("UPDATE entries SET account_id = ?, volume_id = ?, `key` = ?, size = ?, type = ?, updated_at = ? WHERE id = ? LIMIT 1;")).
 					WithArgs(entry.AccountID, entry.VolumeID, entry.Key, entry.Size, entry.Type, entry.UpdatedAt, entry.ID).
 					WillReturnResult(sqlmock.NewResult(1, 1)).
 					WillReturnError(nil)
@@ -122,7 +122,7 @@ func TestEntry_Update(t *testing.T) {
 			inputEntry:  entry,
 			expectError: sql.ErrConnDone,
 			setMockDB: func(mock sqlmock.Sqlmock) {
-				mock.ExpectExec(regexp.QuoteMeta("UPDATE entries SET account_id = ?, volume_id = ?, key = ?, size = ?, type = ?, updated_at = ? WHERE id = ? LIMIT 1;")).
+				mock.ExpectExec(regexp.QuoteMeta("UPDATE entries SET account_id = ?, volume_id = ?, `key` = ?, size = ?, type = ?, updated_at = ? WHERE id = ? LIMIT 1;")).
 					WithArgs(entry.AccountID, entry.VolumeID, entry.Key, entry.Size, entry.Type, entry.UpdatedAt, entry.ID).
 					WillReturnResult(sqlmock.NewResult(1, 1)).
 					WillReturnError(sql.ErrConnDone)

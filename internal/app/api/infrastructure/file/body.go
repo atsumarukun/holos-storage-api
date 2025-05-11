@@ -45,5 +45,5 @@ func (r bodyRepository) Create(path string, reader io.Reader) (err error) {
 }
 
 func (r bodyRepository) Update(src string, dst string) error {
-	return r.fs.Rename(src, dst)
+	return r.fs.Rename(r.basePath+src, r.basePath+dst)
 }

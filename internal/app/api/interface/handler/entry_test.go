@@ -199,7 +199,7 @@ func TestEntry_Update(t *testing.T) {
 			isSetID:        true,
 			isSetAccountID: true,
 			expectCode:     http.StatusOK,
-			expectResponse: map[string]any{"id": entryDTO.ID.String(), "volume_id": entryDTO.VolumeID.String(), "key": "update/sample.txt", "size": entryDTO.Size, "type": entryDTO.Type, "created_at": entryDTO.CreatedAt.Format(time.RFC3339Nano), "updated_at": entryDTO.UpdatedAt.Format(time.RFC3339Nano)},
+			expectResponse: map[string]any{"id": entryDTO.ID.String(), "volume_id": entryDTO.VolumeID.String(), "key": entryDTO.Key, "size": entryDTO.Size, "type": entryDTO.Type, "created_at": entryDTO.CreatedAt.Format(time.RFC3339Nano), "updated_at": entryDTO.UpdatedAt.Format(time.RFC3339Nano)},
 			setMockEntryUC: func(ctx context.Context, entryUC *mockUsecase.MockEntryUsecase) {
 				entryUC.
 					EXPECT().
@@ -287,6 +287,13 @@ func TestEntry_Update(t *testing.T) {
 		if err := json.Unmarshal(w.Body.Bytes(), &response); err != nil {
 			t.Error(err)
 		}
+
+		if tt.expectCode == http.StatusOK {
+			if size, ok := response["size"].(float64); ok {
+				response["size"] = uint64(size)
+			}
+		}
+
 		if diff := cmp.Diff(response, tt.expectResponse); diff != "" {
 			t.Error(diff)
 		}

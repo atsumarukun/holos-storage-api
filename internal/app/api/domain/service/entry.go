@@ -22,7 +22,7 @@ var (
 type EntryService interface {
 	Exists(context.Context, *entity.Entry) error
 	Create(context.Context, *entity.Volume, *entity.Entry, io.Reader) error
-	Update(context.Context, *entity.Entry, string) error
+	Update(context.Context, *entity.Volume, *entity.Entry, string) error
 }
 
 type entryService struct {
@@ -85,7 +85,10 @@ func (s *entryService) Create(ctx context.Context, volume *entity.Volume, entry 
 	return s.bodyRepo.Create(path, body)
 }
 
-func (s *entryService) Update(ctx context.Context, entry *entity.Entry, src string) error {
+func (s *entryService) Update(ctx context.Context, volume *entity.Volume, entry *entity.Entry, src string) error {
+	if volume == nil {
+		return ErrRequiredVolume
+	}
 	if entry == nil {
 		return ErrRequiredEntry
 	}
@@ -109,7 +112,7 @@ func (s *entryService) Update(ctx context.Context, entry *entity.Entry, src stri
 		return err
 	}
 
-	return s.bodyRepo.Update(src, entry.Key)
+	return s.bodyRepo.Update(volume.Name+"/"+src, volume.Name+"/"+entry.Key)
 }
 
 func (s *entryService) extractDirs(key string) []string {
