@@ -51,3 +51,7 @@ func (r *bodyRepository) Update(src, dst string) error {
 
 	return r.fs.Rename(r.basePath+src, r.basePath+dst)
 }
+
+func (r *bodyRepository) Delete(path string) error {
+	return r.fs.RemoveAll(r.basePath + path)
+}

@@ -116,3 +116,46 @@ func TestBody_Update(t *testing.T) {
 		})
 	}
 }
+
+func TestBody_Delete(t *testing.T) {
+	tests := []struct {
+		name         string
+		inputPath    string
+		expectResult bool
+		expectError  error
+		setMockFS    func(fs afero.Fs)
+	}{
+		{
+			name:         "success",
+			inputPath:    "sample/test.txt",
+			expectResult: false,
+			expectError:  nil,
+			setMockFS: func(fs afero.Fs) {
+				if err := afero.WriteFile(fs, "sample/test.txt", []byte("test"), 0o755); err != nil {
+					t.Error(err)
+				}
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			fs := afero.NewMemMapFs()
+			basePath := ""
+
+			tt.setMockFS(fs)
+
+			repo := file.NewBodyRepository(fs, basePath)
+			if err := repo.Delete(tt.inputPath); !errors.Is(err, tt.expectError) {
+				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
+			}
+
+			exists, err := afero.Exists(fs, basePath+tt.inputPath)
+			if err != nil {
+				t.Error(err)
+			}
+			if exists != tt.expectResult {
+				t.Errorf("\nexpect: %v\ngot: %v", tt.expectResult, exists)
+			}
+		})
+	}
+}

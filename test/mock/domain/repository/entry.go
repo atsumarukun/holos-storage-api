@@ -56,6 +56,20 @@ func (mr *MockEntryRepositoryMockRecorder) Create(arg0, arg1 any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockEntryRepository)(nil).Create), arg0, arg1)
 }
 
+// Delete mocks base method.
+func (m *MockEntryRepository) Delete(arg0 context.Context, arg1 *entity.Entry) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Delete", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Delete indicates an expected call of Delete.
+func (mr *MockEntryRepositoryMockRecorder) Delete(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockEntryRepository)(nil).Delete), arg0, arg1)
+}
+
 // FindByKeyPrefixAndAccountID mocks base method.
 func (m *MockEntryRepository) FindByKeyPrefixAndAccountID(arg0 context.Context, arg1 string, arg2 uuid.UUID) ([]*entity.Entry, error) {
 	m.ctrl.T.Helper()
