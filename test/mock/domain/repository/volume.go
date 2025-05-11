@@ -100,19 +100,19 @@ func (mr *MockVolumeRepositoryMockRecorder) FindOneByIDAndAccountID(arg0, arg1, 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindOneByIDAndAccountID", reflect.TypeOf((*MockVolumeRepository)(nil).FindOneByIDAndAccountID), arg0, arg1, arg2)
 }
 
-// FindOneByNameAndAccountID mocks base method.
-func (m *MockVolumeRepository) FindOneByNameAndAccountID(arg0 context.Context, arg1 string, arg2 uuid.UUID) (*entity.Volume, error) {
+// FindOneByName mocks base method.
+func (m *MockVolumeRepository) FindOneByName(arg0 context.Context, arg1 string) (*entity.Volume, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FindOneByNameAndAccountID", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "FindOneByName", arg0, arg1)
 	ret0, _ := ret[0].(*entity.Volume)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// FindOneByNameAndAccountID indicates an expected call of FindOneByNameAndAccountID.
-func (mr *MockVolumeRepositoryMockRecorder) FindOneByNameAndAccountID(arg0, arg1, arg2 any) *gomock.Call {
+// FindOneByName indicates an expected call of FindOneByName.
+func (mr *MockVolumeRepositoryMockRecorder) FindOneByName(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindOneByNameAndAccountID", reflect.TypeOf((*MockVolumeRepository)(nil).FindOneByNameAndAccountID), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindOneByName", reflect.TypeOf((*MockVolumeRepository)(nil).FindOneByName), arg0, arg1)
 }
 
 // Update mocks base method.
