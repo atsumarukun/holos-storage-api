@@ -19,6 +19,7 @@ import (
 
 type EntryHandler interface {
 	Create(*gin.Context)
+	Update(*gin.Context)
 }
 
 type entryHandler struct {
@@ -72,6 +73,8 @@ func (h *entryHandler) Create(c *gin.Context) {
 
 	c.JSON(http.StatusCreated, builder.ToEntryResponse(entry))
 }
+
+func (h *entryHandler) Update(c *gin.Context) {}
 
 func (h *entryHandler) openFile(fileHeader *multipart.FileHeader) (uint64, multipart.File, error) {
 	if fileHeader == nil {
