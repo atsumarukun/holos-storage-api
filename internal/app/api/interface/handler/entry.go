@@ -74,7 +74,35 @@ func (h *entryHandler) Create(c *gin.Context) {
 	c.JSON(http.StatusCreated, builder.ToEntryResponse(entry))
 }
 
-func (h *entryHandler) Update(c *gin.Context) {}
+func (h *entryHandler) Update(c *gin.Context) {
+	var req schema.UpdateEntryRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		errors.Handle(c, status.Error(code.BadRequest, "failed to parse json"))
+		return
+	}
+
+	id, err := parameter.GetPathParameter[uuid.UUID](c, "id")
+	if err != nil {
+		errors.Handle(c, status.Error(code.BadRequest, "invalid id"))
+		return
+	}
+
+	accountID, err := parameter.GetContextParameter[uuid.UUID](c, "accountID")
+	if err != nil {
+		errors.Handle(c, err)
+		return
+	}
+
+	ctx := c.Request.Context()
+
+	entry, err := h.entryUC.Update(ctx, accountID, id, req.Key)
+	if err != nil {
+		errors.Handle(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, builder.ToEntryResponse(entry))
+}
 
 func (h *entryHandler) openFile(fileHeader *multipart.FileHeader) (uint64, multipart.File, error) {
 	if fileHeader == nil {
