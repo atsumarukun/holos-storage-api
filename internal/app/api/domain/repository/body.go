@@ -5,4 +5,5 @@ import "io"
 
 type BodyRepository interface {
 	Create(string, io.Reader) error
+	Update(string, string) error
 }

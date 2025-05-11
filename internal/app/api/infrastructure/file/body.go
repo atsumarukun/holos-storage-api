@@ -1,6 +1,7 @@
 package file
 
 import (
+	"errors"
 	"io"
 	"path/filepath"
 
@@ -42,4 +43,8 @@ func (r bodyRepository) Create(path string, reader io.Reader) (err error) {
 		_, err = io.Copy(file, reader)
 		return err
 	}
+}
+
+func (r bodyRepository) Update(string, string) error {
+	return errors.New("not implemented")
 }
