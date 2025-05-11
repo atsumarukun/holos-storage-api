@@ -58,6 +58,20 @@ func (mr *MockEntryUsecaseMockRecorder) Create(arg0, arg1, arg2, arg3, arg4, arg
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockEntryUsecase)(nil).Create), arg0, arg1, arg2, arg3, arg4, arg5)
 }
 
+// Delete mocks base method.
+func (m *MockEntryUsecase) Delete(arg0 context.Context, arg1, arg2 uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Delete", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Delete indicates an expected call of Delete.
+func (mr *MockEntryUsecaseMockRecorder) Delete(arg0, arg1, arg2 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockEntryUsecase)(nil).Delete), arg0, arg1, arg2)
+}
+
 // Update mocks base method.
 func (m *MockEntryUsecase) Update(arg0 context.Context, arg1, arg2 uuid.UUID, arg3 string) (*dto.EntryDTO, error) {
 	m.ctrl.T.Helper()

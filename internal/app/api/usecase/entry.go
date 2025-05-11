@@ -4,6 +4,7 @@ package usecase
 import (
 	"bytes"
 	"context"
+	"errors"
 	"io"
 	"net/http"
 
@@ -24,6 +25,7 @@ var ErrEntryNotFound = status.Error(code.NotFound, "entry not found")
 type EntryUsecase interface {
 	Create(context.Context, uuid.UUID, uuid.UUID, string, uint64, io.Reader) (*dto.EntryDTO, error)
 	Update(context.Context, uuid.UUID, uuid.UUID, string) (*dto.EntryDTO, error)
+	Delete(context.Context, uuid.UUID, uuid.UUID) error
 }
 
 type entryUsecase struct {
@@ -125,4 +127,8 @@ func (u *entryUsecase) Update(ctx context.Context, accountID, id uuid.UUID, key 
 	}
 
 	return mapper.ToEntryDTO(entry), nil
+}
+
+func (u *entryUsecase) Delete(ctx context.Context, accountID, id uuid.UUID) error {
+	return errors.New("not implemented")
 }
