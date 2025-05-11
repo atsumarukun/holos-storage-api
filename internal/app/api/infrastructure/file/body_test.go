@@ -43,9 +43,75 @@ func TestBody_Create(t *testing.T) {
 			if err != nil {
 				t.Error(err)
 			}
-
 			if exists != tt.expectResult {
 				t.Errorf("\nexpect: %v\ngot: %v", tt.expectResult, exists)
+			}
+		})
+	}
+}
+
+func TestBody_Update(t *testing.T) {
+	tests := []struct {
+		name         string
+		inputSrc     string
+		inputDst     string
+		expectResult bool
+		expectError  error
+		setMockFS    func(fs afero.Fs)
+	}{
+		{
+			name:         "success",
+			inputSrc:     "sample/test.txt",
+			inputDst:     "update/test.txt",
+			expectResult: true,
+			expectError:  nil,
+			setMockFS: func(fs afero.Fs) {
+				if err := afero.WriteFile(fs, "sample/test.txt", []byte("test"), 0o755); err != nil {
+					t.Error(err)
+				}
+			},
+		},
+		{
+			name:         "update error",
+			inputSrc:     "sample/test.txt",
+			inputDst:     "update/test.txt",
+			expectResult: false,
+			expectError:  afero.ErrFileNotFound,
+			setMockFS: func(fs afero.Fs) {
+				if err := afero.WriteFile(fs, "test.txt", []byte("test"), 0o755); err != nil {
+					t.Error(err)
+				}
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			fs := afero.NewMemMapFs()
+			basePath := ""
+
+			tt.setMockFS(fs)
+
+			repo := file.NewBodyRepository(fs, basePath)
+			if err := repo.Update(tt.inputSrc, tt.inputDst); !errors.Is(err, tt.expectError) {
+				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
+			}
+
+			exists, err := afero.Exists(fs, basePath+tt.inputDst)
+			if err != nil {
+				t.Error(err)
+			}
+			if exists != tt.expectResult {
+				t.Errorf("\nexpect: %v\ngot: %v", tt.expectResult, exists)
+			}
+
+			if !errors.Is(tt.expectError, afero.ErrFileNotFound) {
+				exists, err = afero.Exists(fs, basePath+tt.inputSrc)
+				if err != nil {
+					t.Error(err)
+				}
+				if exists != !tt.expectResult {
+					t.Errorf("\nexpect: %v\ngot: %v", !tt.expectResult, exists)
+				}
 			}
 		})
 	}

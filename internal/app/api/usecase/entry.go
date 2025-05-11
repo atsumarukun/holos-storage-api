@@ -13,12 +13,17 @@ import (
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/domain/repository"
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/domain/repository/pkg/transaction"
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/domain/service"
+	"github.com/atsumarukun/holos-storage-api/internal/app/api/pkg/status"
+	"github.com/atsumarukun/holos-storage-api/internal/app/api/pkg/status/code"
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/usecase/dto"
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/usecase/mapper"
 )
 
+var ErrEntryNotFound = status.Error(code.NotFound, "entry not found")
+
 type EntryUsecase interface {
 	Create(context.Context, uuid.UUID, uuid.UUID, string, uint64, io.Reader) (*dto.EntryDTO, error)
+	Update(context.Context, uuid.UUID, uuid.UUID, string) (*dto.EntryDTO, error)
 }
 
 type entryUsecase struct {
@@ -76,6 +81,45 @@ func (u *entryUsecase) Create(ctx context.Context, accountID, volumeID uuid.UUID
 		}
 
 		return u.entryServ.Create(ctx, volume, entry, bodyReader)
+	}); err != nil {
+		return nil, err
+	}
+
+	return mapper.ToEntryDTO(entry), nil
+}
+
+func (u *entryUsecase) Update(ctx context.Context, accountID, id uuid.UUID, key string) (*dto.EntryDTO, error) {
+	var entry *entity.Entry
+
+	if err := u.transactionObj.Transaction(ctx, func(ctx context.Context) error {
+		var err error
+		entry, err = u.entryRepo.FindOneByIDAndAccountID(ctx, id, accountID)
+		if err != nil {
+			return err
+		}
+		if entry == nil {
+			return ErrEntryNotFound
+		}
+
+		volume, err := u.volumeRepo.FindOneByIDAndAccountID(ctx, entry.VolumeID, accountID)
+		if err != nil {
+			return err
+		}
+		if volume == nil {
+			return ErrVolumeNotFound
+		}
+
+		src := entry.Key
+
+		if err := entry.SetKey(key); err != nil {
+			return err
+		}
+
+		if err := u.entryServ.Exists(ctx, entry); err != nil {
+			return err
+		}
+
+		return u.entryServ.Update(ctx, volume, entry, src)
 	}); err != nil {
 		return nil, err
 	}

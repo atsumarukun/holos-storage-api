@@ -11,6 +11,10 @@ type CreateEntryRequest struct {
 	Key      string `form:"key" binding:"required"`
 }
 
+type UpdateEntryRequest struct {
+	Key string `json:"key"`
+}
+
 type EntryResponse struct {
 	ID        uuid.UUID `json:"id"`
 	VolumeID  uuid.UUID `json:"volume_id"`

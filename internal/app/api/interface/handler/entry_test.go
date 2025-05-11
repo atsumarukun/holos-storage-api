@@ -166,3 +166,138 @@ func TestEntry_Create(t *testing.T) {
 		})
 	}
 }
+
+func TestEntry_Update(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	id := uuid.New()
+	accountID := uuid.New()
+	volumeID := uuid.New()
+	entryDTO := &dto.EntryDTO{
+		ID:        id,
+		AccountID: accountID,
+		VolumeID:  volumeID,
+		Key:       "test/sample.txt",
+		Size:      4,
+		Type:      "text/plain; charset=utf-8",
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
+
+	tests := []struct {
+		name           string
+		requestJSON    []byte
+		isSetID        bool
+		isSetAccountID bool
+		expectCode     int
+		expectResponse map[string]any
+		setMockEntryUC func(context.Context, *mockUsecase.MockEntryUsecase)
+	}{
+		{
+			name:           "success",
+			requestJSON:    []byte(`{"key": "update/sample.txt"}`),
+			isSetID:        true,
+			isSetAccountID: true,
+			expectCode:     http.StatusOK,
+			expectResponse: map[string]any{"id": entryDTO.ID.String(), "volume_id": entryDTO.VolumeID.String(), "key": entryDTO.Key, "size": entryDTO.Size, "type": entryDTO.Type, "created_at": entryDTO.CreatedAt.Format(time.RFC3339Nano), "updated_at": entryDTO.UpdatedAt.Format(time.RFC3339Nano)},
+			setMockEntryUC: func(ctx context.Context, entryUC *mockUsecase.MockEntryUsecase) {
+				entryUC.
+					EXPECT().
+					Update(ctx, gomock.Any(), gomock.Any(), gomock.Any()).
+					Return(entryDTO, nil).
+					Times(1)
+			},
+		},
+		{
+			name:           "invalid request",
+			requestJSON:    nil,
+			isSetID:        true,
+			isSetAccountID: true,
+			expectCode:     http.StatusBadRequest,
+			expectResponse: map[string]any{"message": "failed to parse json"},
+			setMockEntryUC: func(context.Context, *mockUsecase.MockEntryUsecase) {},
+		},
+		{
+			name:           "id not found",
+			requestJSON:    []byte(`{"key": "update/sample.txt"}`),
+			isSetID:        false,
+			isSetAccountID: true,
+			expectCode:     http.StatusBadRequest,
+			expectResponse: map[string]any{"message": "invalid id"},
+			setMockEntryUC: func(context.Context, *mockUsecase.MockEntryUsecase) {},
+		},
+		{
+			name:           "account id not found",
+			requestJSON:    []byte(`{"key": "update/sample.txt"}`),
+			isSetID:        true,
+			isSetAccountID: false,
+			expectCode:     http.StatusInternalServerError,
+			expectResponse: map[string]any{"message": "internal server error"},
+			setMockEntryUC: func(context.Context, *mockUsecase.MockEntryUsecase) {},
+		},
+		{
+			name:           "update error",
+			requestJSON:    []byte(`{"key": "update/sample.txt"}`),
+			isSetID:        true,
+			isSetAccountID: true,
+			expectCode:     http.StatusInternalServerError,
+			expectResponse: map[string]any{"message": "internal server error"},
+			setMockEntryUC: func(ctx context.Context, entryUC *mockUsecase.MockEntryUsecase) {
+				entryUC.
+					EXPECT().
+					Update(ctx, gomock.Any(), gomock.Any(), gomock.Any()).
+					Return(nil, sql.ErrConnDone).
+					Times(1)
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := t.Context()
+			w := httptest.NewRecorder()
+
+			c, _ := gin.CreateTestContext(w)
+			var err error
+			c.Request, err = http.NewRequestWithContext(ctx, "PUT", "/entries/"+id.String(), bytes.NewBuffer(tt.requestJSON))
+			if err != nil {
+				t.Error(err)
+			}
+			if tt.isSetID {
+				c.Params = append(c.Params, gin.Param{Key: "id", Value: id.String()})
+			}
+			if tt.isSetAccountID {
+				c.Set("accountID", accountID)
+			}
+
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			entryUC := mockUsecase.NewMockEntryUsecase(ctrl)
+			tt.setMockEntryUC(ctx, entryUC)
+
+			hdl := handler.NewEntryHandler(entryUC)
+			hdl.Update(c)
+
+			c.Writer.WriteHeaderNow()
+
+			if w.Code != tt.expectCode {
+				t.Errorf("\nexpect: %v\ngot: %v", tt.expectCode, w.Code)
+			}
+
+			var response map[string]any
+			if err := json.Unmarshal(w.Body.Bytes(), &response); err != nil {
+				t.Error(err)
+			}
+
+			if tt.expectCode == http.StatusOK {
+				if size, ok := response["size"].(float64); ok {
+					response["size"] = uint64(size)
+				}
+			}
+
+			if diff := cmp.Diff(response, tt.expectResponse); diff != "" {
+				t.Error(diff)
+			}
+		})
+	}
+}

@@ -69,3 +69,17 @@ func (mr *MockEntryServiceMockRecorder) Exists(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Exists", reflect.TypeOf((*MockEntryService)(nil).Exists), arg0, arg1)
 }
+
+// Update mocks base method.
+func (m *MockEntryService) Update(arg0 context.Context, arg1 *entity.Volume, arg2 *entity.Entry, arg3 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Update", arg0, arg1, arg2, arg3)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Update indicates an expected call of Update.
+func (mr *MockEntryServiceMockRecorder) Update(arg0, arg1, arg2, arg3 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockEntryService)(nil).Update), arg0, arg1, arg2, arg3)
+}

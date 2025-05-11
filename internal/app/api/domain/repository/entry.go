@@ -11,5 +11,8 @@ import (
 
 type EntryRepository interface {
 	Create(context.Context, *entity.Entry) error
+	Update(context.Context, *entity.Entry) error
 	FindOneByKeyAndVolumeID(context.Context, string, uuid.UUID) (*entity.Entry, error)
+	FindOneByIDAndAccountID(context.Context, uuid.UUID, uuid.UUID) (*entity.Entry, error)
+	FindByKeyPrefixAndAccountID(context.Context, string, uuid.UUID) ([]*entity.Entry, error)
 }

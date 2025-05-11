@@ -17,4 +17,5 @@ func registerRouter(r *gin.Engine) {
 
 	entries := r.Group("entries")
 	entries.POST("/", entryHdl.Create)
+	entries.PUT("/:id", entryHdl.Update)
 }

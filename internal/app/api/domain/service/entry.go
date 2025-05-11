@@ -22,6 +22,7 @@ var (
 type EntryService interface {
 	Exists(context.Context, *entity.Entry) error
 	Create(context.Context, *entity.Volume, *entity.Entry, io.Reader) error
+	Update(context.Context, *entity.Volume, *entity.Entry, string) error
 }
 
 type entryService struct {
@@ -51,7 +52,7 @@ func (s *entryService) Exists(ctx context.Context, entry *entity.Entry) error {
 	return ErrEntryAlreadyExists
 }
 
-func (s entryService) Create(ctx context.Context, volume *entity.Volume, entry *entity.Entry, body io.Reader) error {
+func (s *entryService) Create(ctx context.Context, volume *entity.Volume, entry *entity.Entry, body io.Reader) error {
 	if volume == nil {
 		return ErrRequiredVolume
 	}
@@ -59,21 +60,8 @@ func (s entryService) Create(ctx context.Context, volume *entity.Volume, entry *
 		return ErrRequiredEntry
 	}
 
-	for _, dir := range s.extractDirs(entry.Key) {
-		ent, err := entity.NewEntry(entry.AccountID, volume.ID, dir, 0, "folder")
-		if err != nil {
-			return err
-		}
-		if err := s.Exists(ctx, ent); err != nil {
-			if errors.Is(err, ErrEntryAlreadyExists) {
-				continue
-			} else {
-				return err
-			}
-		}
-		if err := s.entryRepo.Create(ctx, ent); err != nil {
-			return err
-		}
+	if err := s.createParentEntries(ctx, entry); err != nil {
+		return err
 	}
 
 	if err := s.entryRepo.Create(ctx, entry); err != nil {
@@ -84,7 +72,43 @@ func (s entryService) Create(ctx context.Context, volume *entity.Volume, entry *
 	return s.bodyRepo.Create(path, body)
 }
 
-func (s entryService) extractDirs(key string) []string {
+func (s *entryService) Update(ctx context.Context, volume *entity.Volume, entry *entity.Entry, src string) error {
+	if volume == nil {
+		return ErrRequiredVolume
+	}
+	if entry == nil {
+		return ErrRequiredEntry
+	}
+
+	if err := s.createParentEntries(ctx, entry); err != nil {
+		return err
+	}
+
+	if entry.IsFolder() {
+		children, err := s.entryRepo.FindByKeyPrefixAndAccountID(ctx, src+"/", entry.AccountID)
+		if err != nil {
+			return err
+		}
+
+		for _, child := range children {
+			key := strings.Replace(child.Key, src, entry.Key, 1)
+			if err := child.SetKey(key); err != nil {
+				return err
+			}
+			if err := s.entryRepo.Update(ctx, child); err != nil {
+				return err
+			}
+		}
+	}
+
+	if err := s.entryRepo.Update(ctx, entry); err != nil {
+		return err
+	}
+
+	return s.bodyRepo.Update(volume.Name+"/"+src, volume.Name+"/"+entry.Key)
+}
+
+func (s *entryService) extractDirs(key string) []string {
 	dirKey := filepath.Dir(key)
 	if dirKey == "." {
 		return nil
@@ -99,4 +123,24 @@ func (s entryService) extractDirs(key string) []string {
 	}
 
 	return dirs
+}
+
+func (s *entryService) createParentEntries(ctx context.Context, entry *entity.Entry) error {
+	for _, dir := range s.extractDirs(entry.Key) {
+		ent, err := entity.NewEntry(entry.AccountID, entry.VolumeID, dir, 0, "folder")
+		if err != nil {
+			return err
+		}
+		if err := s.Exists(ctx, ent); err != nil {
+			if errors.Is(err, ErrEntryAlreadyExists) {
+				continue
+			} else {
+				return err
+			}
+		}
+		if err := s.entryRepo.Create(ctx, ent); err != nil {
+			return err
+		}
+	}
+	return nil
 }

@@ -15,13 +15,13 @@ type bodyRepository struct {
 }
 
 func NewBodyRepository(fs afero.Fs, basePath string) repository.BodyRepository {
-	return bodyRepository{
+	return &bodyRepository{
 		fs:       fs,
 		basePath: basePath,
 	}
 }
 
-func (r bodyRepository) Create(path string, reader io.Reader) (err error) {
+func (r *bodyRepository) Create(path string, reader io.Reader) (err error) {
 	if err := r.fs.MkdirAll(r.basePath+filepath.Dir(path), 0o755); err != nil {
 		return err
 	}
@@ -42,4 +42,12 @@ func (r bodyRepository) Create(path string, reader io.Reader) (err error) {
 		_, err = io.Copy(file, reader)
 		return err
 	}
+}
+
+func (r *bodyRepository) Update(src, dst string) error {
+	if err := r.fs.MkdirAll(r.basePath+filepath.Dir(dst), 0o755); err != nil {
+		return err
+	}
+
+	return r.fs.Rename(r.basePath+src, r.basePath+dst)
 }

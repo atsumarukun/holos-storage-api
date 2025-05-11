@@ -30,3 +30,11 @@ func ToEntryEntity(entry *model.EntryModel) *entity.Entry {
 		entry.UpdatedAt,
 	)
 }
+
+func ToEntryEntities(entries []*model.EntryModel) []*entity.Entry {
+	entities := make([]*entity.Entry, len(entries))
+	for i, entry := range entries {
+		entities[i] = ToEntryEntity(entry)
+	}
+	return entities
+}
