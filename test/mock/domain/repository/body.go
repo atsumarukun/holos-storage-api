@@ -54,6 +54,20 @@ func (mr *MockBodyRepositoryMockRecorder) Create(arg0, arg1 any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockBodyRepository)(nil).Create), arg0, arg1)
 }
 
+// Delete mocks base method.
+func (m *MockBodyRepository) Delete(arg0 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Delete", arg0)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Delete indicates an expected call of Delete.
+func (mr *MockBodyRepositoryMockRecorder) Delete(arg0 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockBodyRepository)(nil).Delete), arg0)
+}
+
 // Update mocks base method.
 func (m *MockBodyRepository) Update(arg0, arg1 string) error {
 	m.ctrl.T.Helper()

@@ -1,6 +1,7 @@
 package file
 
 import (
+	"errors"
 	"io"
 	"path/filepath"
 
@@ -50,4 +51,8 @@ func (r *bodyRepository) Update(src, dst string) error {
 	}
 
 	return r.fs.Rename(r.basePath+src, r.basePath+dst)
+}
+
+func (r *bodyRepository) Delete(path string) error {
+	return errors.New("not implemented")
 }
