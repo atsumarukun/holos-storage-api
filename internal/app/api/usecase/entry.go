@@ -4,7 +4,6 @@ package usecase
 import (
 	"bytes"
 	"context"
-	"errors"
 	"io"
 	"net/http"
 
@@ -130,5 +129,24 @@ func (u *entryUsecase) Update(ctx context.Context, accountID, id uuid.UUID, key 
 }
 
 func (u *entryUsecase) Delete(ctx context.Context, accountID, id uuid.UUID) error {
-	return errors.New("not implemented")
+	return u.transactionObj.Transaction(ctx, func(ctx context.Context) error {
+		var err error
+		entry, err := u.entryRepo.FindOneByIDAndAccountID(ctx, id, accountID)
+		if err != nil {
+			return err
+		}
+		if entry == nil {
+			return ErrEntryNotFound
+		}
+
+		volume, err := u.volumeRepo.FindOneByIDAndAccountID(ctx, entry.VolumeID, accountID)
+		if err != nil {
+			return err
+		}
+		if volume == nil {
+			return ErrVolumeNotFound
+		}
+
+		return u.entryServ.Delete(ctx, volume, entry)
+	})
 }
