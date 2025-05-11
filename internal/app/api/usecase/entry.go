@@ -4,7 +4,6 @@ package usecase
 import (
 	"bytes"
 	"context"
-	"errors"
 	"io"
 	"net/http"
 
@@ -90,5 +89,32 @@ func (u *entryUsecase) Create(ctx context.Context, accountID, volumeID uuid.UUID
 }
 
 func (u *entryUsecase) Update(ctx context.Context, accountID, id uuid.UUID, key string) (*dto.EntryDTO, error) {
-	return nil, errors.New("not implemented")
+	var entry *entity.Entry
+
+	if err := u.transactionObj.Transaction(ctx, func(ctx context.Context) error {
+		var err error
+		entry, err = u.entryRepo.FindOneByIDAndAccountID(ctx, id, accountID)
+		if err != nil {
+			return err
+		}
+		if entry == nil {
+			return ErrEntryNotFound
+		}
+
+		src := entry.Key
+
+		if err := entry.SetKey(key); err != nil {
+			return err
+		}
+
+		if err := u.entryServ.Exists(ctx, entry); err != nil {
+			return err
+		}
+
+		return u.entryServ.Update(ctx, entry, src)
+	}); err != nil {
+		return nil, err
+	}
+
+	return mapper.ToEntryDTO(entry), nil
 }
