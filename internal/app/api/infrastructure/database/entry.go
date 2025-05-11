@@ -51,6 +51,10 @@ func (r *entryRepository) Update(ctx context.Context, entry *entity.Entry) error
 	return err
 }
 
+func (r *entryRepository) Delete(ctx context.Context, entry *entity.Entry) error {
+	return errors.New("not implemented")
+}
+
 func (r *entryRepository) FindOneByKeyAndVolumeID(ctx context.Context, key string, volumeID uuid.UUID) (*entity.Entry, error) {
 	driver := transaction.GetDriver(ctx, r.db)
 	var model model.EntryModel
