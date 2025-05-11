@@ -252,50 +252,52 @@ func TestEntry_Update(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		ctx := t.Context()
-		w := httptest.NewRecorder()
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := t.Context()
+			w := httptest.NewRecorder()
 
-		c, _ := gin.CreateTestContext(w)
-		var err error
-		c.Request, err = http.NewRequestWithContext(ctx, "PUT", "/entries/"+id.String(), bytes.NewBuffer(tt.requestJSON))
-		if err != nil {
-			t.Error(err)
-		}
-		if tt.isSetID {
-			c.Params = append(c.Params, gin.Param{Key: "id", Value: id.String()})
-		}
-		if tt.isSetAccountID {
-			c.Set("accountID", accountID)
-		}
-
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-
-		entryUC := mockUsecase.NewMockEntryUsecase(ctrl)
-		tt.setMockEntryUC(ctx, entryUC)
-
-		hdl := handler.NewEntryHandler(entryUC)
-		hdl.Update(c)
-
-		c.Writer.WriteHeaderNow()
-
-		if w.Code != tt.expectCode {
-			t.Errorf("\nexpect: %v\ngot: %v", tt.expectCode, w.Code)
-		}
-
-		var response map[string]any
-		if err := json.Unmarshal(w.Body.Bytes(), &response); err != nil {
-			t.Error(err)
-		}
-
-		if tt.expectCode == http.StatusOK {
-			if size, ok := response["size"].(float64); ok {
-				response["size"] = uint64(size)
+			c, _ := gin.CreateTestContext(w)
+			var err error
+			c.Request, err = http.NewRequestWithContext(ctx, "PUT", "/entries/"+id.String(), bytes.NewBuffer(tt.requestJSON))
+			if err != nil {
+				t.Error(err)
 			}
-		}
+			if tt.isSetID {
+				c.Params = append(c.Params, gin.Param{Key: "id", Value: id.String()})
+			}
+			if tt.isSetAccountID {
+				c.Set("accountID", accountID)
+			}
 
-		if diff := cmp.Diff(response, tt.expectResponse); diff != "" {
-			t.Error(diff)
-		}
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			entryUC := mockUsecase.NewMockEntryUsecase(ctrl)
+			tt.setMockEntryUC(ctx, entryUC)
+
+			hdl := handler.NewEntryHandler(entryUC)
+			hdl.Update(c)
+
+			c.Writer.WriteHeaderNow()
+
+			if w.Code != tt.expectCode {
+				t.Errorf("\nexpect: %v\ngot: %v", tt.expectCode, w.Code)
+			}
+
+			var response map[string]any
+			if err := json.Unmarshal(w.Body.Bytes(), &response); err != nil {
+				t.Error(err)
+			}
+
+			if tt.expectCode == http.StatusOK {
+				if size, ok := response["size"].(float64); ok {
+					response["size"] = uint64(size)
+				}
+			}
+
+			if diff := cmp.Diff(response, tt.expectResponse); diff != "" {
+				t.Error(diff)
+			}
+		})
 	}
 }
