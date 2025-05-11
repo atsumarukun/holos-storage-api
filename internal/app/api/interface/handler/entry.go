@@ -105,7 +105,28 @@ func (h *entryHandler) Update(c *gin.Context) {
 	c.JSON(http.StatusOK, builder.ToEntryResponse(entry))
 }
 
-func (h *entryHandler) Delete(c *gin.Context) {}
+func (h *entryHandler) Delete(c *gin.Context) {
+	id, err := parameter.GetPathParameter[uuid.UUID](c, "id")
+	if err != nil {
+		errors.Handle(c, status.Error(code.BadRequest, "invalid id"))
+		return
+	}
+
+	accountID, err := parameter.GetContextParameter[uuid.UUID](c, "accountID")
+	if err != nil {
+		errors.Handle(c, err)
+		return
+	}
+
+	ctx := c.Request.Context()
+
+	if err := h.entryUC.Delete(ctx, accountID, id); err != nil {
+		errors.Handle(c, err)
+		return
+	}
+
+	c.Status(http.StatusNoContent)
+}
 
 func (h *entryHandler) openFile(fileHeader *multipart.FileHeader) (uint64, multipart.File, error) {
 	if fileHeader == nil {
