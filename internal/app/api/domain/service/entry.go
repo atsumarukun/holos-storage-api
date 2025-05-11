@@ -93,6 +93,23 @@ func (s *entryService) Update(ctx context.Context, volume *entity.Volume, entry 
 		return ErrRequiredEntry
 	}
 
+	for _, dir := range s.extractDirs(entry.Key) {
+		ent, err := entity.NewEntry(entry.AccountID, volume.ID, dir, 0, "folder")
+		if err != nil {
+			return err
+		}
+		if err := s.Exists(ctx, ent); err != nil {
+			if errors.Is(err, ErrEntryAlreadyExists) {
+				continue
+			} else {
+				return err
+			}
+		}
+		if err := s.entryRepo.Create(ctx, ent); err != nil {
+			return err
+		}
+	}
+
 	if entry.IsFolder() {
 		children, err := s.entryRepo.FindByKeyPrefixAndAccountID(ctx, src+"/", entry.AccountID)
 		if err != nil {

@@ -45,5 +45,9 @@ func (r bodyRepository) Create(path string, reader io.Reader) (err error) {
 }
 
 func (r bodyRepository) Update(src string, dst string) error {
+	if err := r.fs.MkdirAll(r.basePath+filepath.Dir(dst), 0o755); err != nil {
+		return err
+	}
+
 	return r.fs.Rename(r.basePath+src, r.basePath+dst)
 }
