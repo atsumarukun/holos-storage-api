@@ -110,7 +110,31 @@ func (s *entryService) Update(ctx context.Context, volume *entity.Volume, entry 
 }
 
 func (s *entryService) Delete(ctx context.Context, volume *entity.Volume, entry *entity.Entry) error {
-	return errors.New("not implemented")
+	if volume == nil {
+		return ErrRequiredVolume
+	}
+	if entry == nil {
+		return ErrRequiredEntry
+	}
+
+	if entry.IsFolder() {
+		children, err := s.entryRepo.FindByKeyPrefixAndAccountID(ctx, entry.Key+"/", entry.AccountID)
+		if err != nil {
+			return err
+		}
+
+		for _, child := range children {
+			if err := s.entryRepo.Delete(ctx, child); err != nil {
+				return err
+			}
+		}
+	}
+
+	if err := s.entryRepo.Delete(ctx, entry); err != nil {
+		return err
+	}
+
+	return s.bodyRepo.Delete(volume.Name + "/" + entry.Key)
 }
 
 func (s *entryService) extractDirs(key string) []string {
