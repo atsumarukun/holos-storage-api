@@ -1,7 +1,6 @@
 package file
 
 import (
-	"errors"
 	"io"
 	"path/filepath"
 
@@ -45,6 +44,6 @@ func (r bodyRepository) Create(path string, reader io.Reader) (err error) {
 	}
 }
 
-func (r bodyRepository) Update(string, string) error {
-	return errors.New("not implemented")
+func (r bodyRepository) Update(src string, dst string) error {
+	return r.fs.Rename(src, dst)
 }
