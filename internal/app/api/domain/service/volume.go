@@ -34,7 +34,7 @@ func (s *volumeService) Exists(ctx context.Context, volume *entity.Volume) error
 		return ErrRequiredVolume
 	}
 
-	vol, err := s.volumeRepo.FindOneByNameAndAccountID(ctx, volume.Name, volume.AccountID)
+	vol, err := s.volumeRepo.FindOneByName(ctx, volume.Name)
 	if err != nil {
 		return err
 	}

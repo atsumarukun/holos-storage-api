@@ -38,7 +38,7 @@ func TestVolume_Exists(t *testing.T) {
 			setMockVolumeRepo: func(ctx context.Context, volumeRepo *mockRepository.MockVolumeRepository) {
 				volumeRepo.
 					EXPECT().
-					FindOneByNameAndAccountID(ctx, volume.Name, volume.AccountID).
+					FindOneByName(ctx, volume.Name).
 					Return(nil, nil).
 					Times(1)
 			},
@@ -50,7 +50,7 @@ func TestVolume_Exists(t *testing.T) {
 			setMockVolumeRepo: func(ctx context.Context, volumeRepo *mockRepository.MockVolumeRepository) {
 				volumeRepo.
 					EXPECT().
-					FindOneByNameAndAccountID(ctx, volume.Name, volume.AccountID).
+					FindOneByName(ctx, volume.Name).
 					Return(volume, nil).
 					Times(1)
 			},
@@ -68,7 +68,7 @@ func TestVolume_Exists(t *testing.T) {
 			setMockVolumeRepo: func(ctx context.Context, volumeRepo *mockRepository.MockVolumeRepository) {
 				volumeRepo.
 					EXPECT().
-					FindOneByNameAndAccountID(ctx, volume.Name, volume.AccountID).
+					FindOneByName(ctx, volume.Name).
 					Return(nil, sql.ErrConnDone).
 					Times(1)
 			},

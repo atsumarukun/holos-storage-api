@@ -62,10 +62,10 @@ func (r *volumeRepository) Delete(ctx context.Context, volume *entity.Volume) er
 	return err
 }
 
-func (r *volumeRepository) FindOneByIDAndAccountID(ctx context.Context, id, accountID uuid.UUID) (*entity.Volume, error) {
+func (r *volumeRepository) FindOneByName(ctx context.Context, name string) (*entity.Volume, error) {
 	driver := transaction.GetDriver(ctx, r.db)
 	var model model.VolumeModel
-	if err := driver.QueryRowxContext(ctx, `SELECT id, account_id, name, is_public, created_at, updated_at FROM volumes WHERE id = ? AND account_id = ? LIMIT 1;`, id, accountID).StructScan(&model); err != nil {
+	if err := driver.QueryRowxContext(ctx, `SELECT id, account_id, name, is_public, created_at, updated_at FROM volumes WHERE name = ? LIMIT 1;`, name).StructScan(&model); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}
@@ -74,10 +74,10 @@ func (r *volumeRepository) FindOneByIDAndAccountID(ctx context.Context, id, acco
 	return transformer.ToVolumeEntity(&model), nil
 }
 
-func (r *volumeRepository) FindOneByNameAndAccountID(ctx context.Context, name string, accountID uuid.UUID) (*entity.Volume, error) {
+func (r *volumeRepository) FindOneByIDAndAccountID(ctx context.Context, id, accountID uuid.UUID) (*entity.Volume, error) {
 	driver := transaction.GetDriver(ctx, r.db)
 	var model model.VolumeModel
-	if err := driver.QueryRowxContext(ctx, `SELECT id, account_id, name, is_public, created_at, updated_at FROM volumes WHERE name = ? AND account_id = ? LIMIT 1;`, name, accountID).StructScan(&model); err != nil {
+	if err := driver.QueryRowxContext(ctx, `SELECT id, account_id, name, is_public, created_at, updated_at FROM volumes WHERE id = ? AND account_id = ? LIMIT 1;`, id, accountID).StructScan(&model); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}
