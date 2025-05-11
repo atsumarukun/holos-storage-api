@@ -23,6 +23,7 @@ type EntryService interface {
 	Exists(context.Context, *entity.Entry) error
 	Create(context.Context, *entity.Volume, *entity.Entry, io.Reader) error
 	Update(context.Context, *entity.Volume, *entity.Entry, string) error
+	Delete(context.Context, *entity.Entry) error
 }
 
 type entryService struct {
@@ -106,6 +107,10 @@ func (s *entryService) Update(ctx context.Context, volume *entity.Volume, entry 
 	}
 
 	return s.bodyRepo.Update(volume.Name+"/"+src, volume.Name+"/"+entry.Key)
+}
+
+func (s *entryService) Delete(ctx context.Context, entry *entity.Entry) error {
+	return errors.New("not implemented")
 }
 
 func (s *entryService) extractDirs(key string) []string {
