@@ -1,7 +1,6 @@
 package file
 
 import (
-	"errors"
 	"io"
 	"path/filepath"
 
@@ -54,5 +53,5 @@ func (r *bodyRepository) Update(src, dst string) error {
 }
 
 func (r *bodyRepository) Delete(path string) error {
-	return errors.New("not implemented")
+	return r.fs.RemoveAll(r.basePath + path)
 }
