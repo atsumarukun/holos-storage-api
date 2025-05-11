@@ -20,6 +20,7 @@ import (
 type EntryHandler interface {
 	Create(*gin.Context)
 	Update(*gin.Context)
+	Delete(*gin.Context)
 }
 
 type entryHandler struct {
@@ -103,6 +104,8 @@ func (h *entryHandler) Update(c *gin.Context) {
 
 	c.JSON(http.StatusOK, builder.ToEntryResponse(entry))
 }
+
+func (h *entryHandler) Delete(c *gin.Context) {}
 
 func (h *entryHandler) openFile(fileHeader *multipart.FileHeader) (uint64, multipart.File, error) {
 	if fileHeader == nil {
