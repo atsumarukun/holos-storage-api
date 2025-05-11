@@ -86,7 +86,30 @@ func (s *entryService) Create(ctx context.Context, volume *entity.Volume, entry 
 }
 
 func (s *entryService) Update(ctx context.Context, entry *entity.Entry, src string) error {
-	return errors.New("not implemented")
+	if entry == nil {
+		return ErrRequiredEntry
+	}
+
+	if entry.IsFolder() {
+		children, err := s.entryRepo.FindByKeyPrefixAndAccountID(ctx, src+"/", entry.AccountID)
+		if err != nil {
+			return err
+		}
+
+		for _, child := range children {
+			key := strings.Replace(child.Key, src, entry.Key, 1)
+			child.SetKey(key)
+			if err := s.entryRepo.Update(ctx, child); err != nil {
+				return err
+			}
+		}
+	}
+
+	if err := s.entryRepo.Update(ctx, entry); err != nil {
+		return err
+	}
+
+	return s.bodyRepo.Update(src, entry.Key)
 }
 
 func (s *entryService) extractDirs(key string) []string {
