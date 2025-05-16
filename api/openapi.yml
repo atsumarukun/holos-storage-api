@@ -212,7 +212,7 @@ paths:
           $ref: "#/components/responses/403"
         500:
           $ref: "#/components/responses/500"
-  /entries/{volumeID}/{key}:
+  /entries/{volumeName}/{key}:
     put:
       summary: "エントリー更新"
       tags:
@@ -229,12 +229,12 @@ paths:
           description: "セッショントークンまたはアクセスキー"
           example: "Session 1Ty1HKTPKTt8xEi-_3HTbWf2SCHOdqOS"
         - in: "path"
-          name: "volumeID"
+          name: "volumeName"
           schema:
             type: "string"
           required: true
-          description: "ボリュームID"
-          example: "c99fc6e0-6e62-4de2-8a7e-5c608ceaa8c6"
+          description: "ボリューム名"
+          example: "volume_name"
         - in: "path"
           name: "key"
           schema:
@@ -273,12 +273,12 @@ paths:
           description: "セッショントークンまたはアクセスキー"
           example: "Session 1Ty1HKTPKTt8xEi-_3HTbWf2SCHOdqOS"
         - in: "path"
-          name: "volumeID"
+          name: "volumeName"
           schema:
             type: "string"
           required: true
-          description: "ボリュームID"
-          example: "c99fc6e0-6e62-4de2-8a7e-5c608ceaa8c6"
+          description: "ボリューム名"
+          example: "volume_name"
         - in: "path"
           name: "key"
           schema:
@@ -313,12 +313,12 @@ paths:
           description: "セッショントークンまたはアクセスキー"
           example: "Session 1Ty1HKTPKTt8xEi-_3HTbWf2SCHOdqOS"
         - in: "path"
-          name: "volumeID"
+          name: "volumeName"
           schema:
             type: "string"
           required: true
-          description: "ボリュームID"
-          example: "c99fc6e0-6e62-4de2-8a7e-5c608ceaa8c6"
+          description: "ボリューム名"
+          example: "volume_name"
         - in: "path"
           name: "key"
           schema:
