@@ -74,6 +74,10 @@ func (r *volumeRepository) FindOneByName(ctx context.Context, name string) (*ent
 	return transformer.ToVolumeEntity(&model), nil
 }
 
+func (r *volumeRepository) FindOneByNameAndAccountID(ctx context.Context, name string, accountID uuid.UUID) (*entity.Volume, error) {
+	return nil, errors.New("not implemented")
+}
+
 func (r *volumeRepository) FindOneByIDAndAccountID(ctx context.Context, id, accountID uuid.UUID) (*entity.Volume, error) {
 	driver := transaction.GetDriver(ctx, r.db)
 	var model model.VolumeModel
