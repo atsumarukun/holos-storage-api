@@ -23,11 +23,11 @@ import (
 	mockUsecase "github.com/atsumarukun/holos-storage-api/test/mock/usecase"
 )
 
-func buildMultipartBody(t *testing.T, volumeID uuid.UUID) (body io.Reader, contentType string) {
+func buildMultipartBody(t *testing.T) (body io.Reader, contentType string) {
 	buffer := &bytes.Buffer{}
 	writer := multipart.NewWriter(buffer)
 	defer writer.Close()
-	if err := writer.WriteField("volume_id", volumeID.String()); err != nil {
+	if err := writer.WriteField("volume_name", "volume"); err != nil {
 		t.Error(err)
 	}
 	if err := writer.WriteField("key", "test/sample.txt"); err != nil {
@@ -65,7 +65,7 @@ func TestEntry_Create(t *testing.T) {
 
 	tests := []struct {
 		name           string
-		buildBody      func(*testing.T, uuid.UUID) (io.Reader, string)
+		buildBody      func(*testing.T) (io.Reader, string)
 		isSetAccountID bool
 		expectCode     int
 		expectResponse map[string]any
@@ -87,7 +87,7 @@ func TestEntry_Create(t *testing.T) {
 		},
 		{
 			name:           "invalid request",
-			buildBody:      func(*testing.T, uuid.UUID) (io.Reader, string) { return http.NoBody, "" },
+			buildBody:      func(*testing.T) (io.Reader, string) { return http.NoBody, "" },
 			isSetAccountID: true,
 			expectCode:     http.StatusBadRequest,
 			expectResponse: map[string]any{"message": "failed to parse multipart/form-data"},
@@ -121,7 +121,7 @@ func TestEntry_Create(t *testing.T) {
 			ctx := t.Context()
 			w := httptest.NewRecorder()
 
-			body, contentType := tt.buildBody(t, volumeID)
+			body, contentType := tt.buildBody(t)
 
 			c, _ := gin.CreateTestContext(w)
 			var err error
