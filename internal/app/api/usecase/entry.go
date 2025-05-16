@@ -23,7 +23,7 @@ var ErrEntryNotFound = status.Error(code.NotFound, "entry not found")
 
 type EntryUsecase interface {
 	Create(context.Context, uuid.UUID, uuid.UUID, string, uint64, io.Reader) (*dto.EntryDTO, error)
-	Update(context.Context, uuid.UUID, uuid.UUID, string) (*dto.EntryDTO, error)
+	Update(context.Context, uuid.UUID, string, string, string) (*dto.EntryDTO, error)
 	Delete(context.Context, uuid.UUID, uuid.UUID) error
 }
 
@@ -89,20 +89,11 @@ func (u *entryUsecase) Create(ctx context.Context, accountID, volumeID uuid.UUID
 	return mapper.ToEntryDTO(entry), nil
 }
 
-func (u *entryUsecase) Update(ctx context.Context, accountID, id uuid.UUID, key string) (*dto.EntryDTO, error) {
+func (u *entryUsecase) Update(ctx context.Context, accountID uuid.UUID, volumeName, key, newKey string) (*dto.EntryDTO, error) {
 	var entry *entity.Entry
 
 	if err := u.transactionObj.Transaction(ctx, func(ctx context.Context) error {
-		var err error
-		entry, err = u.entryRepo.FindOneByIDAndAccountID(ctx, id, accountID)
-		if err != nil {
-			return err
-		}
-		if entry == nil {
-			return ErrEntryNotFound
-		}
-
-		volume, err := u.volumeRepo.FindOneByIDAndAccountID(ctx, entry.VolumeID, accountID)
+		volume, err := u.volumeRepo.FindOneByNameAndAccountID(ctx, volumeName, accountID)
 		if err != nil {
 			return err
 		}
@@ -110,9 +101,15 @@ func (u *entryUsecase) Update(ctx context.Context, accountID, id uuid.UUID, key 
 			return ErrVolumeNotFound
 		}
 
-		src := entry.Key
+		entry, err = u.entryRepo.FindOneByKeyAndVolumeIDAndAccountID(ctx, key, volume.ID, accountID)
+		if err != nil {
+			return err
+		}
+		if entry == nil {
+			return ErrEntryNotFound
+		}
 
-		if err := entry.SetKey(key); err != nil {
+		if err := entry.SetKey(newKey); err != nil {
 			return err
 		}
 
@@ -120,7 +117,7 @@ func (u *entryUsecase) Update(ctx context.Context, accountID, id uuid.UUID, key 
 			return err
 		}
 
-		return u.entryServ.Update(ctx, volume, entry, src)
+		return u.entryServ.Update(ctx, volume, entry, key)
 	}); err != nil {
 		return nil, err
 	}

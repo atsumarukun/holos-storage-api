@@ -73,16 +73,16 @@ func (mr *MockEntryUsecaseMockRecorder) Delete(arg0, arg1, arg2 any) *gomock.Cal
 }
 
 // Update mocks base method.
-func (m *MockEntryUsecase) Update(arg0 context.Context, arg1, arg2 uuid.UUID, arg3 string) (*dto.EntryDTO, error) {
+func (m *MockEntryUsecase) Update(arg0 context.Context, arg1 uuid.UUID, arg2, arg3, arg4 string) (*dto.EntryDTO, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Update", arg0, arg1, arg2, arg3)
+	ret := m.ctrl.Call(m, "Update", arg0, arg1, arg2, arg3, arg4)
 	ret0, _ := ret[0].(*dto.EntryDTO)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Update indicates an expected call of Update.
-func (mr *MockEntryUsecaseMockRecorder) Update(arg0, arg1, arg2, arg3 any) *gomock.Call {
+func (mr *MockEntryUsecaseMockRecorder) Update(arg0, arg1, arg2, arg3, arg4 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockEntryUsecase)(nil).Update), arg0, arg1, arg2, arg3)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockEntryUsecase)(nil).Update), arg0, arg1, arg2, arg3, arg4)
 }

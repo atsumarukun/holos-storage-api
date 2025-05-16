@@ -82,11 +82,8 @@ func (h *entryHandler) Update(c *gin.Context) {
 		return
 	}
 
-	id, err := parameter.GetPathParameter[uuid.UUID](c, "id")
-	if err != nil {
-		errors.Handle(c, status.Error(code.BadRequest, "invalid id"))
-		return
-	}
+	volumeName := c.Param("volumeName")
+	key := c.Param("key")
 
 	accountID, err := parameter.GetContextParameter[uuid.UUID](c, "accountID")
 	if err != nil {
@@ -96,7 +93,7 @@ func (h *entryHandler) Update(c *gin.Context) {
 
 	ctx := c.Request.Context()
 
-	entry, err := h.entryUC.Update(ctx, accountID, id, req.Key)
+	entry, err := h.entryUC.Update(ctx, accountID, volumeName, key, req.Key)
 	if err != nil {
 		errors.Handle(c, err)
 		return
