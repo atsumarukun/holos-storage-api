@@ -24,7 +24,7 @@ var ErrEntryNotFound = status.Error(code.NotFound, "entry not found")
 type EntryUsecase interface {
 	Create(context.Context, uuid.UUID, uuid.UUID, string, uint64, io.Reader) (*dto.EntryDTO, error)
 	Update(context.Context, uuid.UUID, string, string, string) (*dto.EntryDTO, error)
-	Delete(context.Context, uuid.UUID, uuid.UUID) error
+	Delete(context.Context, uuid.UUID, string, string) error
 }
 
 type entryUsecase struct {
@@ -125,23 +125,22 @@ func (u *entryUsecase) Update(ctx context.Context, accountID uuid.UUID, volumeNa
 	return mapper.ToEntryDTO(entry), nil
 }
 
-func (u *entryUsecase) Delete(ctx context.Context, accountID, id uuid.UUID) error {
+func (u *entryUsecase) Delete(ctx context.Context, accountID uuid.UUID, volumeName, key string) error {
 	return u.transactionObj.Transaction(ctx, func(ctx context.Context) error {
-		var err error
-		entry, err := u.entryRepo.FindOneByIDAndAccountID(ctx, id, accountID)
-		if err != nil {
-			return err
-		}
-		if entry == nil {
-			return ErrEntryNotFound
-		}
-
-		volume, err := u.volumeRepo.FindOneByIDAndAccountID(ctx, entry.VolumeID, accountID)
+		volume, err := u.volumeRepo.FindOneByNameAndAccountID(ctx, volumeName, accountID)
 		if err != nil {
 			return err
 		}
 		if volume == nil {
 			return ErrVolumeNotFound
+		}
+
+		entry, err := u.entryRepo.FindOneByKeyAndVolumeIDAndAccountID(ctx, key, volume.ID, accountID)
+		if err != nil {
+			return err
+		}
+		if entry == nil {
+			return ErrEntryNotFound
 		}
 
 		return u.entryServ.Delete(ctx, volume, entry)

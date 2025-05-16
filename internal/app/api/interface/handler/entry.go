@@ -104,11 +104,8 @@ func (h *entryHandler) Update(c *gin.Context) {
 }
 
 func (h *entryHandler) Delete(c *gin.Context) {
-	id, err := parameter.GetPathParameter[uuid.UUID](c, "id")
-	if err != nil {
-		errors.Handle(c, status.Error(code.BadRequest, "invalid id"))
-		return
-	}
+	volumeName := c.Param("volumeName")
+	key := strings.TrimPrefix(c.Param("key"), "/")
 
 	accountID, err := parameter.GetContextParameter[uuid.UUID](c, "accountID")
 	if err != nil {
@@ -118,7 +115,7 @@ func (h *entryHandler) Delete(c *gin.Context) {
 
 	ctx := c.Request.Context()
 
-	if err := h.entryUC.Delete(ctx, accountID, id); err != nil {
+	if err := h.entryUC.Delete(ctx, accountID, volumeName, key); err != nil {
 		errors.Handle(c, err)
 		return
 	}
