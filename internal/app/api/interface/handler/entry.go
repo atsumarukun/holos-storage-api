@@ -4,6 +4,7 @@ import (
 	errs "errors"
 	"mime/multipart"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -83,7 +84,7 @@ func (h *entryHandler) Update(c *gin.Context) {
 	}
 
 	volumeName := c.Param("volumeName")
-	key := c.Param("key")
+	key := strings.TrimPrefix(c.Param("key"), "/")
 
 	accountID, err := parameter.GetContextParameter[uuid.UUID](c, "accountID")
 	if err != nil {
