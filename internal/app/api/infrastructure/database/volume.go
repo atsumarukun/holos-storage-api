@@ -75,7 +75,15 @@ func (r *volumeRepository) FindOneByName(ctx context.Context, name string) (*ent
 }
 
 func (r *volumeRepository) FindOneByNameAndAccountID(ctx context.Context, name string, accountID uuid.UUID) (*entity.Volume, error) {
-	return nil, errors.New("not implemented")
+	driver := transaction.GetDriver(ctx, r.db)
+	var model model.VolumeModel
+	if err := driver.QueryRowxContext(ctx, `SELECT id, account_id, name, is_public, created_at, updated_at FROM volumes WHERE name = ? AND account_id = ? LIMIT 1;`, name, accountID).StructScan(&model); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return transformer.ToVolumeEntity(&model), nil
 }
 
 func (r *volumeRepository) FindOneByIDAndAccountID(ctx context.Context, id, accountID uuid.UUID) (*entity.Volume, error) {
