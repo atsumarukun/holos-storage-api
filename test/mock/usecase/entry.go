@@ -44,7 +44,7 @@ func (m *MockEntryUsecase) EXPECT() *MockEntryUsecaseMockRecorder {
 }
 
 // Create mocks base method.
-func (m *MockEntryUsecase) Create(arg0 context.Context, arg1, arg2 uuid.UUID, arg3 string, arg4 uint64, arg5 io.Reader) (*dto.EntryDTO, error) {
+func (m *MockEntryUsecase) Create(arg0 context.Context, arg1 uuid.UUID, arg2, arg3 string, arg4 uint64, arg5 io.Reader) (*dto.EntryDTO, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Create", arg0, arg1, arg2, arg3, arg4, arg5)
 	ret0, _ := ret[0].(*dto.EntryDTO)

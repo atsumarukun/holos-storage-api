@@ -85,21 +85,6 @@ func (mr *MockEntryRepositoryMockRecorder) FindByKeyPrefixAndAccountID(arg0, arg
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByKeyPrefixAndAccountID", reflect.TypeOf((*MockEntryRepository)(nil).FindByKeyPrefixAndAccountID), arg0, arg1, arg2)
 }
 
-// FindOneByIDAndAccountID mocks base method.
-func (m *MockEntryRepository) FindOneByIDAndAccountID(arg0 context.Context, arg1, arg2 uuid.UUID) (*entity.Entry, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FindOneByIDAndAccountID", arg0, arg1, arg2)
-	ret0, _ := ret[0].(*entity.Entry)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// FindOneByIDAndAccountID indicates an expected call of FindOneByIDAndAccountID.
-func (mr *MockEntryRepositoryMockRecorder) FindOneByIDAndAccountID(arg0, arg1, arg2 any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindOneByIDAndAccountID", reflect.TypeOf((*MockEntryRepository)(nil).FindOneByIDAndAccountID), arg0, arg1, arg2)
-}
-
 // FindOneByKeyAndVolumeID mocks base method.
 func (m *MockEntryRepository) FindOneByKeyAndVolumeID(arg0 context.Context, arg1 string, arg2 uuid.UUID) (*entity.Entry, error) {
 	m.ctrl.T.Helper()

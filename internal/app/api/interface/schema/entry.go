@@ -7,8 +7,8 @@ import (
 )
 
 type CreateEntryRequest struct {
-	VolumeID string `form:"volume_id" binding:"required"`
-	Key      string `form:"key" binding:"required"`
+	VolumeName string `form:"volume_name" binding:"required"`
+	Key        string `form:"key" binding:"required"`
 }
 
 type UpdateEntryRequest struct {

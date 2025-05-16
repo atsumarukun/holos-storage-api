@@ -58,7 +58,7 @@ func TestEntry_Create(t *testing.T) {
 	tests := []struct {
 		name                  string
 		inputAccountID        uuid.UUID
-		inputVolumeID         uuid.UUID
+		inputVolumeName       string
 		inputKey              string
 		inputSize             uint64
 		inputBody             io.Reader
@@ -69,14 +69,14 @@ func TestEntry_Create(t *testing.T) {
 		setMockEntryServ      func(context.Context, *mockService.MockEntryService)
 	}{
 		{
-			name:           "success",
-			inputAccountID: accountID,
-			inputVolumeID:  volumeID,
-			inputKey:       "test/sample.txt",
-			inputSize:      4,
-			inputBody:      bytes.NewBufferString("test"),
-			expectResult:   entryDTO,
-			expectError:    nil,
+			name:            "success",
+			inputAccountID:  accountID,
+			inputVolumeName: volume.Name,
+			inputKey:        "test/sample.txt",
+			inputSize:       4,
+			inputBody:       bytes.NewBufferString("test"),
+			expectResult:    entryDTO,
+			expectError:     nil,
 			setMockTransactionObj: func(ctx context.Context, transactionObj *mockTransaction.MockTransactionObject) {
 				transactionObj.
 					EXPECT().
@@ -89,7 +89,7 @@ func TestEntry_Create(t *testing.T) {
 			setMockVolumeRepo: func(ctx context.Context, volumeRepo *mockRepository.MockVolumeRepository) {
 				volumeRepo.
 					EXPECT().
-					FindOneByIDAndAccountID(ctx, gomock.Any(), gomock.Any()).
+					FindOneByNameAndAccountID(ctx, gomock.Any(), gomock.Any()).
 					Return(volume, nil).
 					Times(1)
 			},
@@ -107,14 +107,14 @@ func TestEntry_Create(t *testing.T) {
 			},
 		},
 		{
-			name:           "invalid key",
-			inputAccountID: accountID,
-			inputVolumeID:  volumeID,
-			inputKey:       "",
-			inputSize:      4,
-			inputBody:      bytes.NewBufferString("test"),
-			expectResult:   nil,
-			expectError:    entity.ErrShortEntryKey,
+			name:            "invalid key",
+			inputAccountID:  accountID,
+			inputVolumeName: volume.Name,
+			inputKey:        "",
+			inputSize:       4,
+			inputBody:       bytes.NewBufferString("test"),
+			expectResult:    nil,
+			expectError:     entity.ErrShortEntryKey,
 			setMockTransactionObj: func(ctx context.Context, transactionObj *mockTransaction.MockTransactionObject) {
 				transactionObj.
 					EXPECT().
@@ -127,21 +127,21 @@ func TestEntry_Create(t *testing.T) {
 			setMockVolumeRepo: func(ctx context.Context, volumeRepo *mockRepository.MockVolumeRepository) {
 				volumeRepo.
 					EXPECT().
-					FindOneByIDAndAccountID(ctx, gomock.Any(), gomock.Any()).
+					FindOneByNameAndAccountID(ctx, gomock.Any(), gomock.Any()).
 					Return(volume, nil).
 					Times(1)
 			},
 			setMockEntryServ: func(context.Context, *mockService.MockEntryService) {},
 		},
 		{
-			name:           "body is nil",
-			inputAccountID: accountID,
-			inputVolumeID:  volumeID,
-			inputKey:       "test/sample",
-			inputSize:      0,
-			inputBody:      nil,
-			expectResult:   folderEntryDTO,
-			expectError:    nil,
+			name:            "body is nil",
+			inputAccountID:  accountID,
+			inputVolumeName: volume.Name,
+			inputKey:        "test/sample",
+			inputSize:       0,
+			inputBody:       nil,
+			expectResult:    folderEntryDTO,
+			expectError:     nil,
 			setMockTransactionObj: func(ctx context.Context, transactionObj *mockTransaction.MockTransactionObject) {
 				transactionObj.
 					EXPECT().
@@ -154,7 +154,7 @@ func TestEntry_Create(t *testing.T) {
 			setMockVolumeRepo: func(ctx context.Context, volumeRepo *mockRepository.MockVolumeRepository) {
 				volumeRepo.
 					EXPECT().
-					FindOneByIDAndAccountID(ctx, gomock.Any(), gomock.Any()).
+					FindOneByNameAndAccountID(ctx, gomock.Any(), gomock.Any()).
 					Return(volume, nil).
 					Times(1)
 			},
@@ -172,14 +172,14 @@ func TestEntry_Create(t *testing.T) {
 			},
 		},
 		{
-			name:           "entry already exists",
-			inputAccountID: accountID,
-			inputVolumeID:  volumeID,
-			inputKey:       "test/sample.txt",
-			inputSize:      4,
-			inputBody:      bytes.NewBufferString("test"),
-			expectResult:   nil,
-			expectError:    service.ErrEntryAlreadyExists,
+			name:            "entry already exists",
+			inputAccountID:  accountID,
+			inputVolumeName: volume.Name,
+			inputKey:        "test/sample.txt",
+			inputSize:       4,
+			inputBody:       bytes.NewBufferString("test"),
+			expectResult:    nil,
+			expectError:     service.ErrEntryAlreadyExists,
 			setMockTransactionObj: func(ctx context.Context, transactionObj *mockTransaction.MockTransactionObject) {
 				transactionObj.
 					EXPECT().
@@ -192,7 +192,7 @@ func TestEntry_Create(t *testing.T) {
 			setMockVolumeRepo: func(ctx context.Context, volumeRepo *mockRepository.MockVolumeRepository) {
 				volumeRepo.
 					EXPECT().
-					FindOneByIDAndAccountID(ctx, gomock.Any(), gomock.Any()).
+					FindOneByNameAndAccountID(ctx, gomock.Any(), gomock.Any()).
 					Return(volume, nil).
 					Times(1)
 			},
@@ -205,14 +205,14 @@ func TestEntry_Create(t *testing.T) {
 			},
 		},
 		{
-			name:           "volume not found",
-			inputAccountID: accountID,
-			inputVolumeID:  volumeID,
-			inputKey:       "test/sample.txt",
-			inputSize:      4,
-			inputBody:      bytes.NewBufferString("test"),
-			expectResult:   nil,
-			expectError:    usecase.ErrVolumeNotFound,
+			name:            "volume not found",
+			inputAccountID:  accountID,
+			inputVolumeName: volume.Name,
+			inputKey:        "test/sample.txt",
+			inputSize:       4,
+			inputBody:       bytes.NewBufferString("test"),
+			expectResult:    nil,
+			expectError:     usecase.ErrVolumeNotFound,
 			setMockTransactionObj: func(ctx context.Context, transactionObj *mockTransaction.MockTransactionObject) {
 				transactionObj.
 					EXPECT().
@@ -225,21 +225,21 @@ func TestEntry_Create(t *testing.T) {
 			setMockVolumeRepo: func(ctx context.Context, volumeRepo *mockRepository.MockVolumeRepository) {
 				volumeRepo.
 					EXPECT().
-					FindOneByIDAndAccountID(ctx, gomock.Any(), gomock.Any()).
+					FindOneByNameAndAccountID(ctx, gomock.Any(), gomock.Any()).
 					Return(nil, nil).
 					Times(1)
 			},
 			setMockEntryServ: func(context.Context, *mockService.MockEntryService) {},
 		},
 		{
-			name:           "create error",
-			inputAccountID: accountID,
-			inputVolumeID:  volumeID,
-			inputKey:       "test/sample.txt",
-			inputSize:      4,
-			inputBody:      bytes.NewBufferString("test"),
-			expectResult:   nil,
-			expectError:    sql.ErrConnDone,
+			name:            "create error",
+			inputAccountID:  accountID,
+			inputVolumeName: volume.Name,
+			inputKey:        "test/sample.txt",
+			inputSize:       4,
+			inputBody:       bytes.NewBufferString("test"),
+			expectResult:    nil,
+			expectError:     sql.ErrConnDone,
 			setMockTransactionObj: func(ctx context.Context, transactionObj *mockTransaction.MockTransactionObject) {
 				transactionObj.
 					EXPECT().
@@ -252,7 +252,7 @@ func TestEntry_Create(t *testing.T) {
 			setMockVolumeRepo: func(ctx context.Context, volumeRepo *mockRepository.MockVolumeRepository) {
 				volumeRepo.
 					EXPECT().
-					FindOneByIDAndAccountID(ctx, gomock.Any(), gomock.Any()).
+					FindOneByNameAndAccountID(ctx, gomock.Any(), gomock.Any()).
 					Return(volume, nil).
 					Times(1)
 			},
@@ -287,7 +287,7 @@ func TestEntry_Create(t *testing.T) {
 			tt.setMockEntryServ(ctx, entryServ)
 
 			uc := usecase.NewEntryUsecase(transactionObj, nil, volumeRepo, entryServ)
-			result, err := uc.Create(ctx, tt.inputAccountID, tt.inputVolumeID, tt.inputKey, tt.inputSize, tt.inputBody)
+			result, err := uc.Create(ctx, tt.inputAccountID, tt.inputVolumeName, tt.inputKey, tt.inputSize, tt.inputBody)
 			if !errors.Is(err, tt.expectError) {
 				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
 			}

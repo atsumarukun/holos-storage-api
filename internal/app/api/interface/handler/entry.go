@@ -41,12 +41,6 @@ func (h *entryHandler) Create(c *gin.Context) {
 		return
 	}
 
-	volumeID, err := uuid.Parse(req.VolumeID)
-	if err != nil {
-		errors.Handle(c, status.Error(code.BadRequest, "failed to parse volume_id to uuid"))
-		return
-	}
-
 	fileHeader, err := c.FormFile("file")
 	if err != nil && !errs.Is(err, http.ErrMissingFile) {
 		errors.Handle(c, status.Error(code.BadRequest, "failed to get file"))
@@ -67,7 +61,7 @@ func (h *entryHandler) Create(c *gin.Context) {
 
 	ctx := c.Request.Context()
 
-	entry, err := h.entryUC.Create(ctx, accountID, volumeID, req.Key, size, file)
+	entry, err := h.entryUC.Create(ctx, accountID, req.VolumeName, req.Key, size, file)
 	if err != nil {
 		errors.Handle(c, err)
 		return

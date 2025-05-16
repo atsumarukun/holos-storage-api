@@ -22,7 +22,7 @@ import (
 var ErrEntryNotFound = status.Error(code.NotFound, "entry not found")
 
 type EntryUsecase interface {
-	Create(context.Context, uuid.UUID, uuid.UUID, string, uint64, io.Reader) (*dto.EntryDTO, error)
+	Create(context.Context, uuid.UUID, string, string, uint64, io.Reader) (*dto.EntryDTO, error)
 	Update(context.Context, uuid.UUID, string, string, string) (*dto.EntryDTO, error)
 	Delete(context.Context, uuid.UUID, string, string) error
 }
@@ -48,11 +48,11 @@ func NewEntryUsecase(
 	}
 }
 
-func (u *entryUsecase) Create(ctx context.Context, accountID, volumeID uuid.UUID, key string, size uint64, body io.Reader) (*dto.EntryDTO, error) {
+func (u *entryUsecase) Create(ctx context.Context, accountID uuid.UUID, volumeName, key string, size uint64, body io.Reader) (*dto.EntryDTO, error) {
 	var entry *entity.Entry
 
 	if err := u.transactionObj.Transaction(ctx, func(ctx context.Context) error {
-		volume, err := u.volumeRepo.FindOneByIDAndAccountID(ctx, volumeID, accountID)
+		volume, err := u.volumeRepo.FindOneByNameAndAccountID(ctx, volumeName, accountID)
 		if err != nil {
 			return err
 		}
@@ -72,7 +72,7 @@ func (u *entryUsecase) Create(ctx context.Context, accountID, volumeID uuid.UUID
 			bodyReader = io.MultiReader(bytes.NewReader(buf[:n]), body)
 		}
 
-		entry, err = entity.NewEntry(accountID, volumeID, key, size, entryType)
+		entry, err = entity.NewEntry(accountID, volume.ID, key, size, entryType)
 		if err != nil {
 			return err
 		}

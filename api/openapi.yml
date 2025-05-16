@@ -398,6 +398,11 @@ components:
           type: "string"
           description: "ボリュームID"
           example: "c99fc6e0-6e62-4de2-8a7e-5c608ceaa8c6"
+        volume_name:
+          type: "string"
+          description: "ボリューム名"
+          example: "volume"
+          writeOnly: true
         key:
           type: "string"
           description: "キー"
@@ -419,6 +424,7 @@ components:
       required:
         - "id"
         - "volume_id"
+        - "volume_name"
         - "key"
         - "size"
         - "type"
@@ -447,6 +453,8 @@ components:
               - $ref: "#/components/schemas/entry"
               - type: "object"
                 properties:
+                  volume_id:
+                    readOnly: true
                   file:
                     type: "string"
                     format: "byte"
@@ -463,6 +471,8 @@ components:
               - type: "object"
                 properties:
                   volume_id:
+                    readOnly: true
+                  volume_name:
                     readOnly: true
 
   responses:
