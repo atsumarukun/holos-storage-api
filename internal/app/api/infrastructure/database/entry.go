@@ -74,6 +74,10 @@ func (r *entryRepository) FindOneByKeyAndVolumeID(ctx context.Context, key strin
 	return transformer.ToEntryEntity(&model), nil
 }
 
+func (r *entryRepository) FindOneByKeyAndVolumeIDAndAccountID(ctx context.Context, key string, volumeID, accountID uuid.UUID) (*entity.Entry, error) {
+	return nil, errors.New("not implemented")
+}
+
 func (r *entryRepository) FindOneByIDAndAccountID(ctx context.Context, id, accountID uuid.UUID) (*entity.Entry, error) {
 	driver := transaction.GetDriver(ctx, r.db)
 	var model model.EntryModel
