@@ -248,8 +248,11 @@ func TestEntry_Update(t *testing.T) {
 			if err != nil {
 				t.Error(err)
 			}
-			c.Params = append(c.Params, gin.Param{Key: "volumeName", Value: "volume"})
-			c.Params = append(c.Params, gin.Param{Key: "key", Value: "test/sample.txt"})
+			c.Params = append(
+				c.Params,
+				gin.Param{Key: "volumeName", Value: "volume"},
+				gin.Param{Key: "key", Value: "test/sample.txt"},
+			)
 			if tt.isSetAccountID {
 				c.Set("accountID", accountID)
 			}
@@ -344,8 +347,11 @@ func TestEntry_Delete(t *testing.T) {
 			if err != nil {
 				t.Error(err)
 			}
-			c.Params = append(c.Params, gin.Param{Key: "volumeName", Value: "volume"})
-			c.Params = append(c.Params, gin.Param{Key: "key", Value: "test/sample.txt"})
+			c.Params = append(
+				c.Params,
+				gin.Param{Key: "volumeName", Value: "volume"},
+				gin.Param{Key: "key", Value: "test/sample.txt"},
+			)
 			if tt.isSetAccountID {
 				c.Set("accountID", accountID)
 			}
