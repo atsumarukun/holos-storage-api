@@ -74,7 +74,7 @@ paths:
           $ref: "#/components/responses/403"
         500:
           $ref: "#/components/responses/500"
-  /volumes/:id:
+  /volumes/{id}:
     put:
       summary: "ボリューム更新"
       tags:
@@ -212,7 +212,7 @@ paths:
           $ref: "#/components/responses/403"
         500:
           $ref: "#/components/responses/500"
-  /entries/:id:
+  /entries/{volumeName}/{key}:
     put:
       summary: "エントリー更新"
       tags:
@@ -228,6 +228,20 @@ paths:
           required: true
           description: "セッショントークンまたはアクセスキー"
           example: "Session 1Ty1HKTPKTt8xEi-_3HTbWf2SCHOdqOS"
+        - in: "path"
+          name: "volumeName"
+          schema:
+            type: "string"
+          required: true
+          description: "ボリューム名"
+          example: "volume_name"
+        - in: "path"
+          name: "key"
+          schema:
+            type: "string"
+          required: true
+          description: "キー"
+          example: "volume/entry.png"
       requestBody:
         $ref: "#/components/requestBodies/update_entry"
       responses:
@@ -258,6 +272,20 @@ paths:
           required: true
           description: "セッショントークンまたはアクセスキー"
           example: "Session 1Ty1HKTPKTt8xEi-_3HTbWf2SCHOdqOS"
+        - in: "path"
+          name: "volumeName"
+          schema:
+            type: "string"
+          required: true
+          description: "ボリューム名"
+          example: "volume_name"
+        - in: "path"
+          name: "key"
+          schema:
+            type: "string"
+          required: true
+          description: "キー"
+          example: "volume/entry.png"
       responses:
         204:
           $ref: "#/components/responses/204"
@@ -284,6 +312,20 @@ paths:
           required: true
           description: "セッショントークンまたはアクセスキー"
           example: "Session 1Ty1HKTPKTt8xEi-_3HTbWf2SCHOdqOS"
+        - in: "path"
+          name: "volumeName"
+          schema:
+            type: "string"
+          required: true
+          description: "ボリューム名"
+          example: "volume_name"
+        - in: "path"
+          name: "key"
+          schema:
+            type: "string"
+          required: true
+          description: "キー"
+          example: "volume/entry.png"
       responses:
         200:
           $ref: "#/components/responses/get_entry"

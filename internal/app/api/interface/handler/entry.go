@@ -4,6 +4,7 @@ import (
 	errs "errors"
 	"mime/multipart"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -82,11 +83,8 @@ func (h *entryHandler) Update(c *gin.Context) {
 		return
 	}
 
-	id, err := parameter.GetPathParameter[uuid.UUID](c, "id")
-	if err != nil {
-		errors.Handle(c, status.Error(code.BadRequest, "invalid id"))
-		return
-	}
+	volumeName := c.Param("volumeName")
+	key := strings.TrimPrefix(c.Param("key"), "/")
 
 	accountID, err := parameter.GetContextParameter[uuid.UUID](c, "accountID")
 	if err != nil {
@@ -96,7 +94,7 @@ func (h *entryHandler) Update(c *gin.Context) {
 
 	ctx := c.Request.Context()
 
-	entry, err := h.entryUC.Update(ctx, accountID, id, req.Key)
+	entry, err := h.entryUC.Update(ctx, accountID, volumeName, key, req.Key)
 	if err != nil {
 		errors.Handle(c, err)
 		return
@@ -106,11 +104,8 @@ func (h *entryHandler) Update(c *gin.Context) {
 }
 
 func (h *entryHandler) Delete(c *gin.Context) {
-	id, err := parameter.GetPathParameter[uuid.UUID](c, "id")
-	if err != nil {
-		errors.Handle(c, status.Error(code.BadRequest, "invalid id"))
-		return
-	}
+	volumeName := c.Param("volumeName")
+	key := strings.TrimPrefix(c.Param("key"), "/")
 
 	accountID, err := parameter.GetContextParameter[uuid.UUID](c, "accountID")
 	if err != nil {
@@ -120,7 +115,7 @@ func (h *entryHandler) Delete(c *gin.Context) {
 
 	ctx := c.Request.Context()
 
-	if err := h.entryUC.Delete(ctx, accountID, id); err != nil {
+	if err := h.entryUC.Delete(ctx, accountID, volumeName, key); err != nil {
 		errors.Handle(c, err)
 		return
 	}

@@ -17,6 +17,6 @@ func registerRouter(r *gin.Engine) {
 
 	entries := r.Group("entries")
 	entries.POST("/", entryHdl.Create)
-	entries.PUT("/:id", entryHdl.Update)
-	entries.DELETE("/:id", entryHdl.Delete)
+	entries.PUT("/:volumeName/*key", entryHdl.Update)
+	entries.DELETE("/:volumeName/*key", entryHdl.Delete)
 }

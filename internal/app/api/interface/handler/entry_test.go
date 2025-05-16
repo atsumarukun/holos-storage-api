@@ -187,7 +187,6 @@ func TestEntry_Update(t *testing.T) {
 	tests := []struct {
 		name           string
 		requestJSON    []byte
-		isSetID        bool
 		isSetAccountID bool
 		expectCode     int
 		expectResponse map[string]any
@@ -196,14 +195,13 @@ func TestEntry_Update(t *testing.T) {
 		{
 			name:           "success",
 			requestJSON:    []byte(`{"key": "update/sample.txt"}`),
-			isSetID:        true,
 			isSetAccountID: true,
 			expectCode:     http.StatusOK,
 			expectResponse: map[string]any{"id": entryDTO.ID.String(), "volume_id": entryDTO.VolumeID.String(), "key": entryDTO.Key, "size": entryDTO.Size, "type": entryDTO.Type, "created_at": entryDTO.CreatedAt.Format(time.RFC3339Nano), "updated_at": entryDTO.UpdatedAt.Format(time.RFC3339Nano)},
 			setMockEntryUC: func(ctx context.Context, entryUC *mockUsecase.MockEntryUsecase) {
 				entryUC.
 					EXPECT().
-					Update(ctx, gomock.Any(), gomock.Any(), gomock.Any()).
+					Update(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 					Return(entryDTO, nil).
 					Times(1)
 			},
@@ -211,25 +209,14 @@ func TestEntry_Update(t *testing.T) {
 		{
 			name:           "invalid request",
 			requestJSON:    nil,
-			isSetID:        true,
 			isSetAccountID: true,
 			expectCode:     http.StatusBadRequest,
 			expectResponse: map[string]any{"message": "failed to parse json"},
 			setMockEntryUC: func(context.Context, *mockUsecase.MockEntryUsecase) {},
 		},
 		{
-			name:           "id not found",
-			requestJSON:    []byte(`{"key": "update/sample.txt"}`),
-			isSetID:        false,
-			isSetAccountID: true,
-			expectCode:     http.StatusBadRequest,
-			expectResponse: map[string]any{"message": "invalid id"},
-			setMockEntryUC: func(context.Context, *mockUsecase.MockEntryUsecase) {},
-		},
-		{
 			name:           "account id not found",
 			requestJSON:    []byte(`{"key": "update/sample.txt"}`),
-			isSetID:        true,
 			isSetAccountID: false,
 			expectCode:     http.StatusInternalServerError,
 			expectResponse: map[string]any{"message": "internal server error"},
@@ -238,14 +225,13 @@ func TestEntry_Update(t *testing.T) {
 		{
 			name:           "update error",
 			requestJSON:    []byte(`{"key": "update/sample.txt"}`),
-			isSetID:        true,
 			isSetAccountID: true,
 			expectCode:     http.StatusInternalServerError,
 			expectResponse: map[string]any{"message": "internal server error"},
 			setMockEntryUC: func(ctx context.Context, entryUC *mockUsecase.MockEntryUsecase) {
 				entryUC.
 					EXPECT().
-					Update(ctx, gomock.Any(), gomock.Any(), gomock.Any()).
+					Update(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 					Return(nil, sql.ErrConnDone).
 					Times(1)
 			},
@@ -258,13 +244,15 @@ func TestEntry_Update(t *testing.T) {
 
 			c, _ := gin.CreateTestContext(w)
 			var err error
-			c.Request, err = http.NewRequestWithContext(ctx, "PUT", "/entries/"+id.String(), bytes.NewBuffer(tt.requestJSON))
+			c.Request, err = http.NewRequestWithContext(ctx, "PUT", "/entries/volume/test/sample.txt", bytes.NewBuffer(tt.requestJSON))
 			if err != nil {
 				t.Error(err)
 			}
-			if tt.isSetID {
-				c.Params = append(c.Params, gin.Param{Key: "id", Value: id.String()})
-			}
+			c.Params = append(
+				c.Params,
+				gin.Param{Key: "volumeName", Value: "volume"},
+				gin.Param{Key: "key", Value: "test/sample.txt"},
+			)
 			if tt.isSetAccountID {
 				c.Set("accountID", accountID)
 			}
@@ -305,12 +293,10 @@ func TestEntry_Update(t *testing.T) {
 func TestEntry_Delete(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
-	id := uuid.New()
 	accountID := uuid.New()
 
 	tests := []struct {
 		name           string
-		isSetID        bool
 		isSetAccountID bool
 		expectCode     int
 		expectResponse *map[string]any
@@ -318,29 +304,19 @@ func TestEntry_Delete(t *testing.T) {
 	}{
 		{
 			name:           "success",
-			isSetID:        true,
 			isSetAccountID: true,
 			expectCode:     http.StatusNoContent,
 			expectResponse: nil,
 			setMockEntryUC: func(ctx context.Context, entryUC *mockUsecase.MockEntryUsecase) {
 				entryUC.
 					EXPECT().
-					Delete(ctx, gomock.Any(), gomock.Any()).
+					Delete(ctx, gomock.Any(), gomock.Any(), gomock.Any()).
 					Return(nil).
 					Times(1)
 			},
 		},
 		{
-			name:           "id not found",
-			isSetID:        false,
-			isSetAccountID: true,
-			expectCode:     http.StatusBadRequest,
-			expectResponse: &map[string]any{"message": "invalid id"},
-			setMockEntryUC: func(context.Context, *mockUsecase.MockEntryUsecase) {},
-		},
-		{
 			name:           "account id not found",
-			isSetID:        true,
 			isSetAccountID: false,
 			expectCode:     http.StatusInternalServerError,
 			expectResponse: &map[string]any{"message": "internal server error"},
@@ -348,14 +324,13 @@ func TestEntry_Delete(t *testing.T) {
 		},
 		{
 			name:           "delete error",
-			isSetID:        true,
 			isSetAccountID: true,
 			expectCode:     http.StatusInternalServerError,
 			expectResponse: &map[string]any{"message": "internal server error"},
 			setMockEntryUC: func(ctx context.Context, entryUC *mockUsecase.MockEntryUsecase) {
 				entryUC.
 					EXPECT().
-					Delete(ctx, gomock.Any(), gomock.Any()).
+					Delete(ctx, gomock.Any(), gomock.Any(), gomock.Any()).
 					Return(sql.ErrConnDone).
 					Times(1)
 			},
@@ -368,13 +343,15 @@ func TestEntry_Delete(t *testing.T) {
 
 			c, _ := gin.CreateTestContext(w)
 			var err error
-			c.Request, err = http.NewRequestWithContext(ctx, "DELETE", "/entries/"+id.String(), http.NoBody)
+			c.Request, err = http.NewRequestWithContext(ctx, "DELETE", "entries/volume/test/sample.txt", http.NoBody)
 			if err != nil {
 				t.Error(err)
 			}
-			if tt.isSetID {
-				c.Params = append(c.Params, gin.Param{Key: "id", Value: id.String()})
-			}
+			c.Params = append(
+				c.Params,
+				gin.Param{Key: "volumeName", Value: "volume"},
+				gin.Param{Key: "key", Value: "test/sample.txt"},
+			)
 			if tt.isSetAccountID {
 				c.Set("accountID", accountID)
 			}
