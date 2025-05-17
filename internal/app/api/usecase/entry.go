@@ -84,7 +84,12 @@ func (u *entryUsecase) Create(ctx context.Context, accountID uuid.UUID, volumeNa
 			return err
 		}
 
-		return u.entryServ.Create(ctx, volume, entry, bodyReader)
+		if err := u.entryServ.Create(ctx, volume, entry, bodyReader); err != nil {
+			return err
+		}
+
+		path := volume.Name + "/" + entry.Key
+		return u.bodyRepo.Create(path, bodyReader)
 	}); err != nil {
 		return nil, err
 	}
@@ -120,7 +125,13 @@ func (u *entryUsecase) Update(ctx context.Context, accountID uuid.UUID, volumeNa
 			return err
 		}
 
-		return u.entryServ.Update(ctx, volume, entry, key)
+		if err := u.entryServ.Update(ctx, volume, entry, key); err != nil {
+			return err
+		}
+
+		src := volume.Name + "/" + key
+		dst := volume.Name + "/" + entry.Key
+		return u.bodyRepo.Update(src, dst)
 	}); err != nil {
 		return nil, err
 	}
@@ -146,6 +157,11 @@ func (u *entryUsecase) Delete(ctx context.Context, accountID uuid.UUID, volumeNa
 			return ErrEntryNotFound
 		}
 
-		return u.entryServ.Delete(ctx, volume, entry)
+		if err := u.entryServ.Delete(ctx, volume, entry); err != nil {
+			return err
+		}
+
+		path := volume.Name + "/" + entry.Key
+		return u.bodyRepo.Delete(path)
 	})
 }
