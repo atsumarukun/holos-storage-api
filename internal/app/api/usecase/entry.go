@@ -30,6 +30,7 @@ type EntryUsecase interface {
 type entryUsecase struct {
 	transactionObj transaction.TransactionObject
 	entryRepo      repository.EntryRepository
+	bodyRepo       repository.BodyRepository
 	volumeRepo     repository.VolumeRepository
 	entryServ      service.EntryService
 }
@@ -37,12 +38,14 @@ type entryUsecase struct {
 func NewEntryUsecase(
 	transactionObj transaction.TransactionObject,
 	entryRepo repository.EntryRepository,
+	bodyRepo repository.BodyRepository,
 	volumeRepo repository.VolumeRepository,
 	entryServ service.EntryService,
 ) EntryUsecase {
 	return &entryUsecase{
 		transactionObj: transactionObj,
 		entryRepo:      entryRepo,
+		bodyRepo:       bodyRepo,
 		volumeRepo:     volumeRepo,
 		entryServ:      entryServ,
 	}

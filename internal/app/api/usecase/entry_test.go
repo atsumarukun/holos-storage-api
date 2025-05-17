@@ -286,7 +286,7 @@ func TestEntry_Create(t *testing.T) {
 			entryServ := mockService.NewMockEntryService(ctrl)
 			tt.setMockEntryServ(ctx, entryServ)
 
-			uc := usecase.NewEntryUsecase(transactionObj, nil, volumeRepo, entryServ)
+			uc := usecase.NewEntryUsecase(transactionObj, nil, nil, volumeRepo, entryServ)
 			result, err := uc.Create(ctx, tt.inputAccountID, tt.inputVolumeName, tt.inputKey, tt.inputSize, tt.inputBody)
 			if !errors.Is(err, tt.expectError) {
 				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
@@ -585,7 +585,7 @@ func TestEntry_Update(t *testing.T) {
 			entryServ := mockService.NewMockEntryService(ctrl)
 			tt.setMockEntryServ(ctx, entryServ)
 
-			uc := usecase.NewEntryUsecase(transactionObj, entryRepo, volumeRepo, entryServ)
+			uc := usecase.NewEntryUsecase(transactionObj, entryRepo, nil, volumeRepo, entryServ)
 			result, err := uc.Update(ctx, tt.inputAccountID, tt.inputVolumeName, tt.inputKey, tt.inputNewKey)
 			if !errors.Is(err, tt.expectError) {
 				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
@@ -782,7 +782,7 @@ func TestEntry_Delete(t *testing.T) {
 			entryServ := mockService.NewMockEntryService(ctrl)
 			tt.setMockEntryServ(ctx, entryServ)
 
-			uc := usecase.NewEntryUsecase(transactionObj, entryRepo, volumeRepo, entryServ)
+			uc := usecase.NewEntryUsecase(transactionObj, entryRepo, nil, volumeRepo, entryServ)
 			if err := uc.Delete(ctx, tt.inputAccountID, tt.inputVolumeName, tt.inputKey); !errors.Is(err, tt.expectError) {
 				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
 			}
