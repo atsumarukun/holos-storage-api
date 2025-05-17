@@ -43,31 +43,31 @@ func (m *MockEntryService) EXPECT() *MockEntryServiceMockRecorder {
 }
 
 // Create mocks base method.
-func (m *MockEntryService) Create(arg0 context.Context, arg1 *entity.Volume, arg2 *entity.Entry, arg3 io.Reader) error {
+func (m *MockEntryService) Create(arg0 context.Context, arg1 *entity.Entry, arg2 io.Reader) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Create", arg0, arg1, arg2, arg3)
+	ret := m.ctrl.Call(m, "Create", arg0, arg1, arg2)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Create indicates an expected call of Create.
-func (mr *MockEntryServiceMockRecorder) Create(arg0, arg1, arg2, arg3 any) *gomock.Call {
+func (mr *MockEntryServiceMockRecorder) Create(arg0, arg1, arg2 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockEntryService)(nil).Create), arg0, arg1, arg2, arg3)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockEntryService)(nil).Create), arg0, arg1, arg2)
 }
 
 // Delete mocks base method.
-func (m *MockEntryService) Delete(arg0 context.Context, arg1 *entity.Volume, arg2 *entity.Entry) error {
+func (m *MockEntryService) Delete(arg0 context.Context, arg1 *entity.Entry) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Delete", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "Delete", arg0, arg1)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Delete indicates an expected call of Delete.
-func (mr *MockEntryServiceMockRecorder) Delete(arg0, arg1, arg2 any) *gomock.Call {
+func (mr *MockEntryServiceMockRecorder) Delete(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockEntryService)(nil).Delete), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockEntryService)(nil).Delete), arg0, arg1)
 }
 
 // Exists mocks base method.
@@ -85,15 +85,15 @@ func (mr *MockEntryServiceMockRecorder) Exists(arg0, arg1 any) *gomock.Call {
 }
 
 // Update mocks base method.
-func (m *MockEntryService) Update(arg0 context.Context, arg1 *entity.Volume, arg2 *entity.Entry, arg3 string) error {
+func (m *MockEntryService) Update(arg0 context.Context, arg1 *entity.Entry, arg2 string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Update", arg0, arg1, arg2, arg3)
+	ret := m.ctrl.Call(m, "Update", arg0, arg1, arg2)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Update indicates an expected call of Update.
-func (mr *MockEntryServiceMockRecorder) Update(arg0, arg1, arg2, arg3 any) *gomock.Call {
+func (mr *MockEntryServiceMockRecorder) Update(arg0, arg1, arg2 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockEntryService)(nil).Update), arg0, arg1, arg2, arg3)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockEntryService)(nil).Update), arg0, arg1, arg2)
 }

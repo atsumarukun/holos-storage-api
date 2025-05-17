@@ -21,20 +21,18 @@ var (
 
 type EntryService interface {
 	Exists(context.Context, *entity.Entry) error
-	Create(context.Context, *entity.Volume, *entity.Entry, io.Reader) error
-	Update(context.Context, *entity.Volume, *entity.Entry, string) error
-	Delete(context.Context, *entity.Volume, *entity.Entry) error
+	Create(context.Context, *entity.Entry, io.Reader) error
+	Update(context.Context, *entity.Entry, string) error
+	Delete(context.Context, *entity.Entry) error
 }
 
 type entryService struct {
 	entryRepo repository.EntryRepository
-	bodyRepo  repository.BodyRepository
 }
 
-func NewEntryService(entryRepo repository.EntryRepository, bodyRepo repository.BodyRepository) EntryService {
+func NewEntryService(entryRepo repository.EntryRepository) EntryService {
 	return &entryService{
 		entryRepo: entryRepo,
-		bodyRepo:  bodyRepo,
 	}
 }
 
@@ -53,10 +51,7 @@ func (s *entryService) Exists(ctx context.Context, entry *entity.Entry) error {
 	return ErrEntryAlreadyExists
 }
 
-func (s *entryService) Create(ctx context.Context, volume *entity.Volume, entry *entity.Entry, body io.Reader) error {
-	if volume == nil {
-		return ErrRequiredVolume
-	}
+func (s *entryService) Create(ctx context.Context, entry *entity.Entry, body io.Reader) error {
 	if entry == nil {
 		return ErrRequiredEntry
 	}
@@ -65,18 +60,10 @@ func (s *entryService) Create(ctx context.Context, volume *entity.Volume, entry 
 		return err
 	}
 
-	if err := s.entryRepo.Create(ctx, entry); err != nil {
-		return err
-	}
-
-	path := volume.Name + "/" + entry.Key
-	return s.bodyRepo.Create(path, body)
+	return s.entryRepo.Create(ctx, entry)
 }
 
-func (s *entryService) Update(ctx context.Context, volume *entity.Volume, entry *entity.Entry, src string) error {
-	if volume == nil {
-		return ErrRequiredVolume
-	}
+func (s *entryService) Update(ctx context.Context, entry *entity.Entry, src string) error {
 	if entry == nil {
 		return ErrRequiredEntry
 	}
@@ -102,17 +89,10 @@ func (s *entryService) Update(ctx context.Context, volume *entity.Volume, entry 
 		}
 	}
 
-	if err := s.entryRepo.Update(ctx, entry); err != nil {
-		return err
-	}
-
-	return s.bodyRepo.Update(volume.Name+"/"+src, volume.Name+"/"+entry.Key)
+	return s.entryRepo.Update(ctx, entry)
 }
 
-func (s *entryService) Delete(ctx context.Context, volume *entity.Volume, entry *entity.Entry) error {
-	if volume == nil {
-		return ErrRequiredVolume
-	}
+func (s *entryService) Delete(ctx context.Context, entry *entity.Entry) error {
 	if entry == nil {
 		return ErrRequiredEntry
 	}
@@ -130,11 +110,7 @@ func (s *entryService) Delete(ctx context.Context, volume *entity.Volume, entry 
 		}
 	}
 
-	if err := s.entryRepo.Delete(ctx, entry); err != nil {
-		return err
-	}
-
-	return s.bodyRepo.Delete(volume.Name + "/" + entry.Key)
+	return s.entryRepo.Delete(ctx, entry)
 }
 
 func (s *entryService) extractDirs(key string) []string {

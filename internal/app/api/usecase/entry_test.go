@@ -110,7 +110,7 @@ func TestEntry_Create(t *testing.T) {
 					Times(1)
 				entryServ.
 					EXPECT().
-					Create(ctx, gomock.Any(), gomock.Any(), gomock.Any()).
+					Create(ctx, gomock.Any(), gomock.Any()).
 					Return(nil).
 					Times(1)
 			},
@@ -183,7 +183,7 @@ func TestEntry_Create(t *testing.T) {
 					Times(1)
 				entryServ.
 					EXPECT().
-					Create(ctx, gomock.Any(), gomock.Any(), gomock.Any()).
+					Create(ctx, gomock.Any(), gomock.Any()).
 					Return(nil).
 					Times(1)
 			},
@@ -284,7 +284,7 @@ func TestEntry_Create(t *testing.T) {
 					Times(1)
 				entryServ.
 					EXPECT().
-					Create(ctx, gomock.Any(), gomock.Any(), gomock.Any()).
+					Create(ctx, gomock.Any(), gomock.Any()).
 					Return(sql.ErrConnDone).
 					Times(1)
 			},
@@ -329,7 +329,7 @@ func TestEntry_Create(t *testing.T) {
 					Times(1)
 				entryServ.
 					EXPECT().
-					Create(ctx, gomock.Any(), gomock.Any(), gomock.Any()).
+					Create(ctx, gomock.Any(), gomock.Any()).
 					Return(nil).
 					Times(1)
 			},
@@ -460,7 +460,7 @@ func TestEntry_Update(t *testing.T) {
 					Times(1)
 				entryServ.
 					EXPECT().
-					Update(ctx, gomock.Any(), gomock.Any(), gomock.Any()).
+					Update(ctx, gomock.Any(), gomock.Any()).
 					Return(nil).
 					Times(1)
 			},
@@ -641,7 +641,7 @@ func TestEntry_Update(t *testing.T) {
 					Times(1)
 				entryServ.
 					EXPECT().
-					Update(ctx, gomock.Any(), gomock.Any(), gomock.Any()).
+					Update(ctx, gomock.Any(), gomock.Any()).
 					Return(sql.ErrConnDone).
 					Times(1)
 			},
@@ -692,7 +692,7 @@ func TestEntry_Update(t *testing.T) {
 					Times(1)
 				entryServ.
 					EXPECT().
-					Update(ctx, gomock.Any(), gomock.Any(), gomock.Any()).
+					Update(ctx, gomock.Any(), gomock.Any()).
 					Return(nil).
 					Times(1)
 			},
@@ -807,7 +807,7 @@ func TestEntry_Delete(t *testing.T) {
 			setMockEntryServ: func(ctx context.Context, entryServ *mockService.MockEntryService) {
 				entryServ.
 					EXPECT().
-					Delete(ctx, gomock.Any(), gomock.Any()).
+					Delete(ctx, gomock.Any()).
 					Return(nil).
 					Times(1)
 			},
@@ -903,7 +903,7 @@ func TestEntry_Delete(t *testing.T) {
 			setMockEntryServ: func(ctx context.Context, entryServ *mockService.MockEntryService) {
 				entryServ.
 					EXPECT().
-					Delete(ctx, gomock.Any(), gomock.Any()).
+					Delete(ctx, gomock.Any()).
 					Return(sql.ErrConnDone).
 					Times(1)
 			},
@@ -947,7 +947,7 @@ func TestEntry_Delete(t *testing.T) {
 			setMockEntryServ: func(ctx context.Context, entryServ *mockService.MockEntryService) {
 				entryServ.
 					EXPECT().
-					Delete(ctx, gomock.Any(), gomock.Any()).
+					Delete(ctx, gomock.Any()).
 					Return(nil).
 					Times(1)
 			},

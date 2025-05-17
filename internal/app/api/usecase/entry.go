@@ -84,7 +84,7 @@ func (u *entryUsecase) Create(ctx context.Context, accountID uuid.UUID, volumeNa
 			return err
 		}
 
-		if err := u.entryServ.Create(ctx, volume, entry, bodyReader); err != nil {
+		if err := u.entryServ.Create(ctx, entry, bodyReader); err != nil {
 			return err
 		}
 
@@ -125,7 +125,7 @@ func (u *entryUsecase) Update(ctx context.Context, accountID uuid.UUID, volumeNa
 			return err
 		}
 
-		if err := u.entryServ.Update(ctx, volume, entry, key); err != nil {
+		if err := u.entryServ.Update(ctx, entry, key); err != nil {
 			return err
 		}
 
@@ -157,7 +157,7 @@ func (u *entryUsecase) Delete(ctx context.Context, accountID uuid.UUID, volumeNa
 			return ErrEntryNotFound
 		}
 
-		if err := u.entryServ.Delete(ctx, volume, entry); err != nil {
+		if err := u.entryServ.Delete(ctx, entry); err != nil {
 			return err
 		}
 
