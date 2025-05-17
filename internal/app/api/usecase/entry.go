@@ -30,6 +30,7 @@ type EntryUsecase interface {
 type entryUsecase struct {
 	transactionObj transaction.TransactionObject
 	entryRepo      repository.EntryRepository
+	bodyRepo       repository.BodyRepository
 	volumeRepo     repository.VolumeRepository
 	entryServ      service.EntryService
 }
@@ -37,12 +38,14 @@ type entryUsecase struct {
 func NewEntryUsecase(
 	transactionObj transaction.TransactionObject,
 	entryRepo repository.EntryRepository,
+	bodyRepo repository.BodyRepository,
 	volumeRepo repository.VolumeRepository,
 	entryServ service.EntryService,
 ) EntryUsecase {
 	return &entryUsecase{
 		transactionObj: transactionObj,
 		entryRepo:      entryRepo,
+		bodyRepo:       bodyRepo,
 		volumeRepo:     volumeRepo,
 		entryServ:      entryServ,
 	}
@@ -81,7 +84,12 @@ func (u *entryUsecase) Create(ctx context.Context, accountID uuid.UUID, volumeNa
 			return err
 		}
 
-		return u.entryServ.Create(ctx, volume, entry, bodyReader)
+		if err := u.entryServ.Create(ctx, entry, bodyReader); err != nil {
+			return err
+		}
+
+		path := volume.Name + "/" + entry.Key
+		return u.bodyRepo.Create(path, bodyReader)
 	}); err != nil {
 		return nil, err
 	}
@@ -117,7 +125,13 @@ func (u *entryUsecase) Update(ctx context.Context, accountID uuid.UUID, volumeNa
 			return err
 		}
 
-		return u.entryServ.Update(ctx, volume, entry, key)
+		if err := u.entryServ.Update(ctx, entry, key); err != nil {
+			return err
+		}
+
+		src := volume.Name + "/" + key
+		dst := volume.Name + "/" + entry.Key
+		return u.bodyRepo.Update(src, dst)
 	}); err != nil {
 		return nil, err
 	}
@@ -143,6 +157,11 @@ func (u *entryUsecase) Delete(ctx context.Context, accountID uuid.UUID, volumeNa
 			return ErrEntryNotFound
 		}
 
-		return u.entryServ.Delete(ctx, volume, entry)
+		if err := u.entryServ.Delete(ctx, entry); err != nil {
+			return err
+		}
+
+		path := volume.Name + "/" + entry.Key
+		return u.bodyRepo.Delete(path)
 	})
 }

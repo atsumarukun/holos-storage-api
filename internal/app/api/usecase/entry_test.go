@@ -12,6 +12,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/google/uuid"
+	"github.com/spf13/afero"
 	"go.uber.org/mock/gomock"
 
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/domain/entity"
@@ -65,6 +66,7 @@ func TestEntry_Create(t *testing.T) {
 		expectResult          *dto.EntryDTO
 		expectError           error
 		setMockTransactionObj func(context.Context, *mockTransaction.MockTransactionObject)
+		setMockBodyRepo       func(context.Context, *mockRepository.MockBodyRepository)
 		setMockVolumeRepo     func(context.Context, *mockRepository.MockVolumeRepository)
 		setMockEntryServ      func(context.Context, *mockService.MockEntryService)
 	}{
@@ -86,6 +88,13 @@ func TestEntry_Create(t *testing.T) {
 					}).
 					Times(1)
 			},
+			setMockBodyRepo: func(_ context.Context, bodyRepo *mockRepository.MockBodyRepository) {
+				bodyRepo.
+					EXPECT().
+					Create(gomock.Any(), gomock.Any()).
+					Return(nil).
+					Times(1)
+			},
 			setMockVolumeRepo: func(ctx context.Context, volumeRepo *mockRepository.MockVolumeRepository) {
 				volumeRepo.
 					EXPECT().
@@ -101,7 +110,7 @@ func TestEntry_Create(t *testing.T) {
 					Times(1)
 				entryServ.
 					EXPECT().
-					Create(ctx, gomock.Any(), gomock.Any(), gomock.Any()).
+					Create(ctx, gomock.Any(), gomock.Any()).
 					Return(nil).
 					Times(1)
 			},
@@ -124,6 +133,7 @@ func TestEntry_Create(t *testing.T) {
 					}).
 					Times(1)
 			},
+			setMockBodyRepo: func(context.Context, *mockRepository.MockBodyRepository) {},
 			setMockVolumeRepo: func(ctx context.Context, volumeRepo *mockRepository.MockVolumeRepository) {
 				volumeRepo.
 					EXPECT().
@@ -151,6 +161,13 @@ func TestEntry_Create(t *testing.T) {
 					}).
 					Times(1)
 			},
+			setMockBodyRepo: func(_ context.Context, bodyRepo *mockRepository.MockBodyRepository) {
+				bodyRepo.
+					EXPECT().
+					Create(gomock.Any(), gomock.Any()).
+					Return(nil).
+					Times(1)
+			},
 			setMockVolumeRepo: func(ctx context.Context, volumeRepo *mockRepository.MockVolumeRepository) {
 				volumeRepo.
 					EXPECT().
@@ -166,7 +183,7 @@ func TestEntry_Create(t *testing.T) {
 					Times(1)
 				entryServ.
 					EXPECT().
-					Create(ctx, gomock.Any(), gomock.Any(), gomock.Any()).
+					Create(ctx, gomock.Any(), gomock.Any()).
 					Return(nil).
 					Times(1)
 			},
@@ -189,6 +206,7 @@ func TestEntry_Create(t *testing.T) {
 					}).
 					Times(1)
 			},
+			setMockBodyRepo: func(context.Context, *mockRepository.MockBodyRepository) {},
 			setMockVolumeRepo: func(ctx context.Context, volumeRepo *mockRepository.MockVolumeRepository) {
 				volumeRepo.
 					EXPECT().
@@ -222,6 +240,7 @@ func TestEntry_Create(t *testing.T) {
 					}).
 					Times(1)
 			},
+			setMockBodyRepo: func(context.Context, *mockRepository.MockBodyRepository) {},
 			setMockVolumeRepo: func(ctx context.Context, volumeRepo *mockRepository.MockVolumeRepository) {
 				volumeRepo.
 					EXPECT().
@@ -232,7 +251,7 @@ func TestEntry_Create(t *testing.T) {
 			setMockEntryServ: func(context.Context, *mockService.MockEntryService) {},
 		},
 		{
-			name:            "create error",
+			name:            "create entry error",
 			inputAccountID:  accountID,
 			inputVolumeName: volume.Name,
 			inputKey:        "test/sample.txt",
@@ -247,6 +266,52 @@ func TestEntry_Create(t *testing.T) {
 					DoAndReturn(func(ctx context.Context, fn func(context.Context) error) error {
 						return fn(ctx)
 					}).
+					Times(1)
+			},
+			setMockBodyRepo: func(context.Context, *mockRepository.MockBodyRepository) {},
+			setMockVolumeRepo: func(ctx context.Context, volumeRepo *mockRepository.MockVolumeRepository) {
+				volumeRepo.
+					EXPECT().
+					FindOneByNameAndAccountID(ctx, gomock.Any(), gomock.Any()).
+					Return(volume, nil).
+					Times(1)
+			},
+			setMockEntryServ: func(ctx context.Context, entryServ *mockService.MockEntryService) {
+				entryServ.
+					EXPECT().
+					Exists(ctx, gomock.Any()).
+					Return(nil).
+					Times(1)
+				entryServ.
+					EXPECT().
+					Create(ctx, gomock.Any(), gomock.Any()).
+					Return(sql.ErrConnDone).
+					Times(1)
+			},
+		},
+		{
+			name:            "create body error",
+			inputAccountID:  accountID,
+			inputVolumeName: volume.Name,
+			inputKey:        "test/sample.txt",
+			inputSize:       4,
+			inputBody:       bytes.NewBufferString("test"),
+			expectResult:    nil,
+			expectError:     io.ErrNoProgress,
+			setMockTransactionObj: func(ctx context.Context, transactionObj *mockTransaction.MockTransactionObject) {
+				transactionObj.
+					EXPECT().
+					Transaction(ctx, gomock.Any()).
+					DoAndReturn(func(ctx context.Context, fn func(context.Context) error) error {
+						return fn(ctx)
+					}).
+					Times(1)
+			},
+			setMockBodyRepo: func(_ context.Context, bodyRepo *mockRepository.MockBodyRepository) {
+				bodyRepo.
+					EXPECT().
+					Create(gomock.Any(), gomock.Any()).
+					Return(io.ErrNoProgress).
 					Times(1)
 			},
 			setMockVolumeRepo: func(ctx context.Context, volumeRepo *mockRepository.MockVolumeRepository) {
@@ -264,8 +329,8 @@ func TestEntry_Create(t *testing.T) {
 					Times(1)
 				entryServ.
 					EXPECT().
-					Create(ctx, gomock.Any(), gomock.Any(), gomock.Any()).
-					Return(sql.ErrConnDone).
+					Create(ctx, gomock.Any(), gomock.Any()).
+					Return(nil).
 					Times(1)
 			},
 		},
@@ -280,13 +345,16 @@ func TestEntry_Create(t *testing.T) {
 			transactionObj := mockTransaction.NewMockTransactionObject(ctrl)
 			tt.setMockTransactionObj(ctx, transactionObj)
 
+			bodyRepo := mockRepository.NewMockBodyRepository(ctrl)
+			tt.setMockBodyRepo(ctx, bodyRepo)
+
 			volumeRepo := mockRepository.NewMockVolumeRepository(ctrl)
 			tt.setMockVolumeRepo(ctx, volumeRepo)
 
 			entryServ := mockService.NewMockEntryService(ctrl)
 			tt.setMockEntryServ(ctx, entryServ)
 
-			uc := usecase.NewEntryUsecase(transactionObj, nil, volumeRepo, entryServ)
+			uc := usecase.NewEntryUsecase(transactionObj, nil, bodyRepo, volumeRepo, entryServ)
 			result, err := uc.Create(ctx, tt.inputAccountID, tt.inputVolumeName, tt.inputKey, tt.inputSize, tt.inputBody)
 			if !errors.Is(err, tt.expectError) {
 				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
@@ -342,6 +410,7 @@ func TestEntry_Update(t *testing.T) {
 		expectError           error
 		setMockTransactionObj func(context.Context, *mockTransaction.MockTransactionObject)
 		setMockEntryRepo      func(context.Context, *mockRepository.MockEntryRepository)
+		setMockBodyRepo       func(context.Context, *mockRepository.MockBodyRepository)
 		setMockVolumeRepo     func(context.Context, *mockRepository.MockVolumeRepository)
 		setMockEntryServ      func(context.Context, *mockService.MockEntryService)
 	}{
@@ -369,6 +438,13 @@ func TestEntry_Update(t *testing.T) {
 					Return(entry, nil).
 					Times(1)
 			},
+			setMockBodyRepo: func(_ context.Context, bodyRepo *mockRepository.MockBodyRepository) {
+				bodyRepo.
+					EXPECT().
+					Update(gomock.Any(), gomock.Any()).
+					Return(nil).
+					Times(1)
+			},
 			setMockVolumeRepo: func(ctx context.Context, volumeRepo *mockRepository.MockVolumeRepository) {
 				volumeRepo.
 					EXPECT().
@@ -384,7 +460,7 @@ func TestEntry_Update(t *testing.T) {
 					Times(1)
 				entryServ.
 					EXPECT().
-					Update(ctx, gomock.Any(), gomock.Any(), gomock.Any()).
+					Update(ctx, gomock.Any(), gomock.Any()).
 					Return(nil).
 					Times(1)
 			},
@@ -413,6 +489,7 @@ func TestEntry_Update(t *testing.T) {
 					Return(entry, nil).
 					Times(1)
 			},
+			setMockBodyRepo: func(context.Context, *mockRepository.MockBodyRepository) {},
 			setMockVolumeRepo: func(ctx context.Context, volumeRepo *mockRepository.MockVolumeRepository) {
 				volumeRepo.
 					EXPECT().
@@ -440,6 +517,7 @@ func TestEntry_Update(t *testing.T) {
 					Times(1)
 			},
 			setMockEntryRepo: func(context.Context, *mockRepository.MockEntryRepository) {},
+			setMockBodyRepo:  func(context.Context, *mockRepository.MockBodyRepository) {},
 			setMockVolumeRepo: func(ctx context.Context, volumeRepo *mockRepository.MockVolumeRepository) {
 				volumeRepo.
 					EXPECT().
@@ -473,6 +551,7 @@ func TestEntry_Update(t *testing.T) {
 					Return(nil, nil).
 					Times(1)
 			},
+			setMockBodyRepo: func(context.Context, *mockRepository.MockBodyRepository) {},
 			setMockVolumeRepo: func(ctx context.Context, volumeRepo *mockRepository.MockVolumeRepository) {
 				volumeRepo.
 					EXPECT().
@@ -506,6 +585,7 @@ func TestEntry_Update(t *testing.T) {
 					Return(entry, nil).
 					Times(1)
 			},
+			setMockBodyRepo: func(context.Context, *mockRepository.MockBodyRepository) {},
 			setMockVolumeRepo: func(ctx context.Context, volumeRepo *mockRepository.MockVolumeRepository) {
 				volumeRepo.
 					EXPECT().
@@ -522,7 +602,7 @@ func TestEntry_Update(t *testing.T) {
 			},
 		},
 		{
-			name:            "update error",
+			name:            "update entry error",
 			inputAccountID:  entry.AccountID,
 			inputVolumeName: "volume",
 			inputKey:        "test/sample.txt",
@@ -545,6 +625,7 @@ func TestEntry_Update(t *testing.T) {
 					Return(entry, nil).
 					Times(1)
 			},
+			setMockBodyRepo: func(context.Context, *mockRepository.MockBodyRepository) {},
 			setMockVolumeRepo: func(ctx context.Context, volumeRepo *mockRepository.MockVolumeRepository) {
 				volumeRepo.
 					EXPECT().
@@ -560,8 +641,59 @@ func TestEntry_Update(t *testing.T) {
 					Times(1)
 				entryServ.
 					EXPECT().
-					Update(ctx, gomock.Any(), gomock.Any(), gomock.Any()).
+					Update(ctx, gomock.Any(), gomock.Any()).
 					Return(sql.ErrConnDone).
+					Times(1)
+			},
+		},
+		{
+			name:            "update body error",
+			inputAccountID:  entry.AccountID,
+			inputVolumeName: "volume",
+			inputKey:        "test/sample.txt",
+			inputNewKey:     "update/sample.txt",
+			expectResult:    nil,
+			expectError:     afero.ErrFileClosed,
+			setMockTransactionObj: func(ctx context.Context, transactionObj *mockTransaction.MockTransactionObject) {
+				transactionObj.
+					EXPECT().
+					Transaction(ctx, gomock.Any()).
+					DoAndReturn(func(ctx context.Context, fn func(context.Context) error) error {
+						return fn(ctx)
+					}).
+					Times(1)
+			},
+			setMockEntryRepo: func(ctx context.Context, entryRepo *mockRepository.MockEntryRepository) {
+				entryRepo.
+					EXPECT().
+					FindOneByKeyAndVolumeIDAndAccountID(ctx, gomock.Any(), gomock.Any(), gomock.Any()).
+					Return(entry, nil).
+					Times(1)
+			},
+			setMockBodyRepo: func(_ context.Context, bodyRepo *mockRepository.MockBodyRepository) {
+				bodyRepo.
+					EXPECT().
+					Update(gomock.Any(), gomock.Any()).
+					Return(afero.ErrFileClosed).
+					Times(1)
+			},
+			setMockVolumeRepo: func(ctx context.Context, volumeRepo *mockRepository.MockVolumeRepository) {
+				volumeRepo.
+					EXPECT().
+					FindOneByNameAndAccountID(ctx, gomock.Any(), gomock.Any()).
+					Return(volume, nil).
+					Times(1)
+			},
+			setMockEntryServ: func(ctx context.Context, entryServ *mockService.MockEntryService) {
+				entryServ.
+					EXPECT().
+					Exists(ctx, gomock.Any()).
+					Return(nil).
+					Times(1)
+				entryServ.
+					EXPECT().
+					Update(ctx, gomock.Any(), gomock.Any()).
+					Return(nil).
 					Times(1)
 			},
 		},
@@ -579,13 +711,16 @@ func TestEntry_Update(t *testing.T) {
 			entryRepo := mockRepository.NewMockEntryRepository(ctrl)
 			tt.setMockEntryRepo(ctx, entryRepo)
 
+			bodyRepo := mockRepository.NewMockBodyRepository(ctrl)
+			tt.setMockBodyRepo(ctx, bodyRepo)
+
 			volumeRepo := mockRepository.NewMockVolumeRepository(ctrl)
 			tt.setMockVolumeRepo(ctx, volumeRepo)
 
 			entryServ := mockService.NewMockEntryService(ctrl)
 			tt.setMockEntryServ(ctx, entryServ)
 
-			uc := usecase.NewEntryUsecase(transactionObj, entryRepo, volumeRepo, entryServ)
+			uc := usecase.NewEntryUsecase(transactionObj, entryRepo, bodyRepo, volumeRepo, entryServ)
 			result, err := uc.Update(ctx, tt.inputAccountID, tt.inputVolumeName, tt.inputKey, tt.inputNewKey)
 			if !errors.Is(err, tt.expectError) {
 				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
@@ -629,6 +764,7 @@ func TestEntry_Delete(t *testing.T) {
 		expectError           error
 		setMockTransactionObj func(context.Context, *mockTransaction.MockTransactionObject)
 		setMockEntryRepo      func(context.Context, *mockRepository.MockEntryRepository)
+		setMockBodyRepo       func(context.Context, *mockRepository.MockBodyRepository)
 		setMockVolumeRepo     func(context.Context, *mockRepository.MockVolumeRepository)
 		setMockEntryServ      func(context.Context, *mockService.MockEntryService)
 	}{
@@ -654,6 +790,13 @@ func TestEntry_Delete(t *testing.T) {
 					Return(entry, nil).
 					Times(1)
 			},
+			setMockBodyRepo: func(_ context.Context, bodyRepo *mockRepository.MockBodyRepository) {
+				bodyRepo.
+					EXPECT().
+					Delete(gomock.Any()).
+					Return(nil).
+					Times(1)
+			},
 			setMockVolumeRepo: func(ctx context.Context, volumeRepo *mockRepository.MockVolumeRepository) {
 				volumeRepo.
 					EXPECT().
@@ -664,7 +807,7 @@ func TestEntry_Delete(t *testing.T) {
 			setMockEntryServ: func(ctx context.Context, entryServ *mockService.MockEntryService) {
 				entryServ.
 					EXPECT().
-					Delete(ctx, gomock.Any(), gomock.Any()).
+					Delete(ctx, gomock.Any()).
 					Return(nil).
 					Times(1)
 			},
@@ -685,6 +828,7 @@ func TestEntry_Delete(t *testing.T) {
 					Times(1)
 			},
 			setMockEntryRepo: func(context.Context, *mockRepository.MockEntryRepository) {},
+			setMockBodyRepo:  func(context.Context, *mockRepository.MockBodyRepository) {},
 			setMockVolumeRepo: func(ctx context.Context, volumeRepo *mockRepository.MockVolumeRepository) {
 				volumeRepo.
 					EXPECT().
@@ -716,6 +860,7 @@ func TestEntry_Delete(t *testing.T) {
 					Return(nil, nil).
 					Times(1)
 			},
+			setMockBodyRepo: func(context.Context, *mockRepository.MockBodyRepository) {},
 			setMockVolumeRepo: func(ctx context.Context, volumeRepo *mockRepository.MockVolumeRepository) {
 				volumeRepo.
 					EXPECT().
@@ -726,7 +871,7 @@ func TestEntry_Delete(t *testing.T) {
 			setMockEntryServ: func(context.Context, *mockService.MockEntryService) {},
 		},
 		{
-			name:            "delete error",
+			name:            "delete entry error",
 			inputAccountID:  entry.AccountID,
 			inputVolumeName: "volume",
 			inputKey:        "test/sample.txt",
@@ -747,6 +892,7 @@ func TestEntry_Delete(t *testing.T) {
 					Return(entry, nil).
 					Times(1)
 			},
+			setMockBodyRepo: func(context.Context, *mockRepository.MockBodyRepository) {},
 			setMockVolumeRepo: func(ctx context.Context, volumeRepo *mockRepository.MockVolumeRepository) {
 				volumeRepo.
 					EXPECT().
@@ -757,8 +903,52 @@ func TestEntry_Delete(t *testing.T) {
 			setMockEntryServ: func(ctx context.Context, entryServ *mockService.MockEntryService) {
 				entryServ.
 					EXPECT().
-					Delete(ctx, gomock.Any(), gomock.Any()).
+					Delete(ctx, gomock.Any()).
 					Return(sql.ErrConnDone).
+					Times(1)
+			},
+		},
+		{
+			name:            "delete body error",
+			inputAccountID:  entry.AccountID,
+			inputVolumeName: "volume",
+			inputKey:        "test/sample.txt",
+			expectError:     afero.ErrFileClosed,
+			setMockTransactionObj: func(ctx context.Context, transactionObj *mockTransaction.MockTransactionObject) {
+				transactionObj.
+					EXPECT().
+					Transaction(ctx, gomock.Any()).
+					DoAndReturn(func(ctx context.Context, fn func(context.Context) error) error {
+						return fn(ctx)
+					}).
+					Times(1)
+			},
+			setMockEntryRepo: func(ctx context.Context, entryRepo *mockRepository.MockEntryRepository) {
+				entryRepo.
+					EXPECT().
+					FindOneByKeyAndVolumeIDAndAccountID(ctx, gomock.Any(), gomock.Any(), gomock.Any()).
+					Return(entry, nil).
+					Times(1)
+			},
+			setMockBodyRepo: func(_ context.Context, bodyRepo *mockRepository.MockBodyRepository) {
+				bodyRepo.
+					EXPECT().
+					Delete(gomock.Any()).
+					Return(afero.ErrFileClosed).
+					Times(1)
+			},
+			setMockVolumeRepo: func(ctx context.Context, volumeRepo *mockRepository.MockVolumeRepository) {
+				volumeRepo.
+					EXPECT().
+					FindOneByNameAndAccountID(ctx, gomock.Any(), gomock.Any()).
+					Return(volume, nil).
+					Times(1)
+			},
+			setMockEntryServ: func(ctx context.Context, entryServ *mockService.MockEntryService) {
+				entryServ.
+					EXPECT().
+					Delete(ctx, gomock.Any()).
+					Return(nil).
 					Times(1)
 			},
 		},
@@ -776,13 +966,16 @@ func TestEntry_Delete(t *testing.T) {
 			entryRepo := mockRepository.NewMockEntryRepository(ctrl)
 			tt.setMockEntryRepo(ctx, entryRepo)
 
+			bodyRepo := mockRepository.NewMockBodyRepository(ctrl)
+			tt.setMockBodyRepo(ctx, bodyRepo)
+
 			volumeRepo := mockRepository.NewMockVolumeRepository(ctrl)
 			tt.setMockVolumeRepo(ctx, volumeRepo)
 
 			entryServ := mockService.NewMockEntryService(ctrl)
 			tt.setMockEntryServ(ctx, entryServ)
 
-			uc := usecase.NewEntryUsecase(transactionObj, entryRepo, volumeRepo, entryServ)
+			uc := usecase.NewEntryUsecase(transactionObj, entryRepo, bodyRepo, volumeRepo, entryServ)
 			if err := uc.Delete(ctx, tt.inputAccountID, tt.inputVolumeName, tt.inputKey); !errors.Is(err, tt.expectError) {
 				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
 			}

@@ -33,11 +33,11 @@ func inject(db *sqlx.DB, fs afero.Fs, config *serverConfig) {
 	bodyRepo := file.NewBodyRepository(fs, config.fileSystem.BasePath)
 
 	volumeServ := service.NewVolumeService(volumeRepo)
-	entryServ := service.NewEntryService(entryRepo, bodyRepo)
+	entryServ := service.NewEntryService(entryRepo)
 
 	authorizationUC := usecase.NewAuthorizationUsecase(accountRepo)
 	volumeUC := usecase.NewVolumeUsecase(transactionObj, volumeRepo, volumeServ)
-	entryUC := usecase.NewEntryUsecase(transactionObj, entryRepo, volumeRepo, entryServ)
+	entryUC := usecase.NewEntryUsecase(transactionObj, entryRepo, bodyRepo, volumeRepo, entryServ)
 
 	authorizationMW = middleware.NewAuthorizationMiddleware(authorizationUC)
 

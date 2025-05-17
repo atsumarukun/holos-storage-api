@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/spf13/afero"
 	"go.uber.org/mock/gomock"
 
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/domain/entity"
@@ -89,7 +88,7 @@ func TestEntry_Exists(t *testing.T) {
 			entryRepo := mockRepository.NewMockEntryRepository(ctrl)
 			tt.setMockEntryRepo(ctx, entryRepo)
 
-			serv := service.NewEntryService(entryRepo, nil)
+			serv := service.NewEntryService(entryRepo)
 			if err := serv.Exists(ctx, tt.inputEntry); !errors.Is(err, tt.expectError) {
 				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
 			}
@@ -99,18 +98,11 @@ func TestEntry_Exists(t *testing.T) {
 
 func TestEntry_Create(t *testing.T) {
 	accountID := uuid.New()
-	volume := &entity.Volume{
-		ID:        uuid.New(),
-		AccountID: accountID,
-		Name:      "name",
-		IsPublic:  false,
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
-	}
+	volumeID := uuid.New()
 	entry := &entity.Entry{
 		ID:        uuid.New(),
 		AccountID: accountID,
-		VolumeID:  volume.ID,
+		VolumeID:  volumeID,
 		Key:       "test/sample.txt",
 		Size:      10000,
 		Type:      "text/plain",
@@ -120,7 +112,7 @@ func TestEntry_Create(t *testing.T) {
 	parentEntry := &entity.Entry{
 		ID:        uuid.New(),
 		AccountID: accountID,
-		VolumeID:  volume.ID,
+		VolumeID:  volumeID,
 		Key:       "test",
 		Size:      0,
 		Type:      "folder",
@@ -130,16 +122,13 @@ func TestEntry_Create(t *testing.T) {
 
 	tests := []struct {
 		name             string
-		inputVolume      *entity.Volume
 		inputEntry       *entity.Entry
 		inputBody        io.Reader
 		expectError      error
 		setMockEntryRepo func(context.Context, *mockRepository.MockEntryRepository)
-		setMockBodyRepo  func(context.Context, *mockRepository.MockBodyRepository)
 	}{
 		{
 			name:        "success",
-			inputVolume: volume,
 			inputEntry:  entry,
 			inputBody:   bytes.NewBufferString("test"),
 			expectError: nil,
@@ -155,61 +144,16 @@ func TestEntry_Create(t *testing.T) {
 					Return(nil).
 					AnyTimes()
 			},
-			setMockBodyRepo: func(_ context.Context, bodyRepo *mockRepository.MockBodyRepository) {
-				bodyRepo.
-					EXPECT().
-					Create(gomock.Any(), gomock.Any()).
-					Return(nil).
-					Times(1)
-			},
-		},
-		{
-			name:             "volume is nil",
-			inputVolume:      nil,
-			inputEntry:       entry,
-			inputBody:        bytes.NewBufferString("test"),
-			expectError:      service.ErrRequiredVolume,
-			setMockEntryRepo: func(context.Context, *mockRepository.MockEntryRepository) {},
-			setMockBodyRepo:  func(context.Context, *mockRepository.MockBodyRepository) {},
 		},
 		{
 			name:             "entry is nil",
-			inputVolume:      volume,
 			inputEntry:       nil,
 			inputBody:        bytes.NewBufferString("test"),
 			expectError:      service.ErrRequiredEntry,
 			setMockEntryRepo: func(context.Context, *mockRepository.MockEntryRepository) {},
-			setMockBodyRepo:  func(context.Context, *mockRepository.MockBodyRepository) {},
-		},
-		{
-			name:        "body is nil",
-			inputVolume: volume,
-			inputEntry:  entry,
-			inputBody:   nil,
-			expectError: nil,
-			setMockEntryRepo: func(ctx context.Context, entryRepo *mockRepository.MockEntryRepository) {
-				entryRepo.
-					EXPECT().
-					FindOneByKeyAndVolumeID(ctx, parentEntry.Key, parentEntry.VolumeID).
-					Return(parentEntry, nil).
-					AnyTimes()
-				entryRepo.
-					EXPECT().
-					Create(ctx, gomock.Any()).
-					Return(nil).
-					AnyTimes()
-			},
-			setMockBodyRepo: func(_ context.Context, bodyRepo *mockRepository.MockBodyRepository) {
-				bodyRepo.
-					EXPECT().
-					Create(gomock.Any(), gomock.Any()).
-					Return(nil).
-					Times(1)
-			},
 		},
 		{
 			name:        "parent entry already exists",
-			inputVolume: volume,
 			inputEntry:  entry,
 			inputBody:   bytes.NewBufferString("test"),
 			expectError: nil,
@@ -225,17 +169,9 @@ func TestEntry_Create(t *testing.T) {
 					Return(nil).
 					AnyTimes()
 			},
-			setMockBodyRepo: func(_ context.Context, bodyRepo *mockRepository.MockBodyRepository) {
-				bodyRepo.
-					EXPECT().
-					Create(gomock.Any(), gomock.Any()).
-					Return(nil).
-					Times(1)
-			},
 		},
 		{
 			name:        "find entry error",
-			inputVolume: volume,
 			inputEntry:  entry,
 			inputBody:   bytes.NewBufferString("test"),
 			expectError: sql.ErrConnDone,
@@ -246,11 +182,9 @@ func TestEntry_Create(t *testing.T) {
 					Return(nil, sql.ErrConnDone).
 					AnyTimes()
 			},
-			setMockBodyRepo: func(context.Context, *mockRepository.MockBodyRepository) {},
 		},
 		{
 			name:        "create entry error",
-			inputVolume: volume,
 			inputEntry:  entry,
 			inputBody:   bytes.NewBufferString("test"),
 			expectError: sql.ErrConnDone,
@@ -266,33 +200,6 @@ func TestEntry_Create(t *testing.T) {
 					Return(sql.ErrConnDone).
 					AnyTimes()
 			},
-			setMockBodyRepo: func(context.Context, *mockRepository.MockBodyRepository) {},
-		},
-		{
-			name:        "create body error",
-			inputVolume: volume,
-			inputEntry:  entry,
-			inputBody:   bytes.NewBufferString("test"),
-			expectError: io.ErrNoProgress,
-			setMockEntryRepo: func(ctx context.Context, entryRepo *mockRepository.MockEntryRepository) {
-				entryRepo.
-					EXPECT().
-					FindOneByKeyAndVolumeID(ctx, parentEntry.Key, parentEntry.VolumeID).
-					Return(nil, nil).
-					AnyTimes()
-				entryRepo.
-					EXPECT().
-					Create(ctx, gomock.Any()).
-					Return(nil).
-					AnyTimes()
-			},
-			setMockBodyRepo: func(_ context.Context, bodyRepo *mockRepository.MockBodyRepository) {
-				bodyRepo.
-					EXPECT().
-					Create(gomock.Any(), gomock.Any()).
-					Return(io.ErrNoProgress).
-					Times(1)
-			},
 		},
 	}
 	for _, tt := range tests {
@@ -305,11 +212,8 @@ func TestEntry_Create(t *testing.T) {
 			entryRepo := mockRepository.NewMockEntryRepository(ctrl)
 			tt.setMockEntryRepo(ctx, entryRepo)
 
-			bodyRepo := mockRepository.NewMockBodyRepository(ctrl)
-			tt.setMockBodyRepo(ctx, bodyRepo)
-
-			serv := service.NewEntryService(entryRepo, bodyRepo)
-			if err := serv.Create(ctx, tt.inputVolume, tt.inputEntry, tt.inputBody); !errors.Is(err, tt.expectError) {
+			serv := service.NewEntryService(entryRepo)
+			if err := serv.Create(ctx, tt.inputEntry, tt.inputBody); !errors.Is(err, tt.expectError) {
 				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
 			}
 		})
@@ -318,18 +222,11 @@ func TestEntry_Create(t *testing.T) {
 
 func TestEntry_Update(t *testing.T) {
 	accountID := uuid.New()
-	volume := &entity.Volume{
-		ID:        uuid.New(),
-		AccountID: accountID,
-		Name:      "name",
-		IsPublic:  false,
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
-	}
+	volumeID := uuid.New()
 	entry := &entity.Entry{
 		ID:        uuid.New(),
 		AccountID: accountID,
-		VolumeID:  volume.ID,
+		VolumeID:  volumeID,
 		Key:       "test",
 		Size:      0,
 		Type:      "folder",
@@ -339,7 +236,7 @@ func TestEntry_Update(t *testing.T) {
 	childEntry := &entity.Entry{
 		ID:        uuid.New(),
 		AccountID: accountID,
-		VolumeID:  volume.ID,
+		VolumeID:  volumeID,
 		Key:       "test/sample.txt",
 		Size:      10000,
 		Type:      "text/plain",
@@ -349,16 +246,13 @@ func TestEntry_Update(t *testing.T) {
 
 	tests := []struct {
 		name             string
-		inputVolume      *entity.Volume
 		inputEntry       *entity.Entry
 		inputSrc         string
 		expectError      error
 		setMockEntryRepo func(context.Context, *mockRepository.MockEntryRepository)
-		setMockBodyRepo  func(context.Context, *mockRepository.MockBodyRepository)
 	}{
 		{
 			name:        "success",
-			inputVolume: volume,
 			inputEntry:  entry,
 			inputSrc:    "update",
 			expectError: nil,
@@ -374,35 +268,16 @@ func TestEntry_Update(t *testing.T) {
 					Return(nil).
 					AnyTimes()
 			},
-			setMockBodyRepo: func(_ context.Context, bodyRepo *mockRepository.MockBodyRepository) {
-				bodyRepo.
-					EXPECT().
-					Update(gomock.Any(), gomock.Any()).
-					Return(nil).
-					Times(1)
-			},
-		},
-		{
-			name:             "volume is nil",
-			inputVolume:      nil,
-			inputEntry:       entry,
-			inputSrc:         "update",
-			expectError:      service.ErrRequiredVolume,
-			setMockEntryRepo: func(context.Context, *mockRepository.MockEntryRepository) {},
-			setMockBodyRepo:  func(context.Context, *mockRepository.MockBodyRepository) {},
 		},
 		{
 			name:             "entry is nil",
-			inputVolume:      volume,
 			inputEntry:       nil,
 			inputSrc:         "update",
 			expectError:      service.ErrRequiredEntry,
 			setMockEntryRepo: func(context.Context, *mockRepository.MockEntryRepository) {},
-			setMockBodyRepo:  func(context.Context, *mockRepository.MockBodyRepository) {},
 		},
 		{
 			name:        "find entry error",
-			inputVolume: volume,
 			inputEntry:  entry,
 			inputSrc:    "update",
 			expectError: sql.ErrConnDone,
@@ -413,11 +288,9 @@ func TestEntry_Update(t *testing.T) {
 					Return(nil, sql.ErrConnDone).
 					AnyTimes()
 			},
-			setMockBodyRepo: func(context.Context, *mockRepository.MockBodyRepository) {},
 		},
 		{
 			name:        "update entry error",
-			inputVolume: volume,
 			inputEntry:  entry,
 			inputSrc:    "update",
 			expectError: sql.ErrConnDone,
@@ -433,33 +306,6 @@ func TestEntry_Update(t *testing.T) {
 					Return(sql.ErrConnDone).
 					AnyTimes()
 			},
-			setMockBodyRepo: func(context.Context, *mockRepository.MockBodyRepository) {},
-		},
-		{
-			name:        "update body error",
-			inputVolume: volume,
-			inputEntry:  entry,
-			inputSrc:    "update",
-			expectError: afero.ErrFileClosed,
-			setMockEntryRepo: func(ctx context.Context, entryRepo *mockRepository.MockEntryRepository) {
-				entryRepo.
-					EXPECT().
-					FindByKeyPrefixAndAccountID(ctx, "update/", entry.AccountID).
-					Return([]*entity.Entry{childEntry}, nil).
-					AnyTimes()
-				entryRepo.
-					EXPECT().
-					Update(ctx, gomock.Any()).
-					Return(nil).
-					AnyTimes()
-			},
-			setMockBodyRepo: func(_ context.Context, bodyRepo *mockRepository.MockBodyRepository) {
-				bodyRepo.
-					EXPECT().
-					Update(gomock.Any(), gomock.Any()).
-					Return(afero.ErrFileClosed).
-					Times(1)
-			},
 		},
 	}
 	for _, tt := range tests {
@@ -472,11 +318,8 @@ func TestEntry_Update(t *testing.T) {
 			entryRepo := mockRepository.NewMockEntryRepository(ctrl)
 			tt.setMockEntryRepo(ctx, entryRepo)
 
-			bodyRepo := mockRepository.NewMockBodyRepository(ctrl)
-			tt.setMockBodyRepo(ctx, bodyRepo)
-
-			serv := service.NewEntryService(entryRepo, bodyRepo)
-			if err := serv.Update(ctx, tt.inputVolume, tt.inputEntry, tt.inputSrc); !errors.Is(err, tt.expectError) {
+			serv := service.NewEntryService(entryRepo)
+			if err := serv.Update(ctx, tt.inputEntry, tt.inputSrc); !errors.Is(err, tt.expectError) {
 				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
 			}
 		})
@@ -485,18 +328,11 @@ func TestEntry_Update(t *testing.T) {
 
 func TestEntry_Delete(t *testing.T) {
 	accountID := uuid.New()
-	volume := &entity.Volume{
-		ID:        uuid.New(),
-		AccountID: accountID,
-		Name:      "name",
-		IsPublic:  false,
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
-	}
+	volumeID := uuid.New()
 	entry := &entity.Entry{
 		ID:        uuid.New(),
 		AccountID: accountID,
-		VolumeID:  volume.ID,
+		VolumeID:  volumeID,
 		Key:       "test",
 		Size:      0,
 		Type:      "folder",
@@ -506,7 +342,7 @@ func TestEntry_Delete(t *testing.T) {
 	childEntry := &entity.Entry{
 		ID:        uuid.New(),
 		AccountID: accountID,
-		VolumeID:  volume.ID,
+		VolumeID:  volumeID,
 		Key:       "test/sample.txt",
 		Size:      10000,
 		Type:      "text/plain",
@@ -516,15 +352,12 @@ func TestEntry_Delete(t *testing.T) {
 
 	tests := []struct {
 		name             string
-		inputVolume      *entity.Volume
 		inputEntry       *entity.Entry
 		expectError      error
 		setMockEntryRepo func(context.Context, *mockRepository.MockEntryRepository)
-		setMockBodyRepo  func(context.Context, *mockRepository.MockBodyRepository)
 	}{
 		{
 			name:        "success",
-			inputVolume: volume,
 			inputEntry:  entry,
 			expectError: nil,
 			setMockEntryRepo: func(ctx context.Context, entryRepo *mockRepository.MockEntryRepository) {
@@ -539,33 +372,15 @@ func TestEntry_Delete(t *testing.T) {
 					Return(nil).
 					AnyTimes()
 			},
-			setMockBodyRepo: func(_ context.Context, bodyRepo *mockRepository.MockBodyRepository) {
-				bodyRepo.
-					EXPECT().
-					Delete(gomock.Any()).
-					Return(nil).
-					Times(1)
-			},
-		},
-		{
-			name:             "volume is nil",
-			inputVolume:      nil,
-			inputEntry:       entry,
-			expectError:      service.ErrRequiredVolume,
-			setMockEntryRepo: func(context.Context, *mockRepository.MockEntryRepository) {},
-			setMockBodyRepo:  func(context.Context, *mockRepository.MockBodyRepository) {},
 		},
 		{
 			name:             "entry is nil",
-			inputVolume:      volume,
 			inputEntry:       nil,
 			expectError:      service.ErrRequiredEntry,
 			setMockEntryRepo: func(context.Context, *mockRepository.MockEntryRepository) {},
-			setMockBodyRepo:  func(context.Context, *mockRepository.MockBodyRepository) {},
 		},
 		{
 			name:        "find entry error",
-			inputVolume: volume,
 			inputEntry:  entry,
 			expectError: sql.ErrConnDone,
 			setMockEntryRepo: func(ctx context.Context, entryRepo *mockRepository.MockEntryRepository) {
@@ -575,11 +390,9 @@ func TestEntry_Delete(t *testing.T) {
 					Return(nil, sql.ErrConnDone).
 					AnyTimes()
 			},
-			setMockBodyRepo: func(context.Context, *mockRepository.MockBodyRepository) {},
 		},
 		{
 			name:        "delete entry error",
-			inputVolume: volume,
 			inputEntry:  entry,
 			expectError: sql.ErrConnDone,
 			setMockEntryRepo: func(ctx context.Context, entryRepo *mockRepository.MockEntryRepository) {
@@ -594,32 +407,6 @@ func TestEntry_Delete(t *testing.T) {
 					Return(sql.ErrConnDone).
 					AnyTimes()
 			},
-			setMockBodyRepo: func(context.Context, *mockRepository.MockBodyRepository) {},
-		},
-		{
-			name:        "delete body error",
-			inputVolume: volume,
-			inputEntry:  entry,
-			expectError: afero.ErrFileClosed,
-			setMockEntryRepo: func(ctx context.Context, entryRepo *mockRepository.MockEntryRepository) {
-				entryRepo.
-					EXPECT().
-					FindByKeyPrefixAndAccountID(ctx, "test/", entry.AccountID).
-					Return([]*entity.Entry{childEntry}, nil).
-					AnyTimes()
-				entryRepo.
-					EXPECT().
-					Delete(ctx, gomock.Any()).
-					Return(nil).
-					AnyTimes()
-			},
-			setMockBodyRepo: func(_ context.Context, bodyRepo *mockRepository.MockBodyRepository) {
-				bodyRepo.
-					EXPECT().
-					Delete(gomock.Any()).
-					Return(afero.ErrFileClosed).
-					Times(1)
-			},
 		},
 	}
 	for _, tt := range tests {
@@ -632,11 +419,8 @@ func TestEntry_Delete(t *testing.T) {
 			entryRepo := mockRepository.NewMockEntryRepository(ctrl)
 			tt.setMockEntryRepo(ctx, entryRepo)
 
-			bodyRepo := mockRepository.NewMockBodyRepository(ctrl)
-			tt.setMockBodyRepo(ctx, bodyRepo)
-
-			serv := service.NewEntryService(entryRepo, bodyRepo)
-			if err := serv.Delete(ctx, tt.inputVolume, tt.inputEntry); !errors.Is(err, tt.expectError) {
+			serv := service.NewEntryService(entryRepo)
+			if err := serv.Delete(ctx, tt.inputEntry); !errors.Is(err, tt.expectError) {
 				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
 			}
 		})
