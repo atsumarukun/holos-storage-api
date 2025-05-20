@@ -22,6 +22,7 @@ type EntryHandler interface {
 	Create(*gin.Context)
 	Update(*gin.Context)
 	Delete(*gin.Context)
+	Head(*gin.Context)
 }
 
 type entryHandler struct {
@@ -116,6 +117,8 @@ func (h *entryHandler) Delete(c *gin.Context) {
 
 	c.Status(http.StatusNoContent)
 }
+
+func (h *entryHandler) Head(c *gin.Context) {}
 
 func (h *entryHandler) openFile(fileHeader *multipart.FileHeader) (uint64, multipart.File, error) {
 	if fileHeader == nil {
