@@ -25,6 +25,7 @@ type EntryUsecase interface {
 	Create(context.Context, uuid.UUID, string, string, uint64, io.Reader) (*dto.EntryDTO, error)
 	Update(context.Context, uuid.UUID, string, string, string) (*dto.EntryDTO, error)
 	Delete(context.Context, uuid.UUID, string, string) error
+	Head(context.Context, uuid.UUID, string, string) (*dto.EntryDTO, error)
 }
 
 type entryUsecase struct {
@@ -164,4 +165,32 @@ func (u *entryUsecase) Delete(ctx context.Context, accountID uuid.UUID, volumeNa
 		path := volume.Name + "/" + entry.Key
 		return u.bodyRepo.Delete(path)
 	})
+}
+
+func (u *entryUsecase) Head(ctx context.Context, accountID uuid.UUID, volumeName, key string) (*dto.EntryDTO, error) {
+	var entry *entity.Entry
+
+	if err := u.transactionObj.Transaction(ctx, func(ctx context.Context) error {
+		volume, err := u.volumeRepo.FindOneByNameAndAccountID(ctx, volumeName, accountID)
+		if err != nil {
+			return err
+		}
+		if volume == nil {
+			return ErrVolumeNotFound
+		}
+
+		entry, err = u.entryRepo.FindOneByKeyAndVolumeIDAndAccountID(ctx, key, volume.ID, accountID)
+		if err != nil {
+			return err
+		}
+		if entry == nil {
+			return ErrEntryNotFound
+		}
+
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	return mapper.ToEntryDTO(entry), nil
 }

@@ -2,8 +2,10 @@ package handler
 
 import (
 	errs "errors"
+	"log"
 	"mime/multipart"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -22,6 +24,7 @@ type EntryHandler interface {
 	Create(*gin.Context)
 	Update(*gin.Context)
 	Delete(*gin.Context)
+	Head(*gin.Context)
 }
 
 type entryHandler struct {
@@ -115,6 +118,35 @@ func (h *entryHandler) Delete(c *gin.Context) {
 	}
 
 	c.Status(http.StatusNoContent)
+}
+
+func (h *entryHandler) Head(c *gin.Context) {
+	volumeName := c.Param("volumeName")
+	key := strings.TrimPrefix(c.Param("key"), "/")
+
+	accountID, err := parameter.GetContextParameter[uuid.UUID](c, "accountID")
+	if err != nil {
+		log.Println(err)
+		c.Header("Content-Length", "0")
+		c.Status(errors.GetStatusCode(err))
+		return
+	}
+
+	ctx := c.Request.Context()
+
+	entry, err := h.entryUC.Head(ctx, accountID, volumeName, key)
+	if err != nil {
+		log.Println(err)
+		c.Header("Content-Length", "0")
+		c.Status(errors.GetStatusCode(err))
+		return
+	}
+
+	c.Header("Content-Length", strconv.FormatUint(entry.Size, 10))
+	c.Header("Content-Type", entry.Type)
+	c.Header("Last-Modified", entry.UpdatedAt.Format(http.TimeFormat))
+
+	c.Status(http.StatusOK)
 }
 
 func (h *entryHandler) openFile(fileHeader *multipart.FileHeader) (uint64, multipart.File, error) {
