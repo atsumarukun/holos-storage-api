@@ -9,6 +9,7 @@ import (
 	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -379,6 +380,123 @@ func TestEntry_Delete(t *testing.T) {
 				if diff := cmp.Diff(&response, tt.expectResponse); diff != "" {
 					t.Error(diff)
 				}
+			}
+		})
+	}
+}
+
+func TestEntry_Head(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	id := uuid.New()
+	accountID := uuid.New()
+	volumeID := uuid.New()
+	entryDTO := &dto.EntryDTO{
+		ID:        id,
+		AccountID: accountID,
+		VolumeID:  volumeID,
+		Key:       "test/sample.txt",
+		Size:      4,
+		Type:      "text/plain; charset=utf-8",
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
+
+	tests := []struct {
+		name            string
+		isSetAccountID  bool
+		expectCode      int
+		expectSize      string
+		expectType      string
+		expectUpdatedAt string
+		setMockEntryUC  func(context.Context, *mockUsecase.MockEntryUsecase)
+	}{
+		{
+			name:            "success",
+			isSetAccountID:  true,
+			expectCode:      http.StatusOK,
+			expectSize:      strconv.FormatUint(entryDTO.Size, 10),
+			expectType:      entryDTO.Type,
+			expectUpdatedAt: entryDTO.UpdatedAt.Format(http.TimeFormat),
+			setMockEntryUC: func(ctx context.Context, entryUC *mockUsecase.MockEntryUsecase) {
+				entryUC.
+					EXPECT().
+					Head(ctx, gomock.Any(), gomock.Any(), gomock.Any()).
+					Return(entryDTO, nil).
+					Times(1)
+			},
+		},
+		{
+			name:            "account id not found",
+			isSetAccountID:  false,
+			expectCode:      http.StatusInternalServerError,
+			expectType:      "",
+			expectSize:      "0",
+			expectUpdatedAt: "",
+			setMockEntryUC:  func(context.Context, *mockUsecase.MockEntryUsecase) {},
+		},
+		{
+			name:            "head error",
+			isSetAccountID:  true,
+			expectCode:      http.StatusInternalServerError,
+			expectType:      "",
+			expectSize:      "0",
+			expectUpdatedAt: "",
+			setMockEntryUC: func(ctx context.Context, entryUC *mockUsecase.MockEntryUsecase) {
+				entryUC.
+					EXPECT().
+					Head(ctx, gomock.Any(), gomock.Any(), gomock.Any()).
+					Return(nil, sql.ErrConnDone).
+					Times(1)
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := t.Context()
+			w := httptest.NewRecorder()
+
+			c, _ := gin.CreateTestContext(w)
+			var err error
+			c.Request, err = http.NewRequestWithContext(ctx, "HEAD", "/entries/volume/test/sample.txt", http.NoBody)
+			if err != nil {
+				t.Error(err)
+			}
+			c.Params = append(
+				c.Params,
+				gin.Param{Key: "volumeName", Value: "volume"},
+				gin.Param{Key: "key", Value: "test/sample.txt"},
+			)
+			if tt.isSetAccountID {
+				c.Set("accountID", accountID)
+			}
+
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			entryUC := mockUsecase.NewMockEntryUsecase(ctrl)
+			tt.setMockEntryUC(ctx, entryUC)
+
+			hdl := handler.NewEntryHandler(entryUC)
+			hdl.Head(c)
+
+			c.Writer.WriteHeaderNow()
+
+			if w.Code != tt.expectCode {
+				t.Errorf("\nexpect: %v\ngot: %v", tt.expectCode, w.Code)
+			}
+
+			size := w.Header().Get("Content-Length")
+			if size != tt.expectSize {
+				t.Errorf("\nexpect: %v\ngot: %v", tt.expectSize, size)
+			}
+			contentType := w.Header().Get("Content-Type")
+			if contentType != tt.expectType {
+				t.Errorf("\nexpect: %v\ngot: %v", tt.expectType, contentType)
+			}
+			updatedAt := w.Header().Get("Last-Modified")
+			if updatedAt != tt.expectUpdatedAt {
+				t.Errorf("\nexpect: %v\ngot: %v", tt.expectUpdatedAt, updatedAt)
 			}
 		})
 	}
