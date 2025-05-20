@@ -297,6 +297,59 @@ paths:
           $ref: "#/components/responses/403"
         500:
           $ref: "#/components/responses/500"
+    head:
+      summary: "エントリー情報取得"
+      tags:
+        - "entries"
+      security:
+        - sessionAuth: []
+        - accessKeyAuth: []
+      parameters:
+        - in: "header"
+          name: "Authorization"
+          schema:
+            type: "string"
+          required: true
+          description: "セッショントークンまたはアクセスキー"
+          example: "Session 1Ty1HKTPKTt8xEi-_3HTbWf2SCHOdqOS"
+        - in: "path"
+          name: "volumeName"
+          schema:
+            type: "string"
+          required: true
+          description: "ボリューム名"
+          example: "volume_name"
+        - in: "path"
+          name: "key"
+          schema:
+            type: "string"
+          required: true
+          description: "キー"
+          example: "volume/entry.png"
+      responses:
+        200:
+          description: "Success"
+          headers:
+            Content-Length:
+              schema:
+                type: "integer"
+                example: 6937039
+            Content-Type:
+              schema:
+                type: "string"
+                example: "image/png"
+            Last-Modified:
+              schema:
+                type: "string"
+                example: "Wed, 07 May 2025 17:22:51 GMT"
+        400:
+          $ref: "#/components/responses/400"
+        401:
+          $ref: "#/components/responses/401"
+        403:
+          $ref: "#/components/responses/403"
+        500:
+          $ref: "#/components/responses/500"
     get:
       summary: "エントリー単体取得"
       tags:
