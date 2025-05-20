@@ -38,3 +38,10 @@ func Handle(c *gin.Context, err error) {
 	}
 	c.JSON(http.StatusInternalServerError, map[string]string{"message": "internal server error"})
 }
+
+func GetStatusCode(err error) int {
+	if v, ok := err.(*status.Status); ok {
+		return responseMap[v.Code()].code
+	}
+	return http.StatusInternalServerError
+}
