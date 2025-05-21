@@ -4,6 +4,7 @@ package usecase
 import (
 	"bytes"
 	"context"
+	"errors"
 	"io"
 	"net/http"
 
@@ -26,6 +27,7 @@ type EntryUsecase interface {
 	Update(context.Context, uuid.UUID, string, string, string) (*dto.EntryDTO, error)
 	Delete(context.Context, uuid.UUID, string, string) error
 	Head(context.Context, uuid.UUID, string, string) (*dto.EntryDTO, error)
+	Get(context.Context, uuid.UUID, string, string) (*dto.EntryDTO, io.ReadCloser, error)
 }
 
 type entryUsecase struct {
@@ -193,4 +195,8 @@ func (u *entryUsecase) Head(ctx context.Context, accountID uuid.UUID, volumeName
 	}
 
 	return mapper.ToEntryDTO(entry), nil
+}
+
+func (u *entryUsecase) Get(ctx context.Context, accountID uuid.UUID, volumeName, key string) (*dto.EntryDTO, io.ReadCloser, error) {
+	return nil, nil, errors.New("not implemented")
 }
