@@ -4,7 +4,6 @@ package usecase
 import (
 	"bytes"
 	"context"
-	"errors"
 	"io"
 	"net/http"
 
@@ -198,5 +197,32 @@ func (u *entryUsecase) Head(ctx context.Context, accountID uuid.UUID, volumeName
 }
 
 func (u *entryUsecase) Get(ctx context.Context, accountID uuid.UUID, volumeName, key string) (*dto.EntryDTO, io.ReadCloser, error) {
-	return nil, nil, errors.New("not implemented")
+	var entry *entity.Entry
+	var body io.ReadCloser
+
+	if err := u.transactionObj.Transaction(ctx, func(ctx context.Context) error {
+		volume, err := u.volumeRepo.FindOneByNameAndAccountID(ctx, volumeName, accountID)
+		if err != nil {
+			return err
+		}
+		if volume == nil {
+			return ErrVolumeNotFound
+		}
+
+		entry, err = u.entryRepo.FindOneByKeyAndVolumeIDAndAccountID(ctx, key, volume.ID, accountID)
+		if err != nil {
+			return err
+		}
+		if entry == nil {
+			return ErrEntryNotFound
+		}
+
+		path := volume.Name + "/" + entry.Key
+		body, err = u.bodyRepo.FindOneByPath(path)
+		return err
+	}); err != nil {
+		return nil, nil, err
+	}
+
+	return mapper.ToEntryDTO(entry), body, nil
 }
