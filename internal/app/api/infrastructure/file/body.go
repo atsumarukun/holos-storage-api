@@ -55,3 +55,16 @@ func (r *bodyRepository) Update(src, dst string) error {
 func (r *bodyRepository) Delete(path string) error {
 	return r.fs.RemoveAll(r.basePath + path)
 }
+
+func (r *bodyRepository) FindOneByPath(path string) (io.ReadCloser, error) {
+	info, err := r.fs.Stat(r.basePath + path)
+	if err != nil {
+		return nil, err
+	}
+
+	if info.IsDir() {
+		return nil, nil
+	}
+
+	return r.fs.Open(r.basePath + path)
+}

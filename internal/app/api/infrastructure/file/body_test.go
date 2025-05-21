@@ -6,6 +6,7 @@ import (
 	"io"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/spf13/afero"
 
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/infrastructure/file"
@@ -155,6 +156,59 @@ func TestBody_Delete(t *testing.T) {
 			}
 			if exists != tt.expectResult {
 				t.Errorf("\nexpect: %v\ngot: %v", tt.expectResult, exists)
+			}
+		})
+	}
+}
+
+func TestBody_FindOneByPath(t *testing.T) {
+	tests := []struct {
+		name         string
+		inputPath    string
+		expectResult []byte
+		expectError  error
+		setMockFS    func(fs afero.Fs)
+	}{
+		{
+			name:         "success",
+			inputPath:    "sample/test.txt",
+			expectResult: []byte("test"),
+			expectError:  nil,
+			setMockFS: func(fs afero.Fs) {
+				if err := afero.WriteFile(fs, "sample/test.txt", []byte("test"), 0o755); err != nil {
+					t.Error(err)
+				}
+			},
+		},
+		{
+			name:         "find error",
+			inputPath:    "sample/test.txt",
+			expectResult: nil,
+			expectError:  afero.ErrFileNotFound,
+			setMockFS:    func(afero.Fs) {},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			fs := afero.NewMemMapFs()
+			basePath := ""
+
+			tt.setMockFS(fs)
+
+			repo := file.NewBodyRepository(fs, basePath)
+			body, err := repo.FindOneByPath(tt.inputPath)
+			if !errors.Is(err, tt.expectError) {
+				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
+			}
+
+			if tt.expectResult != nil {
+				result, err := io.ReadAll(body)
+				if err != nil {
+					t.Error(err)
+				}
+				if diff := cmp.Diff(result, tt.expectResult); diff != "" {
+					t.Error(diff)
+				}
 			}
 		})
 	}
