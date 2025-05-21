@@ -176,7 +176,12 @@ func (h *entryHandler) Get(c *gin.Context) {
 		return
 	}
 
-	defer body.Close()
+	defer func() {
+		if err := body.Close(); err != nil {
+			errors.Handle(c, err)
+			return
+		}
+	}()
 
 	c.Header("Content-Length", strconv.FormatUint(entry.Size, 10))
 	c.Header("Content-Type", entry.Type)
