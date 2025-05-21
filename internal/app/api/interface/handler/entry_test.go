@@ -501,3 +501,109 @@ func TestEntry_Head(t *testing.T) {
 		})
 	}
 }
+
+func TestEntry_Get(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	id := uuid.New()
+	accountID := uuid.New()
+	volumeID := uuid.New()
+	entryDTO := &dto.EntryDTO{
+		ID:        id,
+		AccountID: accountID,
+		VolumeID:  volumeID,
+		Key:       "test/sample.txt",
+		Size:      4,
+		Type:      "text/plain; charset=utf-8",
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
+
+	tests := []struct {
+		name           string
+		isSetAccountID bool
+		expectCode     int
+		expectResponse []byte
+		setMockEntryUC func(context.Context, *mockUsecase.MockEntryUsecase)
+	}{
+		{
+			name:           "success",
+			isSetAccountID: true,
+			expectCode:     http.StatusOK,
+			expectResponse: []byte("test"),
+			setMockEntryUC: func(ctx context.Context, entryUC *mockUsecase.MockEntryUsecase) {
+				entryUC.
+					EXPECT().
+					Get(ctx, gomock.Any(), gomock.Any(), gomock.Any()).
+					Return(entryDTO, io.NopCloser(bytes.NewReader([]byte("test"))), nil).
+					Times(1)
+			},
+		},
+		{
+			name:           "account id not found",
+			isSetAccountID: false,
+			expectCode:     http.StatusInternalServerError,
+			expectResponse: []byte(`{"message":"internal server error"}`),
+			setMockEntryUC: func(context.Context, *mockUsecase.MockEntryUsecase) {},
+		},
+		{
+			name:           "get error",
+			isSetAccountID: true,
+			expectCode:     http.StatusInternalServerError,
+			expectResponse: []byte(`{"message":"internal server error"}`),
+			setMockEntryUC: func(ctx context.Context, entryUC *mockUsecase.MockEntryUsecase) {
+				entryUC.
+					EXPECT().
+					Get(ctx, gomock.Any(), gomock.Any(), gomock.Any()).
+					Return(nil, nil, sql.ErrConnDone).
+					Times(1)
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := t.Context()
+			w := httptest.NewRecorder()
+
+			c, _ := gin.CreateTestContext(w)
+			var err error
+			c.Request, err = http.NewRequestWithContext(ctx, "GET", "/entries/volume/test/sample.txt", http.NoBody)
+			if err != nil {
+				t.Error(err)
+			}
+			c.Params = append(
+				c.Params,
+				gin.Param{Key: "volumeName", Value: "volume"},
+				gin.Param{Key: "key", Value: "test/sample.txt"},
+			)
+			if tt.isSetAccountID {
+				c.Set("accountID", accountID)
+			}
+
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			entryUC := mockUsecase.NewMockEntryUsecase(ctrl)
+			tt.setMockEntryUC(ctx, entryUC)
+
+			hdl := handler.NewEntryHandler(entryUC)
+			hdl.Get(c)
+
+			c.Writer.WriteHeaderNow()
+
+			if w.Code != tt.expectCode {
+				t.Errorf("\nexpect: %v\ngot: %v", tt.expectCode, w.Code)
+			}
+
+			resp := w.Result()
+			response, err := io.ReadAll(resp.Body)
+			if err != nil {
+				t.Error(err)
+			}
+
+			if diff := cmp.Diff(response, tt.expectResponse); diff != "" {
+				t.Error(diff)
+			}
+		})
+	}
+}
