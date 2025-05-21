@@ -2,6 +2,7 @@ package handler
 
 import (
 	errs "errors"
+	"io"
 	"log"
 	"mime/multipart"
 	"net/http"
@@ -150,7 +151,42 @@ func (h *entryHandler) Head(c *gin.Context) {
 	c.Status(http.StatusOK)
 }
 
-func (h *entryHandler) Get(c *gin.Context) {}
+func (h *entryHandler) Get(c *gin.Context) {
+	volumeName := c.Param("volumeName")
+	key := strings.TrimPrefix(c.Param("key"), "/")
+
+	accountID, err := parameter.GetContextParameter[uuid.UUID](c, "accountID")
+	if err != nil {
+		errors.Handle(c, err)
+		return
+	}
+
+	ctx := c.Request.Context()
+
+	entry, body, err := h.entryUC.Get(ctx, accountID, volumeName, key)
+	if err != nil {
+		errors.Handle(c, err)
+		return
+	}
+
+	if body == nil {
+		c.Header("Content-Length", strconv.FormatUint(entry.Size, 10))
+		c.Header("Content-Type", "application/octet-stream")
+		c.Header("Last-Modified", entry.UpdatedAt.Format(http.TimeFormat))
+		return
+	}
+
+	defer body.Close()
+
+	c.Header("Content-Length", strconv.FormatUint(entry.Size, 10))
+	c.Header("Content-Type", entry.Type)
+	c.Header("Last-Modified", entry.UpdatedAt.Format(http.TimeFormat))
+
+	if _, err := io.Copy(c.Writer, body); err != nil {
+		errors.Handle(c, err)
+		return
+	}
+}
 
 func (h *entryHandler) openFile(fileHeader *multipart.FileHeader) (uint64, multipart.File, error) {
 	if fileHeader == nil {
