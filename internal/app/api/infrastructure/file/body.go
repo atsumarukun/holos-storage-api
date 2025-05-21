@@ -1,7 +1,6 @@
 package file
 
 import (
-	"errors"
 	"io"
 	"path/filepath"
 
@@ -58,5 +57,14 @@ func (r *bodyRepository) Delete(path string) error {
 }
 
 func (r *bodyRepository) FindOneByPath(path string) (io.ReadCloser, error) {
-	return nil, errors.New("not implemented")
+	info, err := r.fs.Stat(r.basePath + path)
+	if err != nil {
+		return nil, err
+	}
+
+	if info.IsDir() {
+		return nil, nil
+	}
+
+	return r.fs.Open(r.basePath + path)
 }
