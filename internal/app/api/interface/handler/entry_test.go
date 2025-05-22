@@ -502,7 +502,7 @@ func TestEntry_Head(t *testing.T) {
 	}
 }
 
-func TestEntry_Get(t *testing.T) {
+func TestEntry_GetOne(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
 	id := uuid.New()
@@ -587,7 +587,7 @@ func TestEntry_Get(t *testing.T) {
 			tt.setMockEntryUC(ctx, entryUC)
 
 			hdl := handler.NewEntryHandler(entryUC)
-			hdl.Get(c)
+			hdl.GetOne(c)
 
 			c.Writer.WriteHeaderNow()
 

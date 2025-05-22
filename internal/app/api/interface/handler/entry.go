@@ -26,7 +26,7 @@ type EntryHandler interface {
 	Update(*gin.Context)
 	Delete(*gin.Context)
 	Head(*gin.Context)
-	Get(*gin.Context)
+	GetOne(*gin.Context)
 }
 
 type entryHandler struct {
@@ -151,7 +151,7 @@ func (h *entryHandler) Head(c *gin.Context) {
 	c.Status(http.StatusOK)
 }
 
-func (h *entryHandler) Get(c *gin.Context) {
+func (h *entryHandler) GetOne(c *gin.Context) {
 	volumeName := c.Param("volumeName")
 	key := strings.TrimPrefix(c.Param("key"), "/")
 
