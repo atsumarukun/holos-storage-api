@@ -17,7 +17,10 @@ import (
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/pkg/status/code"
 )
 
-var ErrRequiredEntry = status.Error(code.Internal, "entry is required")
+var (
+	ErrRequiredEntry    = status.Error(code.Internal, "entry is required")
+	ErrInvalidArguments = status.Error(code.BadRequest, "invalid arguments")
+)
 
 type entryRepository struct {
 	db *sqlx.DB
