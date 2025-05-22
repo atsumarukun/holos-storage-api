@@ -15,6 +15,5 @@ type EntryRepository interface {
 	Delete(context.Context, *entity.Entry) error
 	FindOneByKeyAndVolumeID(context.Context, string, uuid.UUID) (*entity.Entry, error)
 	FindOneByKeyAndVolumeIDAndAccountID(context.Context, string, uuid.UUID, uuid.UUID) (*entity.Entry, error)
-	FindByKeyPrefixAndAccountID(context.Context, string, uuid.UUID) ([]*entity.Entry, error)
 	FindByVolumeIDAndAccountID(context.Context, uuid.UUID, uuid.UUID, *string, *uint64) ([]*entity.Entry, error)
 }
