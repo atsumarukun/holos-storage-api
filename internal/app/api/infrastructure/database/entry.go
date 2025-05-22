@@ -112,6 +112,40 @@ func (r *entryRepository) FindByKeyPrefixAndAccountID(ctx context.Context, keywo
 	return transformer.ToEntryEntities(models), nil
 }
 
-func (r *entryRepository) FindByVolumeIDAndAccountID(ctx context.Context, volumeID, accountID uuid.UUID, prefix *string, depth *uint64) ([]*entity.Entry, error) {
-	return nil, errors.New("not implemented")
+func (r *entryRepository) FindByVolumeIDAndAccountID(ctx context.Context, volumeID, accountID uuid.UUID, prefix *string, depth *uint64) (entries []*entity.Entry, err error) {
+	driver := transaction.GetDriver(ctx, r.db)
+
+	filterQuery := " volume_id = ? AND account_id = ?"
+	filterArguments := []any{volumeID, accountID}
+
+	if prefix != nil {
+		filterQuery += " AND `key` LIKE ?"
+		filterArguments = append(filterArguments, *prefix+"/%")
+	}
+	if depth != nil {
+		if prefix == nil {
+			return nil, ErrInvalidArguments
+		}
+		filterQuery += " AND LENGTH(`key`) - LENGTH(REPLACE(`key`, '/', '')) <= LENGTH(?) - LENGTH(REPLACE(?, '/', '')) + ?"
+		filterArguments = append(filterArguments, *prefix, *prefix, *depth)
+	}
+
+	rows, err := driver.QueryxContext(ctx, "SELECT id, account_id, volume_id, `key`, size, type, created_at, updated_at FROM entries WHERE"+filterQuery+";", filterArguments...)
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		err = rows.Close()
+	}()
+
+	var models []*model.EntryModel
+	for rows.Next() {
+		var model model.EntryModel
+		if err := rows.StructScan(&model); err != nil {
+			return nil, err
+		}
+		models = append(models, &model)
+	}
+
+	return transformer.ToEntryEntities(models), nil
 }
