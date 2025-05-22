@@ -188,6 +188,7 @@ paths:
           $ref: "#/components/responses/409"
         500:
           $ref: "#/components/responses/500"
+  /entries/{volumeName}:
     get:
       summary: "エントリー一覧取得"
       tags:
@@ -203,6 +204,13 @@ paths:
           required: true
           description: "セッショントークンまたはアクセスキー"
           example: "Session 1Ty1HKTPKTt8xEi-_3HTbWf2SCHOdqOS"
+        - in: "path"
+          name: "volumeName"
+          schema:
+            type: "string"
+          required: true
+          description: "ボリューム名"
+          example: "volume_name"
         - in: "query"
           name: "prefix"
           schema:
