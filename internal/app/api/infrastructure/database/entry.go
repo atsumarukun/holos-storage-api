@@ -108,3 +108,7 @@ func (r *entryRepository) FindByKeyPrefixAndAccountID(ctx context.Context, keywo
 
 	return transformer.ToEntryEntities(models), nil
 }
+
+func (r *entryRepository) FindByVolumeIDAndAccountID(ctx context.Context, volumeID, accountID uuid.UUID, prefix *string, depth *uint64) ([]*entity.Entry, error) {
+	return nil, errors.New("not implemented")
+}
