@@ -1172,7 +1172,7 @@ func TestEntry_Head(t *testing.T) {
 	}
 }
 
-func TestEntry_Get(t *testing.T) {
+func TestEntry_GetOne(t *testing.T) {
 	volume := &entity.Volume{
 		ID:        uuid.New(),
 		AccountID: uuid.New(),
@@ -1406,7 +1406,7 @@ func TestEntry_Get(t *testing.T) {
 			tt.setMockVolumeRepo(ctx, volumeRepo)
 
 			uc := usecase.NewEntryUsecase(transactionObj, entryRepo, bodyRepo, volumeRepo, nil)
-			entry, body, err := uc.Get(ctx, tt.inputAccountID, tt.inputVolumeName, tt.inputKey)
+			entry, body, err := uc.GetOne(ctx, tt.inputAccountID, tt.inputVolumeName, tt.inputKey)
 			if !errors.Is(err, tt.expectError) {
 				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
 			}

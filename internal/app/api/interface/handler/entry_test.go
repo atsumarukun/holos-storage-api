@@ -534,7 +534,7 @@ func TestEntry_Get(t *testing.T) {
 			setMockEntryUC: func(ctx context.Context, entryUC *mockUsecase.MockEntryUsecase) {
 				entryUC.
 					EXPECT().
-					Get(ctx, gomock.Any(), gomock.Any(), gomock.Any()).
+					GetOne(ctx, gomock.Any(), gomock.Any(), gomock.Any()).
 					Return(entryDTO, io.NopCloser(bytes.NewReader([]byte("test"))), nil).
 					Times(1)
 			},
@@ -554,7 +554,7 @@ func TestEntry_Get(t *testing.T) {
 			setMockEntryUC: func(ctx context.Context, entryUC *mockUsecase.MockEntryUsecase) {
 				entryUC.
 					EXPECT().
-					Get(ctx, gomock.Any(), gomock.Any(), gomock.Any()).
+					GetOne(ctx, gomock.Any(), gomock.Any(), gomock.Any()).
 					Return(nil, nil, sql.ErrConnDone).
 					Times(1)
 			},

@@ -163,7 +163,7 @@ func (h *entryHandler) Get(c *gin.Context) {
 
 	ctx := c.Request.Context()
 
-	entry, body, err := h.entryUC.Get(ctx, accountID, volumeName, key)
+	entry, body, err := h.entryUC.GetOne(ctx, accountID, volumeName, key)
 	if err != nil {
 		errors.Handle(c, err)
 		return
