@@ -1221,6 +1221,7 @@ func TestEntry_GetOne(t *testing.T) {
 			inputVolumeName: "volume",
 			inputKey:        "test/sample.txt",
 			expectEntry:     entryDTO,
+			expectBody:      nil,
 			expectError:     nil,
 			setMockTransactionObj: func(ctx context.Context, transactionObj *mockTransaction.MockTransactionObject) {
 				transactionObj.
