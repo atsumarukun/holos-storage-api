@@ -41,6 +41,20 @@ func (m *MockVolumeService) EXPECT() *MockVolumeServiceMockRecorder {
 	return m.recorder
 }
 
+// CanDelete mocks base method.
+func (m *MockVolumeService) CanDelete(arg0 context.Context, arg1 *entity.Volume) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CanDelete", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CanDelete indicates an expected call of CanDelete.
+func (mr *MockVolumeServiceMockRecorder) CanDelete(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CanDelete", reflect.TypeOf((*MockVolumeService)(nil).CanDelete), arg0, arg1)
+}
+
 // Exists mocks base method.
 func (m *MockVolumeService) Exists(arg0 context.Context, arg1 *entity.Volume) error {
 	m.ctrl.T.Helper()

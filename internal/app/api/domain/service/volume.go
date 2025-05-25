@@ -3,6 +3,7 @@ package service
 
 import (
 	"context"
+	"errors"
 
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/domain/entity"
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/domain/repository"
@@ -17,6 +18,7 @@ var (
 
 type VolumeService interface {
 	Exists(context.Context, *entity.Volume) error
+	CanDelete(context.Context, *entity.Volume) error
 }
 
 type volumeService struct {
@@ -44,4 +46,8 @@ func (s *volumeService) Exists(ctx context.Context, volume *entity.Volume) error
 		return nil
 	}
 	return ErrVolumeAlreadyExists
+}
+
+func (s *volumeService) CanDelete(ctx context.Context, volume *entity.Volume) error {
+	return errors.New("not implemented")
 }
