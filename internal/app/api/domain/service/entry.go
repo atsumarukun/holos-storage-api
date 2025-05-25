@@ -4,7 +4,6 @@ package service
 import (
 	"context"
 	"errors"
-	"io"
 	"path/filepath"
 	"strings"
 
@@ -21,9 +20,9 @@ var (
 
 type EntryService interface {
 	Exists(context.Context, *entity.Entry) error
-	Create(context.Context, *entity.Entry, io.Reader) error
-	Update(context.Context, *entity.Entry, string) error
-	Delete(context.Context, *entity.Entry) error
+	CreateAncestors(context.Context, *entity.Entry) error
+	UpdateDescendants(context.Context, *entity.Entry, string) error
+	DeleteDescendants(context.Context, *entity.Entry) error
 }
 
 type entryService struct {
@@ -51,66 +50,75 @@ func (s *entryService) Exists(ctx context.Context, entry *entity.Entry) error {
 	return ErrEntryAlreadyExists
 }
 
-func (s *entryService) Create(ctx context.Context, entry *entity.Entry, body io.Reader) error {
+func (s *entryService) CreateAncestors(ctx context.Context, entry *entity.Entry) error {
 	if entry == nil {
 		return ErrRequiredEntry
 	}
 
-	if err := s.createParentEntries(ctx, entry); err != nil {
-		return err
-	}
-
-	return s.entryRepo.Create(ctx, entry)
-}
-
-func (s *entryService) Update(ctx context.Context, entry *entity.Entry, src string) error {
-	if entry == nil {
-		return ErrRequiredEntry
-	}
-
-	if err := s.createParentEntries(ctx, entry); err != nil {
-		return err
-	}
-
-	if entry.IsFolder() {
-		children, err := s.entryRepo.FindByVolumeIDAndAccountID(ctx, entry.VolumeID, entry.AccountID, &src, nil)
+	for _, dir := range s.extractDirs(entry.Key) {
+		ent, err := entity.NewEntry(entry.AccountID, entry.VolumeID, dir, 0, "folder")
 		if err != nil {
 			return err
 		}
-
-		for _, child := range children {
-			key := strings.Replace(child.Key, src, entry.Key, 1)
-			if err := child.SetKey(key); err != nil {
-				return err
-			}
-			if err := s.entryRepo.Update(ctx, child); err != nil {
+		if err := s.Exists(ctx, ent); err != nil {
+			if errors.Is(err, ErrEntryAlreadyExists) {
+				continue
+			} else {
 				return err
 			}
 		}
+		if err := s.entryRepo.Create(ctx, ent); err != nil {
+			return err
+		}
 	}
 
-	return s.entryRepo.Update(ctx, entry)
+	return nil
 }
 
-func (s *entryService) Delete(ctx context.Context, entry *entity.Entry) error {
+func (s *entryService) UpdateDescendants(ctx context.Context, entry *entity.Entry, src string) error {
 	if entry == nil {
 		return ErrRequiredEntry
 	}
 
 	if entry.IsFolder() {
-		children, err := s.entryRepo.FindByVolumeIDAndAccountID(ctx, entry.VolumeID, entry.AccountID, &entry.Key, nil)
+		descendants, err := s.entryRepo.FindByVolumeIDAndAccountID(ctx, entry.VolumeID, entry.AccountID, &src, nil)
 		if err != nil {
 			return err
 		}
 
-		for _, child := range children {
-			if err := s.entryRepo.Delete(ctx, child); err != nil {
+		for _, descendant := range descendants {
+			key := strings.Replace(descendant.Key, src, entry.Key, 1)
+			if err := descendant.SetKey(key); err != nil {
+				return err
+			}
+			if err := s.entryRepo.Update(ctx, descendant); err != nil {
 				return err
 			}
 		}
 	}
 
-	return s.entryRepo.Delete(ctx, entry)
+	return nil
+}
+
+func (s *entryService) DeleteDescendants(ctx context.Context, entry *entity.Entry) error {
+	if entry == nil {
+		return ErrRequiredEntry
+	}
+
+	if entry.IsFolder() {
+		descendants, err := s.entryRepo.FindByVolumeIDAndAccountID(ctx, entry.VolumeID, entry.AccountID, &entry.Key, nil)
+		if err != nil {
+			return err
+		}
+
+		for _, descendant := range descendants {
+			if err := s.entryRepo.Delete(ctx, descendant); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
 }
 
 func (s *entryService) extractDirs(key string) []string {
@@ -128,24 +136,4 @@ func (s *entryService) extractDirs(key string) []string {
 	}
 
 	return dirs
-}
-
-func (s *entryService) createParentEntries(ctx context.Context, entry *entity.Entry) error {
-	for _, dir := range s.extractDirs(entry.Key) {
-		ent, err := entity.NewEntry(entry.AccountID, entry.VolumeID, dir, 0, "folder")
-		if err != nil {
-			return err
-		}
-		if err := s.Exists(ctx, ent); err != nil {
-			if errors.Is(err, ErrEntryAlreadyExists) {
-				continue
-			} else {
-				return err
-			}
-		}
-		if err := s.entryRepo.Create(ctx, ent); err != nil {
-			return err
-		}
-	}
-	return nil
 }

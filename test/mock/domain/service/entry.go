@@ -11,7 +11,6 @@ package service
 
 import (
 	context "context"
-	io "io"
 	reflect "reflect"
 
 	entity "github.com/atsumarukun/holos-storage-api/internal/app/api/domain/entity"
@@ -42,32 +41,32 @@ func (m *MockEntryService) EXPECT() *MockEntryServiceMockRecorder {
 	return m.recorder
 }
 
-// Create mocks base method.
-func (m *MockEntryService) Create(arg0 context.Context, arg1 *entity.Entry, arg2 io.Reader) error {
+// CreateAncestors mocks base method.
+func (m *MockEntryService) CreateAncestors(arg0 context.Context, arg1 *entity.Entry) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Create", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "CreateAncestors", arg0, arg1)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// Create indicates an expected call of Create.
-func (mr *MockEntryServiceMockRecorder) Create(arg0, arg1, arg2 any) *gomock.Call {
+// CreateAncestors indicates an expected call of CreateAncestors.
+func (mr *MockEntryServiceMockRecorder) CreateAncestors(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockEntryService)(nil).Create), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateAncestors", reflect.TypeOf((*MockEntryService)(nil).CreateAncestors), arg0, arg1)
 }
 
-// Delete mocks base method.
-func (m *MockEntryService) Delete(arg0 context.Context, arg1 *entity.Entry) error {
+// DeleteDescendants mocks base method.
+func (m *MockEntryService) DeleteDescendants(arg0 context.Context, arg1 *entity.Entry) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Delete", arg0, arg1)
+	ret := m.ctrl.Call(m, "DeleteDescendants", arg0, arg1)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// Delete indicates an expected call of Delete.
-func (mr *MockEntryServiceMockRecorder) Delete(arg0, arg1 any) *gomock.Call {
+// DeleteDescendants indicates an expected call of DeleteDescendants.
+func (mr *MockEntryServiceMockRecorder) DeleteDescendants(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockEntryService)(nil).Delete), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteDescendants", reflect.TypeOf((*MockEntryService)(nil).DeleteDescendants), arg0, arg1)
 }
 
 // Exists mocks base method.
@@ -84,16 +83,16 @@ func (mr *MockEntryServiceMockRecorder) Exists(arg0, arg1 any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Exists", reflect.TypeOf((*MockEntryService)(nil).Exists), arg0, arg1)
 }
 
-// Update mocks base method.
-func (m *MockEntryService) Update(arg0 context.Context, arg1 *entity.Entry, arg2 string) error {
+// UpdateDescendants mocks base method.
+func (m *MockEntryService) UpdateDescendants(arg0 context.Context, arg1 *entity.Entry, arg2 string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Update", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "UpdateDescendants", arg0, arg1, arg2)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// Update indicates an expected call of Update.
-func (mr *MockEntryServiceMockRecorder) Update(arg0, arg1, arg2 any) *gomock.Call {
+// UpdateDescendants indicates an expected call of UpdateDescendants.
+func (mr *MockEntryServiceMockRecorder) UpdateDescendants(arg0, arg1, arg2 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockEntryService)(nil).Update), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateDescendants", reflect.TypeOf((*MockEntryService)(nil).UpdateDescendants), arg0, arg1, arg2)
 }

@@ -66,6 +66,7 @@ func TestEntry_Create(t *testing.T) {
 		expectResult          *dto.EntryDTO
 		expectError           error
 		setMockTransactionObj func(context.Context, *mockTransaction.MockTransactionObject)
+		setMockEntryRepo      func(context.Context, *mockRepository.MockEntryRepository)
 		setMockBodyRepo       func(context.Context, *mockRepository.MockBodyRepository)
 		setMockVolumeRepo     func(context.Context, *mockRepository.MockVolumeRepository)
 		setMockEntryServ      func(context.Context, *mockService.MockEntryService)
@@ -86,6 +87,13 @@ func TestEntry_Create(t *testing.T) {
 					DoAndReturn(func(ctx context.Context, fn func(context.Context) error) error {
 						return fn(ctx)
 					}).
+					Times(1)
+			},
+			setMockEntryRepo: func(ctx context.Context, entryRepo *mockRepository.MockEntryRepository) {
+				entryRepo.
+					EXPECT().
+					Create(ctx, gomock.Any()).
+					Return(nil).
 					Times(1)
 			},
 			setMockBodyRepo: func(_ context.Context, bodyRepo *mockRepository.MockBodyRepository) {
@@ -110,7 +118,7 @@ func TestEntry_Create(t *testing.T) {
 					Times(1)
 				entryServ.
 					EXPECT().
-					Create(ctx, gomock.Any(), gomock.Any()).
+					CreateAncestors(ctx, gomock.Any()).
 					Return(nil).
 					Times(1)
 			},
@@ -133,7 +141,8 @@ func TestEntry_Create(t *testing.T) {
 					}).
 					Times(1)
 			},
-			setMockBodyRepo: func(context.Context, *mockRepository.MockBodyRepository) {},
+			setMockEntryRepo: func(context.Context, *mockRepository.MockEntryRepository) {},
+			setMockBodyRepo:  func(context.Context, *mockRepository.MockBodyRepository) {},
 			setMockVolumeRepo: func(ctx context.Context, volumeRepo *mockRepository.MockVolumeRepository) {
 				volumeRepo.
 					EXPECT().
@@ -161,6 +170,13 @@ func TestEntry_Create(t *testing.T) {
 					}).
 					Times(1)
 			},
+			setMockEntryRepo: func(ctx context.Context, entryRepo *mockRepository.MockEntryRepository) {
+				entryRepo.
+					EXPECT().
+					Create(ctx, gomock.Any()).
+					Return(nil).
+					Times(1)
+			},
 			setMockBodyRepo: func(_ context.Context, bodyRepo *mockRepository.MockBodyRepository) {
 				bodyRepo.
 					EXPECT().
@@ -183,7 +199,7 @@ func TestEntry_Create(t *testing.T) {
 					Times(1)
 				entryServ.
 					EXPECT().
-					Create(ctx, gomock.Any(), gomock.Any()).
+					CreateAncestors(ctx, gomock.Any()).
 					Return(nil).
 					Times(1)
 			},
@@ -206,7 +222,8 @@ func TestEntry_Create(t *testing.T) {
 					}).
 					Times(1)
 			},
-			setMockBodyRepo: func(context.Context, *mockRepository.MockBodyRepository) {},
+			setMockEntryRepo: func(context.Context, *mockRepository.MockEntryRepository) {},
+			setMockBodyRepo:  func(context.Context, *mockRepository.MockBodyRepository) {},
 			setMockVolumeRepo: func(ctx context.Context, volumeRepo *mockRepository.MockVolumeRepository) {
 				volumeRepo.
 					EXPECT().
@@ -240,7 +257,8 @@ func TestEntry_Create(t *testing.T) {
 					}).
 					Times(1)
 			},
-			setMockBodyRepo: func(context.Context, *mockRepository.MockBodyRepository) {},
+			setMockEntryRepo: func(context.Context, *mockRepository.MockEntryRepository) {},
+			setMockBodyRepo:  func(context.Context, *mockRepository.MockBodyRepository) {},
 			setMockVolumeRepo: func(ctx context.Context, volumeRepo *mockRepository.MockVolumeRepository) {
 				volumeRepo.
 					EXPECT().
@@ -249,6 +267,46 @@ func TestEntry_Create(t *testing.T) {
 					Times(1)
 			},
 			setMockEntryServ: func(context.Context, *mockService.MockEntryService) {},
+		},
+		{
+			name:            "create ancestors entries error",
+			inputAccountID:  accountID,
+			inputVolumeName: volume.Name,
+			inputKey:        "test/sample.txt",
+			inputSize:       4,
+			inputBody:       bytes.NewBufferString("test"),
+			expectResult:    nil,
+			expectError:     sql.ErrConnDone,
+			setMockTransactionObj: func(ctx context.Context, transactionObj *mockTransaction.MockTransactionObject) {
+				transactionObj.
+					EXPECT().
+					Transaction(ctx, gomock.Any()).
+					DoAndReturn(func(ctx context.Context, fn func(context.Context) error) error {
+						return fn(ctx)
+					}).
+					Times(1)
+			},
+			setMockEntryRepo: func(context.Context, *mockRepository.MockEntryRepository) {},
+			setMockBodyRepo:  func(context.Context, *mockRepository.MockBodyRepository) {},
+			setMockVolumeRepo: func(ctx context.Context, volumeRepo *mockRepository.MockVolumeRepository) {
+				volumeRepo.
+					EXPECT().
+					FindOneByNameAndAccountID(ctx, gomock.Any(), gomock.Any()).
+					Return(volume, nil).
+					Times(1)
+			},
+			setMockEntryServ: func(ctx context.Context, entryServ *mockService.MockEntryService) {
+				entryServ.
+					EXPECT().
+					Exists(ctx, gomock.Any()).
+					Return(nil).
+					Times(1)
+				entryServ.
+					EXPECT().
+					CreateAncestors(ctx, gomock.Any()).
+					Return(sql.ErrConnDone).
+					Times(1)
+			},
 		},
 		{
 			name:            "create entry error",
@@ -268,6 +326,13 @@ func TestEntry_Create(t *testing.T) {
 					}).
 					Times(1)
 			},
+			setMockEntryRepo: func(ctx context.Context, entryRepo *mockRepository.MockEntryRepository) {
+				entryRepo.
+					EXPECT().
+					Create(ctx, gomock.Any()).
+					Return(sql.ErrConnDone).
+					Times(1)
+			},
 			setMockBodyRepo: func(context.Context, *mockRepository.MockBodyRepository) {},
 			setMockVolumeRepo: func(ctx context.Context, volumeRepo *mockRepository.MockVolumeRepository) {
 				volumeRepo.
@@ -284,8 +349,8 @@ func TestEntry_Create(t *testing.T) {
 					Times(1)
 				entryServ.
 					EXPECT().
-					Create(ctx, gomock.Any(), gomock.Any()).
-					Return(sql.ErrConnDone).
+					CreateAncestors(ctx, gomock.Any()).
+					Return(nil).
 					Times(1)
 			},
 		},
@@ -305,6 +370,13 @@ func TestEntry_Create(t *testing.T) {
 					DoAndReturn(func(ctx context.Context, fn func(context.Context) error) error {
 						return fn(ctx)
 					}).
+					Times(1)
+			},
+			setMockEntryRepo: func(ctx context.Context, entryRepo *mockRepository.MockEntryRepository) {
+				entryRepo.
+					EXPECT().
+					Create(ctx, gomock.Any()).
+					Return(nil).
 					Times(1)
 			},
 			setMockBodyRepo: func(_ context.Context, bodyRepo *mockRepository.MockBodyRepository) {
@@ -329,7 +401,7 @@ func TestEntry_Create(t *testing.T) {
 					Times(1)
 				entryServ.
 					EXPECT().
-					Create(ctx, gomock.Any(), gomock.Any()).
+					CreateAncestors(ctx, gomock.Any()).
 					Return(nil).
 					Times(1)
 			},
@@ -345,6 +417,9 @@ func TestEntry_Create(t *testing.T) {
 			transactionObj := mockTransaction.NewMockTransactionObject(ctrl)
 			tt.setMockTransactionObj(ctx, transactionObj)
 
+			entryRepo := mockRepository.NewMockEntryRepository(ctrl)
+			tt.setMockEntryRepo(ctx, entryRepo)
+
 			bodyRepo := mockRepository.NewMockBodyRepository(ctrl)
 			tt.setMockBodyRepo(ctx, bodyRepo)
 
@@ -354,7 +429,7 @@ func TestEntry_Create(t *testing.T) {
 			entryServ := mockService.NewMockEntryService(ctrl)
 			tt.setMockEntryServ(ctx, entryServ)
 
-			uc := usecase.NewEntryUsecase(transactionObj, nil, bodyRepo, volumeRepo, entryServ)
+			uc := usecase.NewEntryUsecase(transactionObj, entryRepo, bodyRepo, volumeRepo, entryServ)
 			result, err := uc.Create(ctx, tt.inputAccountID, tt.inputVolumeName, tt.inputKey, tt.inputSize, tt.inputBody)
 			if !errors.Is(err, tt.expectError) {
 				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
@@ -437,6 +512,11 @@ func TestEntry_Update(t *testing.T) {
 					FindOneByKeyAndVolumeIDAndAccountID(ctx, gomock.Any(), gomock.Any(), gomock.Any()).
 					Return(entry, nil).
 					Times(1)
+				entryRepo.
+					EXPECT().
+					Update(ctx, gomock.Any()).
+					Return(nil).
+					Times(1)
 			},
 			setMockBodyRepo: func(_ context.Context, bodyRepo *mockRepository.MockBodyRepository) {
 				bodyRepo.
@@ -460,7 +540,12 @@ func TestEntry_Update(t *testing.T) {
 					Times(1)
 				entryServ.
 					EXPECT().
-					Update(ctx, gomock.Any(), gomock.Any()).
+					CreateAncestors(ctx, gomock.Any()).
+					Return(nil).
+					Times(1)
+				entryServ.
+					EXPECT().
+					UpdateDescendants(ctx, gomock.Any(), gomock.Any()).
 					Return(nil).
 					Times(1)
 			},
@@ -602,7 +687,7 @@ func TestEntry_Update(t *testing.T) {
 			},
 		},
 		{
-			name:            "update entry error",
+			name:            "create ancestor entries error",
 			inputAccountID:  entry.AccountID,
 			inputVolumeName: "volume",
 			inputKey:        "test/sample.txt",
@@ -641,8 +726,113 @@ func TestEntry_Update(t *testing.T) {
 					Times(1)
 				entryServ.
 					EXPECT().
-					Update(ctx, gomock.Any(), gomock.Any()).
+					CreateAncestors(ctx, gomock.Any()).
 					Return(sql.ErrConnDone).
+					Times(1)
+			},
+		},
+		{
+			name:            "update descendant entries error",
+			inputAccountID:  entry.AccountID,
+			inputVolumeName: "volume",
+			inputKey:        "test/sample.txt",
+			inputNewKey:     "update/sample.txt",
+			expectResult:    nil,
+			expectError:     sql.ErrConnDone,
+			setMockTransactionObj: func(ctx context.Context, transactionObj *mockTransaction.MockTransactionObject) {
+				transactionObj.
+					EXPECT().
+					Transaction(ctx, gomock.Any()).
+					DoAndReturn(func(ctx context.Context, fn func(context.Context) error) error {
+						return fn(ctx)
+					}).
+					Times(1)
+			},
+			setMockEntryRepo: func(ctx context.Context, entryRepo *mockRepository.MockEntryRepository) {
+				entryRepo.
+					EXPECT().
+					FindOneByKeyAndVolumeIDAndAccountID(ctx, gomock.Any(), gomock.Any(), gomock.Any()).
+					Return(entry, nil).
+					Times(1)
+			},
+			setMockBodyRepo: func(context.Context, *mockRepository.MockBodyRepository) {},
+			setMockVolumeRepo: func(ctx context.Context, volumeRepo *mockRepository.MockVolumeRepository) {
+				volumeRepo.
+					EXPECT().
+					FindOneByNameAndAccountID(ctx, gomock.Any(), gomock.Any()).
+					Return(volume, nil).
+					Times(1)
+			},
+			setMockEntryServ: func(ctx context.Context, entryServ *mockService.MockEntryService) {
+				entryServ.
+					EXPECT().
+					Exists(ctx, gomock.Any()).
+					Return(nil).
+					Times(1)
+				entryServ.
+					EXPECT().
+					CreateAncestors(ctx, gomock.Any()).
+					Return(nil).
+					Times(1)
+				entryServ.
+					EXPECT().
+					UpdateDescendants(ctx, gomock.Any(), gomock.Any()).
+					Return(sql.ErrConnDone).
+					Times(1)
+			},
+		},
+		{
+			name:            "update entry error",
+			inputAccountID:  entry.AccountID,
+			inputVolumeName: "volume",
+			inputKey:        "test/sample.txt",
+			inputNewKey:     "update/sample.txt",
+			expectResult:    nil,
+			expectError:     sql.ErrConnDone,
+			setMockTransactionObj: func(ctx context.Context, transactionObj *mockTransaction.MockTransactionObject) {
+				transactionObj.
+					EXPECT().
+					Transaction(ctx, gomock.Any()).
+					DoAndReturn(func(ctx context.Context, fn func(context.Context) error) error {
+						return fn(ctx)
+					}).
+					Times(1)
+			},
+			setMockEntryRepo: func(ctx context.Context, entryRepo *mockRepository.MockEntryRepository) {
+				entryRepo.
+					EXPECT().
+					FindOneByKeyAndVolumeIDAndAccountID(ctx, gomock.Any(), gomock.Any(), gomock.Any()).
+					Return(entry, nil).
+					Times(1)
+				entryRepo.
+					EXPECT().
+					Update(ctx, gomock.Any()).
+					Return(sql.ErrConnDone).
+					Times(1)
+			},
+			setMockBodyRepo: func(context.Context, *mockRepository.MockBodyRepository) {},
+			setMockVolumeRepo: func(ctx context.Context, volumeRepo *mockRepository.MockVolumeRepository) {
+				volumeRepo.
+					EXPECT().
+					FindOneByNameAndAccountID(ctx, gomock.Any(), gomock.Any()).
+					Return(volume, nil).
+					Times(1)
+			},
+			setMockEntryServ: func(ctx context.Context, entryServ *mockService.MockEntryService) {
+				entryServ.
+					EXPECT().
+					Exists(ctx, gomock.Any()).
+					Return(nil).
+					Times(1)
+				entryServ.
+					EXPECT().
+					CreateAncestors(ctx, gomock.Any()).
+					Return(nil).
+					Times(1)
+				entryServ.
+					EXPECT().
+					UpdateDescendants(ctx, gomock.Any(), gomock.Any()).
+					Return(nil).
 					Times(1)
 			},
 		},
@@ -669,6 +859,11 @@ func TestEntry_Update(t *testing.T) {
 					FindOneByKeyAndVolumeIDAndAccountID(ctx, gomock.Any(), gomock.Any(), gomock.Any()).
 					Return(entry, nil).
 					Times(1)
+				entryRepo.
+					EXPECT().
+					Update(ctx, gomock.Any()).
+					Return(nil).
+					Times(1)
 			},
 			setMockBodyRepo: func(_ context.Context, bodyRepo *mockRepository.MockBodyRepository) {
 				bodyRepo.
@@ -692,7 +887,12 @@ func TestEntry_Update(t *testing.T) {
 					Times(1)
 				entryServ.
 					EXPECT().
-					Update(ctx, gomock.Any(), gomock.Any()).
+					CreateAncestors(ctx, gomock.Any()).
+					Return(nil).
+					Times(1)
+				entryServ.
+					EXPECT().
+					UpdateDescendants(ctx, gomock.Any(), gomock.Any()).
 					Return(nil).
 					Times(1)
 			},
@@ -789,6 +989,11 @@ func TestEntry_Delete(t *testing.T) {
 					FindOneByKeyAndVolumeIDAndAccountID(ctx, gomock.Any(), gomock.Any(), gomock.Any()).
 					Return(entry, nil).
 					Times(1)
+				entryRepo.
+					EXPECT().
+					Delete(ctx, gomock.Any()).
+					Return(nil).
+					Times(1)
 			},
 			setMockBodyRepo: func(_ context.Context, bodyRepo *mockRepository.MockBodyRepository) {
 				bodyRepo.
@@ -807,7 +1012,7 @@ func TestEntry_Delete(t *testing.T) {
 			setMockEntryServ: func(ctx context.Context, entryServ *mockService.MockEntryService) {
 				entryServ.
 					EXPECT().
-					Delete(ctx, gomock.Any()).
+					DeleteDescendants(ctx, gomock.Any()).
 					Return(nil).
 					Times(1)
 			},
@@ -871,7 +1076,7 @@ func TestEntry_Delete(t *testing.T) {
 			setMockEntryServ: func(context.Context, *mockService.MockEntryService) {},
 		},
 		{
-			name:            "delete entry error",
+			name:            "delete descendant entries error",
 			inputAccountID:  entry.AccountID,
 			inputVolumeName: "volume",
 			inputKey:        "test/sample.txt",
@@ -903,8 +1108,51 @@ func TestEntry_Delete(t *testing.T) {
 			setMockEntryServ: func(ctx context.Context, entryServ *mockService.MockEntryService) {
 				entryServ.
 					EXPECT().
+					DeleteDescendants(ctx, gomock.Any()).
+					Return(sql.ErrConnDone).
+					Times(1)
+			},
+		},
+		{
+			name:            "delete entry error",
+			inputAccountID:  entry.AccountID,
+			inputVolumeName: "volume",
+			inputKey:        "test/sample.txt",
+			expectError:     sql.ErrConnDone,
+			setMockTransactionObj: func(ctx context.Context, transactionObj *mockTransaction.MockTransactionObject) {
+				transactionObj.
+					EXPECT().
+					Transaction(ctx, gomock.Any()).
+					DoAndReturn(func(ctx context.Context, fn func(context.Context) error) error {
+						return fn(ctx)
+					}).
+					Times(1)
+			},
+			setMockEntryRepo: func(ctx context.Context, entryRepo *mockRepository.MockEntryRepository) {
+				entryRepo.
+					EXPECT().
+					FindOneByKeyAndVolumeIDAndAccountID(ctx, gomock.Any(), gomock.Any(), gomock.Any()).
+					Return(entry, nil).
+					Times(1)
+				entryRepo.
+					EXPECT().
 					Delete(ctx, gomock.Any()).
 					Return(sql.ErrConnDone).
+					Times(1)
+			},
+			setMockBodyRepo: func(context.Context, *mockRepository.MockBodyRepository) {},
+			setMockVolumeRepo: func(ctx context.Context, volumeRepo *mockRepository.MockVolumeRepository) {
+				volumeRepo.
+					EXPECT().
+					FindOneByNameAndAccountID(ctx, gomock.Any(), gomock.Any()).
+					Return(volume, nil).
+					Times(1)
+			},
+			setMockEntryServ: func(ctx context.Context, entryServ *mockService.MockEntryService) {
+				entryServ.
+					EXPECT().
+					DeleteDescendants(ctx, gomock.Any()).
+					Return(nil).
 					Times(1)
 			},
 		},
@@ -929,6 +1177,11 @@ func TestEntry_Delete(t *testing.T) {
 					FindOneByKeyAndVolumeIDAndAccountID(ctx, gomock.Any(), gomock.Any(), gomock.Any()).
 					Return(entry, nil).
 					Times(1)
+				entryRepo.
+					EXPECT().
+					Delete(ctx, gomock.Any()).
+					Return(nil).
+					Times(1)
 			},
 			setMockBodyRepo: func(_ context.Context, bodyRepo *mockRepository.MockBodyRepository) {
 				bodyRepo.
@@ -947,7 +1200,7 @@ func TestEntry_Delete(t *testing.T) {
 			setMockEntryServ: func(ctx context.Context, entryServ *mockService.MockEntryService) {
 				entryServ.
 					EXPECT().
-					Delete(ctx, gomock.Any()).
+					DeleteDescendants(ctx, gomock.Any()).
 					Return(nil).
 					Times(1)
 			},
