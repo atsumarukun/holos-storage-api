@@ -554,6 +554,7 @@ func TestVolume_Delete(t *testing.T) {
 		expectError           error
 		setMockTransactionObj func(context.Context, *mockTransaction.MockTransactionObject)
 		setMockVolumeRepo     func(context.Context, *mockRepository.MockVolumeRepository)
+		setMockBodyRepo       func(context.Context, *mockRepository.MockBodyRepository)
 	}{
 		{
 			name:           "success",
@@ -581,9 +582,16 @@ func TestVolume_Delete(t *testing.T) {
 					Return(nil).
 					Times(1)
 			},
+			setMockBodyRepo: func(_ context.Context, bodyRepo *mockRepository.MockBodyRepository) {
+				bodyRepo.
+					EXPECT().
+					Delete(gomock.Any()).
+					Return(nil).
+					Times(1)
+			},
 		},
 		{
-			name:           "not found",
+			name:           "volume not found",
 			inputAccountID: accountID,
 			inputID:        id,
 			expectError:    usecase.ErrVolumeNotFound,
@@ -603,9 +611,10 @@ func TestVolume_Delete(t *testing.T) {
 					Return(nil, nil).
 					Times(1)
 			},
+			setMockBodyRepo: func(context.Context, *mockRepository.MockBodyRepository) {},
 		},
 		{
-			name:           "find error",
+			name:           "find volume error",
 			inputAccountID: accountID,
 			inputID:        id,
 			expectError:    sql.ErrConnDone,
@@ -625,9 +634,10 @@ func TestVolume_Delete(t *testing.T) {
 					Return(nil, sql.ErrConnDone).
 					Times(1)
 			},
+			setMockBodyRepo: func(context.Context, *mockRepository.MockBodyRepository) {},
 		},
 		{
-			name:           "delete error",
+			name:           "delete volume error",
 			inputAccountID: accountID,
 			inputID:        id,
 			expectError:    sql.ErrConnDone,
@@ -652,6 +662,41 @@ func TestVolume_Delete(t *testing.T) {
 					Return(sql.ErrConnDone).
 					Times(1)
 			},
+			setMockBodyRepo: func(context.Context, *mockRepository.MockBodyRepository) {},
+		},
+		{
+			name:           "delete body error",
+			inputAccountID: accountID,
+			inputID:        id,
+			expectError:    afero.ErrFileClosed,
+			setMockTransactionObj: func(ctx context.Context, transactionObj *mockTransaction.MockTransactionObject) {
+				transactionObj.
+					EXPECT().
+					Transaction(ctx, gomock.Any()).
+					DoAndReturn(func(ctx context.Context, fn func(context.Context) error) error {
+						return fn(ctx)
+					}).
+					Times(1)
+			},
+			setMockVolumeRepo: func(ctx context.Context, volumeRepo *mockRepository.MockVolumeRepository) {
+				volumeRepo.
+					EXPECT().
+					FindOneByIDAndAccountID(ctx, gomock.Any(), gomock.Any()).
+					Return(volume, nil).
+					Times(1)
+				volumeRepo.
+					EXPECT().
+					Delete(ctx, gomock.Any()).
+					Return(nil).
+					Times(1)
+			},
+			setMockBodyRepo: func(_ context.Context, bodyRepo *mockRepository.MockBodyRepository) {
+				bodyRepo.
+					EXPECT().
+					Delete(gomock.Any()).
+					Return(afero.ErrFileClosed).
+					Times(1)
+			},
 		},
 	}
 	for _, tt := range tests {
@@ -667,7 +712,10 @@ func TestVolume_Delete(t *testing.T) {
 			volumeRepo := mockRepository.NewMockVolumeRepository(ctrl)
 			tt.setMockVolumeRepo(ctx, volumeRepo)
 
-			uc := usecase.NewVolumeUsecase(transactionObj, volumeRepo, nil, nil)
+			bodyRepo := mockRepository.NewMockBodyRepository(ctrl)
+			tt.setMockBodyRepo(ctx, bodyRepo)
+
+			uc := usecase.NewVolumeUsecase(transactionObj, volumeRepo, bodyRepo, nil)
 			if err := uc.Delete(ctx, tt.inputAccountID, tt.inputID); !errors.Is(err, tt.expectError) {
 				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
 			}
