@@ -14,6 +14,7 @@ import (
 
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/domain/entity"
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/domain/service"
+	"github.com/atsumarukun/holos-storage-api/internal/app/api/pkg/types"
 	mockRepository "github.com/atsumarukun/holos-storage-api/test/mock/domain/repository"
 )
 
@@ -259,7 +260,7 @@ func TestEntry_Update(t *testing.T) {
 			setMockEntryRepo: func(ctx context.Context, entryRepo *mockRepository.MockEntryRepository) {
 				entryRepo.
 					EXPECT().
-					FindByKeyPrefixAndAccountID(ctx, "update/", entry.AccountID).
+					FindByVolumeIDAndAccountID(ctx, entry.VolumeID, entry.AccountID, types.ToPointer("update"), nil).
 					Return([]*entity.Entry{childEntry}, nil).
 					AnyTimes()
 				entryRepo.
@@ -284,7 +285,7 @@ func TestEntry_Update(t *testing.T) {
 			setMockEntryRepo: func(ctx context.Context, entryRepo *mockRepository.MockEntryRepository) {
 				entryRepo.
 					EXPECT().
-					FindByKeyPrefixAndAccountID(ctx, "update/", entry.AccountID).
+					FindByVolumeIDAndAccountID(ctx, entry.VolumeID, entry.AccountID, types.ToPointer("update"), nil).
 					Return(nil, sql.ErrConnDone).
 					AnyTimes()
 			},
@@ -297,7 +298,7 @@ func TestEntry_Update(t *testing.T) {
 			setMockEntryRepo: func(ctx context.Context, entryRepo *mockRepository.MockEntryRepository) {
 				entryRepo.
 					EXPECT().
-					FindByKeyPrefixAndAccountID(ctx, "update/", entry.AccountID).
+					FindByVolumeIDAndAccountID(ctx, entry.VolumeID, entry.AccountID, types.ToPointer("update"), nil).
 					Return([]*entity.Entry{childEntry}, nil).
 					AnyTimes()
 				entryRepo.
@@ -363,7 +364,7 @@ func TestEntry_Delete(t *testing.T) {
 			setMockEntryRepo: func(ctx context.Context, entryRepo *mockRepository.MockEntryRepository) {
 				entryRepo.
 					EXPECT().
-					FindByKeyPrefixAndAccountID(ctx, "test/", entry.AccountID).
+					FindByVolumeIDAndAccountID(ctx, entry.VolumeID, entry.AccountID, types.ToPointer("test"), nil).
 					Return([]*entity.Entry{childEntry}, nil).
 					AnyTimes()
 				entryRepo.
@@ -386,7 +387,7 @@ func TestEntry_Delete(t *testing.T) {
 			setMockEntryRepo: func(ctx context.Context, entryRepo *mockRepository.MockEntryRepository) {
 				entryRepo.
 					EXPECT().
-					FindByKeyPrefixAndAccountID(ctx, "test/", entry.AccountID).
+					FindByVolumeIDAndAccountID(ctx, entry.VolumeID, entry.AccountID, types.ToPointer("test"), nil).
 					Return(nil, sql.ErrConnDone).
 					AnyTimes()
 			},
@@ -398,7 +399,7 @@ func TestEntry_Delete(t *testing.T) {
 			setMockEntryRepo: func(ctx context.Context, entryRepo *mockRepository.MockEntryRepository) {
 				entryRepo.
 					EXPECT().
-					FindByKeyPrefixAndAccountID(ctx, "test/", entry.AccountID).
+					FindByVolumeIDAndAccountID(ctx, entry.VolumeID, entry.AccountID, types.ToPointer("test"), nil).
 					Return([]*entity.Entry{childEntry}, nil).
 					AnyTimes()
 				entryRepo.

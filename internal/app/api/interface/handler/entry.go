@@ -26,7 +26,8 @@ type EntryHandler interface {
 	Update(*gin.Context)
 	Delete(*gin.Context)
 	Head(*gin.Context)
-	Get(*gin.Context)
+	GetOne(*gin.Context)
+	Search(*gin.Context)
 }
 
 type entryHandler struct {
@@ -151,7 +152,7 @@ func (h *entryHandler) Head(c *gin.Context) {
 	c.Status(http.StatusOK)
 }
 
-func (h *entryHandler) Get(c *gin.Context) {
+func (h *entryHandler) GetOne(c *gin.Context) {
 	volumeName := c.Param("volumeName")
 	key := strings.TrimPrefix(c.Param("key"), "/")
 
@@ -163,7 +164,7 @@ func (h *entryHandler) Get(c *gin.Context) {
 
 	ctx := c.Request.Context()
 
-	entry, body, err := h.entryUC.Get(ctx, accountID, volumeName, key)
+	entry, body, err := h.entryUC.GetOne(ctx, accountID, volumeName, key)
 	if err != nil {
 		errors.Handle(c, err)
 		return
@@ -191,6 +192,41 @@ func (h *entryHandler) Get(c *gin.Context) {
 		errors.Handle(c, err)
 		return
 	}
+}
+
+func (h *entryHandler) Search(c *gin.Context) {
+	volumeName := c.Param("volumeName")
+
+	var prefix *string
+	if val := c.Query("prefix"); val != "" {
+		prefix = &val
+	}
+
+	var depth *uint64
+	if val := c.Query("depth"); val != "" {
+		d, err := strconv.ParseUint(val, 10, 64)
+		if err != nil {
+			errors.Handle(c, status.Error(code.BadRequest, "invalid depth"))
+			return
+		}
+		depth = &d
+	}
+
+	accountID, err := parameter.GetContextParameter[uuid.UUID](c, "accountID")
+	if err != nil {
+		errors.Handle(c, err)
+		return
+	}
+
+	ctx := c.Request.Context()
+
+	entries, err := h.entryUC.Search(ctx, accountID, volumeName, prefix, depth)
+	if err != nil {
+		errors.Handle(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, map[string][]*schema.EntryResponse{"entries": builder.ToEntryResponses(entries)})
 }
 
 func (h *entryHandler) openFile(fileHeader *multipart.FileHeader) (uint64, multipart.File, error) {

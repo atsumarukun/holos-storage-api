@@ -17,3 +17,11 @@ func ToEntryDTO(entry *entity.Entry) *dto.EntryDTO {
 		UpdatedAt: entry.UpdatedAt,
 	}
 }
+
+func ToEntryDTOs(entries []*entity.Entry) []*dto.EntryDTO {
+	dtos := make([]*dto.EntryDTO, len(entries))
+	for i, entry := range entries {
+		dtos[i] = ToEntryDTO(entry)
+	}
+	return dtos
+}

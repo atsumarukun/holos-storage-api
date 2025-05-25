@@ -26,7 +26,8 @@ type EntryUsecase interface {
 	Update(context.Context, uuid.UUID, string, string, string) (*dto.EntryDTO, error)
 	Delete(context.Context, uuid.UUID, string, string) error
 	Head(context.Context, uuid.UUID, string, string) (*dto.EntryDTO, error)
-	Get(context.Context, uuid.UUID, string, string) (*dto.EntryDTO, io.ReadCloser, error)
+	GetOne(context.Context, uuid.UUID, string, string) (*dto.EntryDTO, io.ReadCloser, error)
+	Search(context.Context, uuid.UUID, string, *string, *uint64) ([]*dto.EntryDTO, error)
 }
 
 type entryUsecase struct {
@@ -196,7 +197,7 @@ func (u *entryUsecase) Head(ctx context.Context, accountID uuid.UUID, volumeName
 	return mapper.ToEntryDTO(entry), nil
 }
 
-func (u *entryUsecase) Get(ctx context.Context, accountID uuid.UUID, volumeName, key string) (*dto.EntryDTO, io.ReadCloser, error) {
+func (u *entryUsecase) GetOne(ctx context.Context, accountID uuid.UUID, volumeName, key string) (*dto.EntryDTO, io.ReadCloser, error) {
 	var entry *entity.Entry
 	var body io.ReadCloser
 
@@ -225,4 +226,25 @@ func (u *entryUsecase) Get(ctx context.Context, accountID uuid.UUID, volumeName,
 	}
 
 	return mapper.ToEntryDTO(entry), body, nil
+}
+
+func (u *entryUsecase) Search(ctx context.Context, accountID uuid.UUID, volumeName string, prefix *string, depth *uint64) ([]*dto.EntryDTO, error) {
+	var entries []*entity.Entry
+
+	if err := u.transactionObj.Transaction(ctx, func(ctx context.Context) error {
+		volume, err := u.volumeRepo.FindOneByNameAndAccountID(ctx, volumeName, accountID)
+		if err != nil {
+			return err
+		}
+		if volume == nil {
+			return ErrVolumeNotFound
+		}
+
+		entries, err = u.entryRepo.FindByVolumeIDAndAccountID(ctx, volume.ID, accountID, prefix, depth)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return mapper.ToEntryDTOs(entries), nil
 }

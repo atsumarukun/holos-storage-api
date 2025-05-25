@@ -13,6 +13,7 @@ import (
 
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/domain/entity"
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/infrastructure/database"
+	"github.com/atsumarukun/holos-storage-api/internal/app/api/pkg/types"
 	mockDatabase "github.com/atsumarukun/holos-storage-api/test/mock/database"
 )
 
@@ -388,7 +389,7 @@ func TestEntry_FindOneByKeyAndVolumeIDAndAccountID(t *testing.T) {
 	}
 }
 
-func TestEntry_FindByKeyPrefixAndAccountID(t *testing.T) {
+func TestEntry_FindByVolumeIDAndAccountID(t *testing.T) {
 	entry := &entity.Entry{
 		ID:        uuid.New(),
 		AccountID: uuid.New(),
@@ -402,47 +403,85 @@ func TestEntry_FindByKeyPrefixAndAccountID(t *testing.T) {
 
 	tests := []struct {
 		name           string
-		inputKeyword   string
+		inputVolumeID  uuid.UUID
 		inputAccountID uuid.UUID
+		inputPrefix    *string
+		inputDepth     *uint64
 		expectResult   []*entity.Entry
 		expectError    error
 		setMockDB      func(mock sqlmock.Sqlmock)
 	}{
 		{
-			name:           "success",
-			inputKeyword:   "test/",
+			name:           "find all",
+			inputVolumeID:  entry.VolumeID,
 			inputAccountID: entry.AccountID,
+			inputPrefix:    nil,
+			inputDepth:     nil,
 			expectResult:   []*entity.Entry{entry},
 			expectError:    nil,
 			setMockDB: func(mock sqlmock.Sqlmock) {
-				mock.ExpectQuery(regexp.QuoteMeta("SELECT id, account_id, volume_id, `key`, size, type, created_at, updated_at FROM entries WHERE `key` LIKE ? AND account_id = ?;")).
-					WithArgs("test/%", entry.AccountID).
+				mock.ExpectQuery(regexp.QuoteMeta("SELECT id, account_id, volume_id, `key`, size, type, created_at, updated_at FROM entries WHERE volume_id = ? AND account_id = ?;")).
+					WithArgs(entry.VolumeID, entry.AccountID).
+					WillReturnRows(sqlmock.NewRows([]string{"id", "account_id", "volume_id", "key", "size", "type", "created_at", "updated_at"}).AddRow(entry.ID, entry.AccountID, entry.VolumeID, entry.Key, entry.Size, entry.Type, entry.CreatedAt, entry.UpdatedAt)).
+					WillReturnError(nil)
+			},
+		},
+		{
+			name:           "find by prefix",
+			inputVolumeID:  entry.VolumeID,
+			inputAccountID: entry.AccountID,
+			inputPrefix:    types.ToPointer("test"),
+			inputDepth:     nil,
+			expectResult:   []*entity.Entry{entry},
+			expectError:    nil,
+			setMockDB: func(mock sqlmock.Sqlmock) {
+				mock.ExpectQuery(regexp.QuoteMeta("SELECT id, account_id, volume_id, `key`, size, type, created_at, updated_at FROM entries WHERE volume_id = ? AND account_id = ? AND `key` LIKE ?;")).
+					WithArgs(entry.VolumeID, entry.AccountID, "test/%").
+					WillReturnRows(sqlmock.NewRows([]string{"id", "account_id", "volume_id", "key", "size", "type", "created_at", "updated_at"}).AddRow(entry.ID, entry.AccountID, entry.VolumeID, entry.Key, entry.Size, entry.Type, entry.CreatedAt, entry.UpdatedAt)).
+					WillReturnError(nil)
+			},
+		},
+		{
+			name:           "find by prefix with depth",
+			inputVolumeID:  entry.VolumeID,
+			inputAccountID: entry.AccountID,
+			inputPrefix:    types.ToPointer("test"),
+			inputDepth:     types.ToPointer(uint64(1)),
+			expectResult:   []*entity.Entry{entry},
+			expectError:    nil,
+			setMockDB: func(mock sqlmock.Sqlmock) {
+				mock.ExpectQuery(regexp.QuoteMeta("SELECT id, account_id, volume_id, `key`, size, type, created_at, updated_at FROM entries WHERE volume_id = ? AND account_id = ? AND `key` LIKE ? AND LENGTH(`key`) - LENGTH(REPLACE(`key`, '/', '')) <= LENGTH(?) - LENGTH(REPLACE(?, '/', '')) + ?;")).
+					WithArgs(entry.VolumeID, entry.AccountID, "test/%", "test", "test", 1).
 					WillReturnRows(sqlmock.NewRows([]string{"id", "account_id", "volume_id", "key", "size", "type", "created_at", "updated_at"}).AddRow(entry.ID, entry.AccountID, entry.VolumeID, entry.Key, entry.Size, entry.Type, entry.CreatedAt, entry.UpdatedAt)).
 					WillReturnError(nil)
 			},
 		},
 		{
 			name:           "not found",
-			inputKeyword:   "test/",
+			inputVolumeID:  entry.VolumeID,
 			inputAccountID: entry.AccountID,
+			inputPrefix:    nil,
+			inputDepth:     nil,
 			expectResult:   []*entity.Entry{},
 			expectError:    nil,
 			setMockDB: func(mock sqlmock.Sqlmock) {
-				mock.ExpectQuery(regexp.QuoteMeta("SELECT id, account_id, volume_id, `key`, size, type, created_at, updated_at FROM entries WHERE `key` LIKE ? AND account_id = ?;")).
-					WithArgs("test/%", entry.AccountID).
+				mock.ExpectQuery(regexp.QuoteMeta("SELECT id, account_id, volume_id, `key`, size, type, created_at, updated_at FROM entries WHERE volume_id = ? AND account_id = ?;")).
+					WithArgs(entry.VolumeID, entry.AccountID).
 					WillReturnRows(sqlmock.NewRows([]string{"id", "account_id", "volume_id", "key", "size", "type", "created_at", "updated_at"})).
 					WillReturnError(nil)
 			},
 		},
 		{
 			name:           "find error",
-			inputKeyword:   "test/",
+			inputVolumeID:  entry.VolumeID,
 			inputAccountID: entry.AccountID,
+			inputPrefix:    nil,
+			inputDepth:     nil,
 			expectResult:   nil,
 			expectError:    sql.ErrConnDone,
 			setMockDB: func(mock sqlmock.Sqlmock) {
-				mock.ExpectQuery(regexp.QuoteMeta("SELECT id, account_id, volume_id, `key`, size, type, created_at, updated_at FROM entries WHERE `key` LIKE ? AND account_id = ?;")).
-					WithArgs("test/%", entry.AccountID).
+				mock.ExpectQuery(regexp.QuoteMeta("SELECT id, account_id, volume_id, `key`, size, type, created_at, updated_at FROM entries WHERE volume_id = ? AND account_id = ?;")).
+					WithArgs(entry.VolumeID, entry.AccountID).
 					WillReturnRows(sqlmock.NewRows([]string{"id", "account_id", "volume_id", "key", "size", "type", "created_at", "updated_at"})).
 					WillReturnError(sql.ErrConnDone)
 			},
@@ -455,7 +494,7 @@ func TestEntry_FindByKeyPrefixAndAccountID(t *testing.T) {
 			tt.setMockDB(mock)
 
 			repo := database.NewEntryRepository(db)
-			result, err := repo.FindByKeyPrefixAndAccountID(t.Context(), tt.inputKeyword, tt.inputAccountID)
+			result, err := repo.FindByVolumeIDAndAccountID(t.Context(), tt.inputVolumeID, tt.inputAccountID, tt.inputPrefix, tt.inputDepth)
 			if !errors.Is(err, tt.expectError) {
 				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
 			}

@@ -188,6 +188,7 @@ paths:
           $ref: "#/components/responses/409"
         500:
           $ref: "#/components/responses/500"
+  /entries/{volumeName}:
     get:
       summary: "エントリー一覧取得"
       tags:
@@ -203,9 +204,30 @@ paths:
           required: true
           description: "セッショントークンまたはアクセスキー"
           example: "Session 1Ty1HKTPKTt8xEi-_3HTbWf2SCHOdqOS"
+        - in: "path"
+          name: "volumeName"
+          schema:
+            type: "string"
+          required: true
+          description: "ボリューム名"
+          example: "volume_name"
+        - in: "query"
+          name: "prefix"
+          schema:
+            type: "string"
+          description: "Keyで前方一致検索する際のprefix"
+          example: "folder"
+        - in: "query"
+          name: "depth"
+          schema:
+            type: "integer"
+          description: "Keyで前方一致検索する際に取得する階層の範囲"
+          example: 1
       responses:
         200:
           $ref: "#/components/responses/get_entries"
+        400:
+          $ref: "#/components/responses/400"
         401:
           $ref: "#/components/responses/401"
         403:

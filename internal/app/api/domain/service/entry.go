@@ -73,7 +73,7 @@ func (s *entryService) Update(ctx context.Context, entry *entity.Entry, src stri
 	}
 
 	if entry.IsFolder() {
-		children, err := s.entryRepo.FindByKeyPrefixAndAccountID(ctx, src+"/", entry.AccountID)
+		children, err := s.entryRepo.FindByVolumeIDAndAccountID(ctx, entry.VolumeID, entry.AccountID, &src, nil)
 		if err != nil {
 			return err
 		}
@@ -98,7 +98,7 @@ func (s *entryService) Delete(ctx context.Context, entry *entity.Entry) error {
 	}
 
 	if entry.IsFolder() {
-		children, err := s.entryRepo.FindByKeyPrefixAndAccountID(ctx, entry.Key+"/", entry.AccountID)
+		children, err := s.entryRepo.FindByVolumeIDAndAccountID(ctx, entry.VolumeID, entry.AccountID, &entry.Key, nil)
 		if err != nil {
 			return err
 		}

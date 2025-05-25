@@ -86,10 +86,26 @@ func (r *entryRepository) FindOneByKeyAndVolumeIDAndAccountID(ctx context.Contex
 	return transformer.ToEntryEntity(&model), nil
 }
 
-func (r *entryRepository) FindByKeyPrefixAndAccountID(ctx context.Context, keyword string, accountID uuid.UUID) (entries []*entity.Entry, err error) {
+func (r *entryRepository) FindByVolumeIDAndAccountID(ctx context.Context, volumeID, accountID uuid.UUID, prefix *string, depth *uint64) (entries []*entity.Entry, err error) {
 	driver := transaction.GetDriver(ctx, r.db)
 
-	rows, err := driver.QueryxContext(ctx, "SELECT id, account_id, volume_id, `key`, size, type, created_at, updated_at FROM entries WHERE `key` LIKE ? AND account_id = ?;", keyword+"%", accountID)
+	filterQuery := " volume_id = ? AND account_id = ?"
+	filterArguments := []any{volumeID, accountID}
+
+	if prefix != nil {
+		filterQuery += " AND `key` LIKE ?"
+		filterArguments = append(filterArguments, *prefix+"/%")
+	}
+	if depth != nil {
+		filterQuery += " AND LENGTH(`key`) - LENGTH(REPLACE(`key`, '/', '')) <= LENGTH(?) - LENGTH(REPLACE(?, '/', '')) + ?"
+		if prefix == nil {
+			filterArguments = append(filterArguments, "", "", *depth-1)
+		} else {
+			filterArguments = append(filterArguments, *prefix, *prefix, *depth)
+		}
+	}
+
+	rows, err := driver.QueryxContext(ctx, "SELECT id, account_id, volume_id, `key`, size, type, created_at, updated_at FROM entries WHERE"+filterQuery+";", filterArguments...)
 	if err != nil {
 		return nil, err
 	}
