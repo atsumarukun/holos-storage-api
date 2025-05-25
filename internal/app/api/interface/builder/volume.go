@@ -7,7 +7,6 @@ import (
 
 func ToVolumeResponse(volume *dto.VolumeDTO) *schema.VolumeResponse {
 	return &schema.VolumeResponse{
-		ID:        volume.ID,
 		Name:      volume.Name,
 		IsPublic:  volume.IsPublic,
 		CreatedAt: volume.CreatedAt,

@@ -2,8 +2,6 @@ package schema
 
 import (
 	"time"
-
-	"github.com/google/uuid"
 )
 
 type CreateVolumeRequest struct {
@@ -17,7 +15,6 @@ type UpdateVolumeRequest struct {
 }
 
 type VolumeResponse struct {
-	ID        uuid.UUID `json:"id"`
 	Name      string    `json:"name"`
 	IsPublic  bool      `json:"is_public"`
 	CreatedAt time.Time `json:"created_at"`

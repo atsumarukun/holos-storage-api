@@ -459,11 +459,6 @@ components:
     volume:
       type: "object"
       properties:
-        id:
-          type: "string"
-          description: "ID"
-          example: "c99fc6e0-6e62-4de2-8a7e-5c608ceaa8c6"
-          readOnly: true
         name:
           type: "string"
           description: "ボリューム名"
@@ -477,7 +472,6 @@ components:
         updated_at:
           $ref: "#/components/schemas/updated_at"
       required:
-        - "id"
         - "name"
         - "is_public"
         - "created_at"
