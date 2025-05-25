@@ -10,13 +10,9 @@ import (
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/domain/repository"
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/domain/repository/pkg/transaction"
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/domain/service"
-	"github.com/atsumarukun/holos-storage-api/internal/app/api/pkg/status"
-	"github.com/atsumarukun/holos-storage-api/internal/app/api/pkg/status/code"
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/usecase/dto"
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/usecase/mapper"
 )
-
-var ErrVolumeNotFound = status.Error(code.NotFound, "volume not found")
 
 type VolumeUsecase interface {
 	Create(context.Context, uuid.UUID, string, bool) (*dto.VolumeDTO, error)
@@ -79,9 +75,6 @@ func (u *volumeUsecase) Update(ctx context.Context, accountID, id uuid.UUID, nam
 		if err != nil {
 			return err
 		}
-		if volume == nil {
-			return ErrVolumeNotFound
-		}
 
 		oldName := volume.Name
 
@@ -112,9 +105,6 @@ func (u *volumeUsecase) Delete(ctx context.Context, accountID, id uuid.UUID) err
 		if err != nil {
 			return err
 		}
-		if volume == nil {
-			return ErrVolumeNotFound
-		}
 
 		if err := u.volumeServ.CanDelete(ctx, volume); err != nil {
 			return err
@@ -132,9 +122,6 @@ func (u *volumeUsecase) GetOne(ctx context.Context, accountID, id uuid.UUID) (*d
 	volume, err := u.volumeRepo.FindOneByIDAndAccountID(ctx, id, accountID)
 	if err != nil {
 		return nil, err
-	}
-	if volume == nil {
-		return nil, ErrVolumeNotFound
 	}
 	return mapper.ToVolumeDTO(volume), nil
 }
