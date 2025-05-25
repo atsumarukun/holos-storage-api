@@ -58,7 +58,7 @@ func (mr *MockVolumeUsecaseMockRecorder) Create(arg0, arg1, arg2, arg3 any) *gom
 }
 
 // Delete mocks base method.
-func (m *MockVolumeUsecase) Delete(arg0 context.Context, arg1, arg2 uuid.UUID) error {
+func (m *MockVolumeUsecase) Delete(arg0 context.Context, arg1 uuid.UUID, arg2 string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Delete", arg0, arg1, arg2)
 	ret0, _ := ret[0].(error)
@@ -87,7 +87,7 @@ func (mr *MockVolumeUsecaseMockRecorder) GetAll(arg0, arg1 any) *gomock.Call {
 }
 
 // GetOne mocks base method.
-func (m *MockVolumeUsecase) GetOne(arg0 context.Context, arg1, arg2 uuid.UUID) (*dto.VolumeDTO, error) {
+func (m *MockVolumeUsecase) GetOne(arg0 context.Context, arg1 uuid.UUID, arg2 string) (*dto.VolumeDTO, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetOne", arg0, arg1, arg2)
 	ret0, _ := ret[0].(*dto.VolumeDTO)
@@ -102,7 +102,7 @@ func (mr *MockVolumeUsecaseMockRecorder) GetOne(arg0, arg1, arg2 any) *gomock.Ca
 }
 
 // Update mocks base method.
-func (m *MockVolumeUsecase) Update(arg0 context.Context, arg1, arg2 uuid.UUID, arg3 string, arg4 bool) (*dto.VolumeDTO, error) {
+func (m *MockVolumeUsecase) Update(arg0 context.Context, arg1 uuid.UUID, arg2, arg3 string, arg4 bool) (*dto.VolumeDTO, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Update", arg0, arg1, arg2, arg3, arg4)
 	ret0, _ := ret[0].(*dto.VolumeDTO)

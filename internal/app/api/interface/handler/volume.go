@@ -64,11 +64,7 @@ func (h *volumeHandler) Update(c *gin.Context) {
 		return
 	}
 
-	id, err := parameter.GetPathParameter[uuid.UUID](c, "id")
-	if err != nil {
-		errors.Handle(c, status.Error(code.BadRequest, "invalid id"))
-		return
-	}
+	name := c.Param("name")
 
 	accountID, err := parameter.GetContextParameter[uuid.UUID](c, "accountID")
 	if err != nil {
@@ -78,7 +74,7 @@ func (h *volumeHandler) Update(c *gin.Context) {
 
 	ctx := c.Request.Context()
 
-	volume, err := h.volumeUC.Update(ctx, accountID, id, req.Name, req.IsPublic)
+	volume, err := h.volumeUC.Update(ctx, accountID, name, req.Name, req.IsPublic)
 	if err != nil {
 		errors.Handle(c, err)
 		return
@@ -88,11 +84,7 @@ func (h *volumeHandler) Update(c *gin.Context) {
 }
 
 func (h *volumeHandler) Delete(c *gin.Context) {
-	id, err := parameter.GetPathParameter[uuid.UUID](c, "id")
-	if err != nil {
-		errors.Handle(c, status.Error(code.BadRequest, "invalid id"))
-		return
-	}
+	name := c.Param("name")
 
 	accountID, err := parameter.GetContextParameter[uuid.UUID](c, "accountID")
 	if err != nil {
@@ -102,7 +94,7 @@ func (h *volumeHandler) Delete(c *gin.Context) {
 
 	ctx := c.Request.Context()
 
-	if err := h.volumeUC.Delete(ctx, accountID, id); err != nil {
+	if err := h.volumeUC.Delete(ctx, accountID, name); err != nil {
 		errors.Handle(c, err)
 		return
 	}
@@ -111,11 +103,7 @@ func (h *volumeHandler) Delete(c *gin.Context) {
 }
 
 func (h *volumeHandler) GetOne(c *gin.Context) {
-	id, err := parameter.GetPathParameter[uuid.UUID](c, "id")
-	if err != nil {
-		errors.Handle(c, status.Error(code.BadRequest, "invalid id"))
-		return
-	}
+	name := c.Param("name")
 
 	accountID, err := parameter.GetContextParameter[uuid.UUID](c, "accountID")
 	if err != nil {
@@ -125,7 +113,7 @@ func (h *volumeHandler) GetOne(c *gin.Context) {
 
 	ctx := c.Request.Context()
 
-	volume, err := h.volumeUC.GetOne(ctx, accountID, id)
+	volume, err := h.volumeUC.GetOne(ctx, accountID, name)
 	if err != nil {
 		errors.Handle(c, err)
 		return

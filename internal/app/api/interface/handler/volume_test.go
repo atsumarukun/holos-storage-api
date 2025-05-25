@@ -144,7 +144,6 @@ func TestVolume_Update(t *testing.T) {
 	tests := []struct {
 		name            string
 		requestJSON     []byte
-		isSetID         bool
 		isSetAccountID  bool
 		expectCode      int
 		expectResponse  map[string]any
@@ -153,7 +152,6 @@ func TestVolume_Update(t *testing.T) {
 		{
 			name:           "success",
 			requestJSON:    []byte(`{"name": "name", "is_public": false}`),
-			isSetID:        true,
 			isSetAccountID: true,
 			expectCode:     http.StatusOK,
 			expectResponse: map[string]any{"id": volumeDTO.ID.String(), "name": volumeDTO.Name, "is_public": volumeDTO.IsPublic, "created_at": volumeDTO.CreatedAt.Format(time.RFC3339Nano), "updated_at": volumeDTO.UpdatedAt.Format(time.RFC3339Nano)},
@@ -168,25 +166,14 @@ func TestVolume_Update(t *testing.T) {
 		{
 			name:            "invalid request",
 			requestJSON:     nil,
-			isSetID:         true,
 			isSetAccountID:  true,
 			expectCode:      http.StatusBadRequest,
 			expectResponse:  map[string]any{"message": "failed to parse json"},
 			setMockVolumeUC: func(context.Context, *mockUsecase.MockVolumeUsecase) {},
 		},
 		{
-			name:            "id not found",
-			requestJSON:     []byte(`{"name": "name", "is_public": false}`),
-			isSetID:         false,
-			isSetAccountID:  true,
-			expectCode:      http.StatusBadRequest,
-			expectResponse:  map[string]any{"message": "invalid id"},
-			setMockVolumeUC: func(context.Context, *mockUsecase.MockVolumeUsecase) {},
-		},
-		{
 			name:            "account id not found",
 			requestJSON:     []byte(`{"name": "name", "is_public": false}`),
-			isSetID:         true,
 			isSetAccountID:  false,
 			expectCode:      http.StatusInternalServerError,
 			expectResponse:  map[string]any{"message": "internal server error"},
@@ -195,7 +182,6 @@ func TestVolume_Update(t *testing.T) {
 		{
 			name:           "update error",
 			requestJSON:    []byte(`{"name": "name", "is_public": false}`),
-			isSetID:        true,
 			isSetAccountID: true,
 			expectCode:     http.StatusInternalServerError,
 			expectResponse: map[string]any{"message": "internal server error"},
@@ -215,13 +201,11 @@ func TestVolume_Update(t *testing.T) {
 
 			c, _ := gin.CreateTestContext(w)
 			var err error
-			c.Request, err = http.NewRequestWithContext(ctx, "PUT", "/volumes/"+id.String(), bytes.NewBuffer(tt.requestJSON))
+			c.Request, err = http.NewRequestWithContext(ctx, "PUT", "/volumes/name", bytes.NewBuffer(tt.requestJSON))
 			if err != nil {
 				t.Error(err)
 			}
-			if tt.isSetID {
-				c.Params = append(c.Params, gin.Param{Key: "id", Value: id.String()})
-			}
+			c.Params = append(c.Params, gin.Param{Key: "name", Value: "name"})
 			if tt.isSetAccountID {
 				c.Set("accountID", accountID)
 			}
@@ -255,12 +239,10 @@ func TestVolume_Update(t *testing.T) {
 func TestVolume_Delete(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
-	id := uuid.New()
 	accountID := uuid.New()
 
 	tests := []struct {
 		name            string
-		isSetID         bool
 		isSetAccountID  bool
 		expectCode      int
 		expectResponse  *map[string]any
@@ -268,7 +250,6 @@ func TestVolume_Delete(t *testing.T) {
 	}{
 		{
 			name:           "success",
-			isSetID:        true,
 			isSetAccountID: true,
 			expectCode:     http.StatusNoContent,
 			expectResponse: nil,
@@ -281,16 +262,7 @@ func TestVolume_Delete(t *testing.T) {
 			},
 		},
 		{
-			name:            "id not found",
-			isSetID:         false,
-			isSetAccountID:  true,
-			expectCode:      http.StatusBadRequest,
-			expectResponse:  &map[string]any{"message": "invalid id"},
-			setMockVolumeUC: func(context.Context, *mockUsecase.MockVolumeUsecase) {},
-		},
-		{
 			name:            "account id not found",
-			isSetID:         true,
 			isSetAccountID:  false,
 			expectCode:      http.StatusInternalServerError,
 			expectResponse:  &map[string]any{"message": "internal server error"},
@@ -298,7 +270,6 @@ func TestVolume_Delete(t *testing.T) {
 		},
 		{
 			name:           "delete error",
-			isSetID:        true,
 			isSetAccountID: true,
 			expectCode:     http.StatusInternalServerError,
 			expectResponse: &map[string]any{"message": "internal server error"},
@@ -318,13 +289,11 @@ func TestVolume_Delete(t *testing.T) {
 
 			c, _ := gin.CreateTestContext(w)
 			var err error
-			c.Request, err = http.NewRequestWithContext(ctx, "DELETE", "/volumes/"+id.String(), http.NoBody)
+			c.Request, err = http.NewRequestWithContext(ctx, "DELETE", "/volumes/name", http.NoBody)
 			if err != nil {
 				t.Error(err)
 			}
-			if tt.isSetID {
-				c.Params = append(c.Params, gin.Param{Key: "id", Value: id.String()})
-			}
+			c.Params = append(c.Params, gin.Param{Key: "name", Value: "name"})
 			if tt.isSetAccountID {
 				c.Set("accountID", accountID)
 			}
@@ -373,7 +342,6 @@ func TestVolume_GetOne(t *testing.T) {
 
 	tests := []struct {
 		name            string
-		isSetID         bool
 		isSetAccountID  bool
 		expectCode      int
 		expectResponse  map[string]any
@@ -381,7 +349,6 @@ func TestVolume_GetOne(t *testing.T) {
 	}{
 		{
 			name:           "success",
-			isSetID:        true,
 			isSetAccountID: true,
 			expectCode:     http.StatusOK,
 			expectResponse: map[string]any{"id": volumeDTO.ID.String(), "name": volumeDTO.Name, "is_public": volumeDTO.IsPublic, "created_at": volumeDTO.CreatedAt.Format(time.RFC3339Nano), "updated_at": volumeDTO.UpdatedAt.Format(time.RFC3339Nano)},
@@ -394,16 +361,7 @@ func TestVolume_GetOne(t *testing.T) {
 			},
 		},
 		{
-			name:            "id not found",
-			isSetID:         false,
-			isSetAccountID:  true,
-			expectCode:      http.StatusBadRequest,
-			expectResponse:  map[string]any{"message": "invalid id"},
-			setMockVolumeUC: func(context.Context, *mockUsecase.MockVolumeUsecase) {},
-		},
-		{
 			name:            "account id not found",
-			isSetID:         true,
 			isSetAccountID:  false,
 			expectCode:      http.StatusInternalServerError,
 			expectResponse:  map[string]any{"message": "internal server error"},
@@ -411,7 +369,6 @@ func TestVolume_GetOne(t *testing.T) {
 		},
 		{
 			name:           "get error",
-			isSetID:        true,
 			isSetAccountID: true,
 			expectCode:     http.StatusInternalServerError,
 			expectResponse: map[string]any{"message": "internal server error"},
@@ -431,13 +388,11 @@ func TestVolume_GetOne(t *testing.T) {
 
 			c, _ := gin.CreateTestContext(w)
 			var err error
-			c.Request, err = http.NewRequestWithContext(ctx, "GET", "/volumes/"+id.String(), http.NoBody)
+			c.Request, err = http.NewRequestWithContext(ctx, "GET", "/volumes/name", http.NoBody)
 			if err != nil {
 				t.Error(err)
 			}
-			if tt.isSetID {
-				c.Params = append(c.Params, gin.Param{Key: "id", Value: id.String()})
-			}
+			c.Params = append(c.Params, gin.Param{Key: "name", Value: "name"})
 			if tt.isSetAccountID {
 				c.Set("accountID", accountID)
 			}
