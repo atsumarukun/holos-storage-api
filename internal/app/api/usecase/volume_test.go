@@ -11,6 +11,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/google/uuid"
+	"github.com/spf13/afero"
 	"go.uber.org/mock/gomock"
 
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/domain/entity"
@@ -257,6 +258,7 @@ func TestVolume_Update(t *testing.T) {
 		expectError           error
 		setMockTransactionObj func(context.Context, *mockTransaction.MockTransactionObject)
 		setMockVolumeRepo     func(context.Context, *mockRepository.MockVolumeRepository)
+		setMockBodyRepo       func(context.Context, *mockRepository.MockBodyRepository)
 		setMockVolumeServ     func(context.Context, *mockService.MockVolumeService)
 	}{
 		{
@@ -285,6 +287,13 @@ func TestVolume_Update(t *testing.T) {
 				volumeRepo.
 					EXPECT().
 					Update(ctx, gomock.Any()).
+					Return(nil).
+					Times(1)
+			},
+			setMockBodyRepo: func(_ context.Context, bodyRepo *mockRepository.MockBodyRepository) {
+				bodyRepo.
+					EXPECT().
+					Update(gomock.Any(), gomock.Any()).
 					Return(nil).
 					Times(1)
 			},
@@ -320,6 +329,7 @@ func TestVolume_Update(t *testing.T) {
 					Return(volume, nil).
 					Times(1)
 			},
+			setMockBodyRepo:   func(context.Context, *mockRepository.MockBodyRepository) {},
 			setMockVolumeServ: func(context.Context, *mockService.MockVolumeService) {},
 		},
 		{
@@ -346,6 +356,7 @@ func TestVolume_Update(t *testing.T) {
 					Return(volume, nil).
 					Times(1)
 			},
+			setMockBodyRepo: func(context.Context, *mockRepository.MockBodyRepository) {},
 			setMockVolumeServ: func(ctx context.Context, volumeServ *mockService.MockVolumeService) {
 				volumeServ.
 					EXPECT().
@@ -376,10 +387,11 @@ func TestVolume_Update(t *testing.T) {
 					Return(nil, nil).
 					Times(1)
 			},
+			setMockBodyRepo:   func(context.Context, *mockRepository.MockBodyRepository) {},
 			setMockVolumeServ: func(context.Context, *mockService.MockVolumeService) {},
 		},
 		{
-			name:           "find error",
+			name:           "find volume error",
 			inputAccountID: accountID,
 			inputID:        id,
 			inputName:      "name",
@@ -402,10 +414,11 @@ func TestVolume_Update(t *testing.T) {
 					Return(nil, sql.ErrConnDone).
 					Times(1)
 			},
+			setMockBodyRepo:   func(context.Context, *mockRepository.MockBodyRepository) {},
 			setMockVolumeServ: func(context.Context, *mockService.MockVolumeService) {},
 		},
 		{
-			name:           "update error",
+			name:           "update volume error",
 			inputAccountID: accountID,
 			inputID:        id,
 			inputName:      "name",
@@ -433,6 +446,51 @@ func TestVolume_Update(t *testing.T) {
 					Return(sql.ErrConnDone).
 					Times(1)
 			},
+			setMockBodyRepo: func(context.Context, *mockRepository.MockBodyRepository) {},
+			setMockVolumeServ: func(ctx context.Context, volumeServ *mockService.MockVolumeService) {
+				volumeServ.
+					EXPECT().
+					Exists(ctx, gomock.Any()).
+					Return(nil).
+					Times(1)
+			},
+		},
+		{
+			name:           "update body error",
+			inputAccountID: accountID,
+			inputID:        id,
+			inputName:      "name",
+			inputIsPublic:  false,
+			expectResult:   nil,
+			expectError:    afero.ErrFileClosed,
+			setMockTransactionObj: func(ctx context.Context, transactionObj *mockTransaction.MockTransactionObject) {
+				transactionObj.
+					EXPECT().
+					Transaction(ctx, gomock.Any()).
+					DoAndReturn(func(ctx context.Context, fn func(context.Context) error) error {
+						return fn(ctx)
+					}).
+					Times(1)
+			},
+			setMockVolumeRepo: func(ctx context.Context, volumeRepo *mockRepository.MockVolumeRepository) {
+				volumeRepo.
+					EXPECT().
+					FindOneByIDAndAccountID(ctx, gomock.Any(), gomock.Any()).
+					Return(volume, nil).
+					Times(1)
+				volumeRepo.
+					EXPECT().
+					Update(ctx, gomock.Any()).
+					Return(nil).
+					Times(1)
+			},
+			setMockBodyRepo: func(_ context.Context, bodyRepo *mockRepository.MockBodyRepository) {
+				bodyRepo.
+					EXPECT().
+					Update(gomock.Any(), gomock.Any()).
+					Return(afero.ErrFileClosed).
+					Times(1)
+			},
 			setMockVolumeServ: func(ctx context.Context, volumeServ *mockService.MockVolumeService) {
 				volumeServ.
 					EXPECT().
@@ -455,10 +513,13 @@ func TestVolume_Update(t *testing.T) {
 			volumeRepo := mockRepository.NewMockVolumeRepository(ctrl)
 			tt.setMockVolumeRepo(ctx, volumeRepo)
 
+			bodyRepo := mockRepository.NewMockBodyRepository(ctrl)
+			tt.setMockBodyRepo(ctx, bodyRepo)
+
 			volumeServ := mockService.NewMockVolumeService(ctrl)
 			tt.setMockVolumeServ(ctx, volumeServ)
 
-			uc := usecase.NewVolumeUsecase(transactionObj, volumeRepo, nil, volumeServ)
+			uc := usecase.NewVolumeUsecase(transactionObj, volumeRepo, bodyRepo, volumeServ)
 			result, err := uc.Update(ctx, tt.inputAccountID, tt.inputID, tt.inputName, tt.inputIsPublic)
 			if !errors.Is(err, tt.expectError) {
 				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
