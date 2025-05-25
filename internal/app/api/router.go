@@ -20,6 +20,6 @@ func registerRouter(r *gin.Engine) {
 	entries.GET("/:volumeName", entryHdl.Search)
 	entries.PUT("/:volumeName/*key", entryHdl.Update)
 	entries.DELETE("/:volumeName/*key", entryHdl.Delete)
-	entries.HEAD("/:volumeName/*key", entryHdl.Head)
+	entries.HEAD("/:volumeName/*key", entryHdl.GetMeta)
 	entries.GET("/:volumeName/*key", entryHdl.GetOne)
 }

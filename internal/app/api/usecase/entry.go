@@ -21,7 +21,7 @@ type EntryUsecase interface {
 	Create(context.Context, uuid.UUID, string, string, uint64, io.Reader) (*dto.EntryDTO, error)
 	Update(context.Context, uuid.UUID, string, string, string) (*dto.EntryDTO, error)
 	Delete(context.Context, uuid.UUID, string, string) error
-	Head(context.Context, uuid.UUID, string, string) (*dto.EntryDTO, error)
+	GetMeta(context.Context, uuid.UUID, string, string) (*dto.EntryDTO, error)
 	GetOne(context.Context, uuid.UUID, string, string) (*dto.EntryDTO, io.ReadCloser, error)
 	Search(context.Context, uuid.UUID, string, *string, *uint64) ([]*dto.EntryDTO, error)
 }
@@ -156,7 +156,7 @@ func (u *entryUsecase) Delete(ctx context.Context, accountID uuid.UUID, volumeNa
 	})
 }
 
-func (u *entryUsecase) Head(ctx context.Context, accountID uuid.UUID, volumeName, key string) (*dto.EntryDTO, error) {
+func (u *entryUsecase) GetMeta(ctx context.Context, accountID uuid.UUID, volumeName, key string) (*dto.EntryDTO, error) {
 	var entry *entity.Entry
 
 	if err := u.transactionObj.Transaction(ctx, func(ctx context.Context) error {

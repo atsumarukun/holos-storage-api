@@ -386,7 +386,7 @@ func TestEntry_Delete(t *testing.T) {
 	}
 }
 
-func TestEntry_Head(t *testing.T) {
+func TestEntry_GetMeta(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
 	id := uuid.New()
@@ -422,7 +422,7 @@ func TestEntry_Head(t *testing.T) {
 			setMockEntryUC: func(ctx context.Context, entryUC *mockUsecase.MockEntryUsecase) {
 				entryUC.
 					EXPECT().
-					Head(ctx, gomock.Any(), gomock.Any(), gomock.Any()).
+					GetMeta(ctx, gomock.Any(), gomock.Any(), gomock.Any()).
 					Return(entryDTO, nil).
 					Times(1)
 			},
@@ -446,7 +446,7 @@ func TestEntry_Head(t *testing.T) {
 			setMockEntryUC: func(ctx context.Context, entryUC *mockUsecase.MockEntryUsecase) {
 				entryUC.
 					EXPECT().
-					Head(ctx, gomock.Any(), gomock.Any(), gomock.Any()).
+					GetMeta(ctx, gomock.Any(), gomock.Any(), gomock.Any()).
 					Return(nil, sql.ErrConnDone).
 					Times(1)
 			},
@@ -479,7 +479,7 @@ func TestEntry_Head(t *testing.T) {
 			tt.setMockEntryUC(ctx, entryUC)
 
 			hdl := handler.NewEntryHandler(entryUC)
-			hdl.Head(c)
+			hdl.GetMeta(c)
 
 			c.Writer.WriteHeaderNow()
 
