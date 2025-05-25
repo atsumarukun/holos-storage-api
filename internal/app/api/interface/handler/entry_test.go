@@ -20,6 +20,7 @@ import (
 	"go.uber.org/mock/gomock"
 
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/interface/handler"
+	"github.com/atsumarukun/holos-storage-api/internal/app/api/interface/schema"
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/usecase/dto"
 	mockUsecase "github.com/atsumarukun/holos-storage-api/test/mock/usecase"
 )
@@ -636,7 +637,7 @@ func TestEntry_Search(t *testing.T) {
 			name:           "success",
 			isSetAccountID: true,
 			expectCode:     http.StatusOK,
-			expectResponse: map[string][]map[string]any{"entries": {{"id": entryDTO.ID.String(), "volume_id": entryDTO.VolumeID.String(), "key": entryDTO.Key, "size": entryDTO.Size, "type": entryDTO.Type, "created_at": entryDTO.CreatedAt.Format(time.RFC3339Nano), "updated_at": entryDTO.UpdatedAt.Format(time.RFC3339Nano)}}},
+			expectResponse: map[string][]*schema.EntryResponse{"entries": {{ID: entryDTO.ID, VolumeID: entryDTO.VolumeID, Key: entryDTO.Key, Size: entryDTO.Size, Type: entryDTO.Type, CreatedAt: entryDTO.CreatedAt, UpdatedAt: entryDTO.UpdatedAt}}},
 			setMockEntryUC: func(ctx context.Context, entryUC *mockUsecase.MockEntryUsecase) {
 				entryUC.
 					EXPECT().
@@ -701,16 +702,9 @@ func TestEntry_Search(t *testing.T) {
 			}
 
 			if tt.expectCode == http.StatusOK {
-				var response map[string][]map[string]any
+				var response map[string][]*schema.EntryResponse
 				if err := json.Unmarshal(w.Body.Bytes(), &response); err != nil {
 					t.Error(err)
-				}
-				if entries, ok := response["entries"]; ok {
-					for _, entry := range entries {
-						if size, ok := entry["size"].(float64); ok {
-							entry["size"] = uint64(size)
-						}
-					}
 				}
 				if diff := cmp.Diff(response, tt.expectResponse); diff != "" {
 					t.Error(diff)
