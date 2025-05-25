@@ -12,6 +12,7 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/domain/entity"
+	"github.com/atsumarukun/holos-storage-api/internal/app/api/domain/repository"
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/infrastructure/database"
 	mockDatabase "github.com/atsumarukun/holos-storage-api/test/mock/database"
 )
@@ -242,7 +243,7 @@ func TestVolume_FindOneByName(t *testing.T) {
 			name:         "not found",
 			inputName:    "name",
 			expectResult: nil,
-			expectError:  nil,
+			expectError:  repository.ErrVolumeNotFound,
 			setMockDB: func(mock sqlmock.Sqlmock) {
 				mock.ExpectQuery(regexp.QuoteMeta(`SELECT id, account_id, name, is_public, created_at, updated_at FROM volumes WHERE name = ? LIMIT 1;`)).
 					WithArgs("name").
@@ -323,7 +324,7 @@ func TestVolume_FindOneByNameAndAccountID(t *testing.T) {
 			inputName:      "name",
 			inputAccountID: accountID,
 			expectResult:   nil,
-			expectError:    nil,
+			expectError:    repository.ErrVolumeNotFound,
 			setMockDB: func(mock sqlmock.Sqlmock) {
 				mock.ExpectQuery(regexp.QuoteMeta(`SELECT id, account_id, name, is_public, created_at, updated_at FROM volumes WHERE name = ? AND account_id = ? LIMIT 1;`)).
 					WithArgs("name", accountID).
@@ -406,7 +407,7 @@ func TestVolume_FindOneByIDAndAccountID(t *testing.T) {
 			inputID:        id,
 			inputAccountID: accountID,
 			expectResult:   nil,
-			expectError:    nil,
+			expectError:    repository.ErrVolumeNotFound,
 			setMockDB: func(mock sqlmock.Sqlmock) {
 				mock.ExpectQuery(regexp.QuoteMeta(`SELECT id, account_id, name, is_public, created_at, updated_at FROM volumes WHERE id = ? AND account_id = ? LIMIT 1;`)).
 					WithArgs(id, accountID).

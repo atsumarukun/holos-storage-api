@@ -62,9 +62,6 @@ func (u *entryUsecase) Create(ctx context.Context, accountID uuid.UUID, volumeNa
 		if err != nil {
 			return err
 		}
-		if volume == nil {
-			return ErrVolumeNotFound
-		}
 
 		entryType, bodyReader, err := u.getBodyInfo(body)
 		if err != nil {
@@ -104,9 +101,6 @@ func (u *entryUsecase) Update(ctx context.Context, accountID uuid.UUID, volumeNa
 		volume, err := u.volumeRepo.FindOneByNameAndAccountID(ctx, volumeName, accountID)
 		if err != nil {
 			return err
-		}
-		if volume == nil {
-			return ErrVolumeNotFound
 		}
 
 		entry, err = u.entryRepo.FindOneByKeyAndVolumeIDAndAccountID(ctx, key, volume.ID, accountID)
@@ -151,9 +145,6 @@ func (u *entryUsecase) Delete(ctx context.Context, accountID uuid.UUID, volumeNa
 		if err != nil {
 			return err
 		}
-		if volume == nil {
-			return ErrVolumeNotFound
-		}
 
 		entry, err := u.entryRepo.FindOneByKeyAndVolumeIDAndAccountID(ctx, key, volume.ID, accountID)
 		if err != nil {
@@ -184,9 +175,6 @@ func (u *entryUsecase) Head(ctx context.Context, accountID uuid.UUID, volumeName
 		if err != nil {
 			return err
 		}
-		if volume == nil {
-			return ErrVolumeNotFound
-		}
 
 		entry, err = u.entryRepo.FindOneByKeyAndVolumeIDAndAccountID(ctx, key, volume.ID, accountID)
 		if err != nil {
@@ -212,9 +200,6 @@ func (u *entryUsecase) GetOne(ctx context.Context, accountID uuid.UUID, volumeNa
 		volume, err := u.volumeRepo.FindOneByNameAndAccountID(ctx, volumeName, accountID)
 		if err != nil {
 			return err
-		}
-		if volume == nil {
-			return ErrVolumeNotFound
 		}
 
 		entry, err = u.entryRepo.FindOneByKeyAndVolumeIDAndAccountID(ctx, key, volume.ID, accountID)
@@ -242,9 +227,6 @@ func (u *entryUsecase) Search(ctx context.Context, accountID uuid.UUID, volumeNa
 		volume, err := u.volumeRepo.FindOneByNameAndAccountID(ctx, volumeName, accountID)
 		if err != nil {
 			return err
-		}
-		if volume == nil {
-			return ErrVolumeNotFound
 		}
 
 		entries, err = u.entryRepo.FindByVolumeIDAndAccountID(ctx, volume.ID, accountID, prefix, depth)
