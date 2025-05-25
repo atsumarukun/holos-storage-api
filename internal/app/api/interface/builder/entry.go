@@ -7,8 +7,6 @@ import (
 
 func ToEntryResponse(entry *dto.EntryDTO) *schema.EntryResponse {
 	return &schema.EntryResponse{
-		ID:        entry.ID,
-		VolumeID:  entry.VolumeID,
 		Key:       entry.Key,
 		Size:      entry.Size,
 		Type:      entry.Type,
