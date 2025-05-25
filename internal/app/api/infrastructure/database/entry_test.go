@@ -457,16 +457,6 @@ func TestEntry_FindByVolumeIDAndAccountID(t *testing.T) {
 			},
 		},
 		{
-			name:           "invalid argument",
-			inputVolumeID:  entry.VolumeID,
-			inputAccountID: entry.AccountID,
-			inputPrefix:    nil,
-			inputDepth:     types.ToPointer(uint64(1)),
-			expectResult:   nil,
-			expectError:    database.ErrInvalidArguments,
-			setMockDB:      func(sqlmock.Sqlmock) {},
-		},
-		{
 			name:           "not found",
 			inputVolumeID:  entry.VolumeID,
 			inputAccountID: entry.AccountID,

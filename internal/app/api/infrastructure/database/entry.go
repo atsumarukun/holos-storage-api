@@ -17,10 +17,7 @@ import (
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/pkg/status/code"
 )
 
-var (
-	ErrRequiredEntry    = status.Error(code.Internal, "entry is required")
-	ErrInvalidArguments = status.Error(code.BadRequest, "invalid arguments")
-)
+var ErrRequiredEntry = status.Error(code.Internal, "entry is required")
 
 type entryRepository struct {
 	db *sqlx.DB
@@ -100,11 +97,12 @@ func (r *entryRepository) FindByVolumeIDAndAccountID(ctx context.Context, volume
 		filterArguments = append(filterArguments, *prefix+"/%")
 	}
 	if depth != nil {
-		if prefix == nil {
-			return nil, ErrInvalidArguments
-		}
 		filterQuery += " AND LENGTH(`key`) - LENGTH(REPLACE(`key`, '/', '')) <= LENGTH(?) - LENGTH(REPLACE(?, '/', '')) + ?"
-		filterArguments = append(filterArguments, *prefix, *prefix, *depth)
+		if prefix == nil {
+			filterArguments = append(filterArguments, "", "", *depth-1)
+		} else {
+			filterArguments = append(filterArguments, *prefix, *prefix, *depth)
+		}
 	}
 
 	rows, err := driver.QueryxContext(ctx, "SELECT id, account_id, volume_id, `key`, size, type, created_at, updated_at FROM entries WHERE"+filterQuery+";", filterArguments...)
