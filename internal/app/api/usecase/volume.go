@@ -29,17 +29,20 @@ type VolumeUsecase interface {
 type volumeUsecase struct {
 	transactionObj transaction.TransactionObject
 	volumeRepo     repository.VolumeRepository
+	bodyRepo       repository.BodyRepository
 	volumeServ     service.VolumeService
 }
 
 func NewVolumeUsecase(
 	transactionObj transaction.TransactionObject,
 	volumeRepo repository.VolumeRepository,
+	bodyRepo repository.BodyRepository,
 	volumeServ service.VolumeService,
 ) VolumeUsecase {
 	return &volumeUsecase{
 		transactionObj: transactionObj,
 		volumeRepo:     volumeRepo,
+		bodyRepo:       bodyRepo,
 		volumeServ:     volumeServ,
 	}
 }
@@ -55,7 +58,11 @@ func (u *volumeUsecase) Create(ctx context.Context, accountID uuid.UUID, name st
 			return err
 		}
 
-		return u.volumeRepo.Create(ctx, volume)
+		if err := u.volumeRepo.Create(ctx, volume); err != nil {
+			return err
+		}
+
+		return u.bodyRepo.Create(volume.Name, nil)
 	}); err != nil {
 		return nil, err
 	}
