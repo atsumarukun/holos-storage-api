@@ -66,16 +66,9 @@ func (u *entryUsecase) Create(ctx context.Context, accountID uuid.UUID, volumeNa
 			return ErrVolumeNotFound
 		}
 
-		entryType := "folder"
-		bodyReader := body
-		if body != nil {
-			buf := make([]byte, 512)
-			n, err := body.Read(buf)
-			if err != nil && err != io.EOF {
-				return err
-			}
-			entryType = http.DetectContentType(buf[:n])
-			bodyReader = io.MultiReader(bytes.NewReader(buf[:n]), body)
+		entryType, bodyReader, err := u.getBodyInfo(body)
+		if err != nil {
+			return err
 		}
 
 		entry, err = entity.NewEntry(accountID, volume.ID, key, size, entryType)
@@ -103,6 +96,7 @@ func (u *entryUsecase) Create(ctx context.Context, accountID uuid.UUID, volumeNa
 	return mapper.ToEntryDTO(entry), nil
 }
 
+// nolint:gocyclo //TODO: repositoryの戻り値をnilからerrorに変更した際に消す.
 func (u *entryUsecase) Update(ctx context.Context, accountID uuid.UUID, volumeName, key, newKey string) (*dto.EntryDTO, error) {
 	var entry *entity.Entry
 
@@ -260,4 +254,21 @@ func (u *entryUsecase) Search(ctx context.Context, accountID uuid.UUID, volumeNa
 	}
 
 	return mapper.ToEntryDTOs(entries), nil
+}
+
+func (u *entryUsecase) getBodyInfo(body io.Reader) (string, io.Reader, error) {
+	if body == nil {
+		return "folder", nil, nil
+	}
+
+	buf := make([]byte, 512)
+	n, err := body.Read(buf)
+	if err != nil && err != io.EOF {
+		return "", nil, err
+	}
+
+	entryType := http.DetectContentType(buf[:n])
+	bodyReader := io.MultiReader(bytes.NewReader(buf[:n]), body)
+
+	return entryType, bodyReader, nil
 }
