@@ -116,6 +116,10 @@ func (u *volumeUsecase) Delete(ctx context.Context, accountID, id uuid.UUID) err
 			return ErrVolumeNotFound
 		}
 
+		if err := u.volumeServ.CanDelete(ctx, volume); err != nil {
+			return err
+		}
+
 		if err := u.volumeRepo.Delete(ctx, volume); err != nil {
 			return err
 		}

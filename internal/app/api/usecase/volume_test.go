@@ -555,6 +555,7 @@ func TestVolume_Delete(t *testing.T) {
 		setMockTransactionObj func(context.Context, *mockTransaction.MockTransactionObject)
 		setMockVolumeRepo     func(context.Context, *mockRepository.MockVolumeRepository)
 		setMockBodyRepo       func(context.Context, *mockRepository.MockBodyRepository)
+		setMockVolumeServ     func(context.Context, *mockService.MockVolumeService)
 	}{
 		{
 			name:           "success",
@@ -589,6 +590,13 @@ func TestVolume_Delete(t *testing.T) {
 					Return(nil).
 					Times(1)
 			},
+			setMockVolumeServ: func(ctx context.Context, volumeServ *mockService.MockVolumeService) {
+				volumeServ.
+					EXPECT().
+					CanDelete(ctx, gomock.Any()).
+					Return(nil).
+					Times(1)
+			},
 		},
 		{
 			name:           "volume not found",
@@ -611,7 +619,8 @@ func TestVolume_Delete(t *testing.T) {
 					Return(nil, nil).
 					Times(1)
 			},
-			setMockBodyRepo: func(context.Context, *mockRepository.MockBodyRepository) {},
+			setMockBodyRepo:   func(context.Context, *mockRepository.MockBodyRepository) {},
+			setMockVolumeServ: func(context.Context, *mockService.MockVolumeService) {},
 		},
 		{
 			name:           "find volume error",
@@ -634,7 +643,38 @@ func TestVolume_Delete(t *testing.T) {
 					Return(nil, sql.ErrConnDone).
 					Times(1)
 			},
+			setMockBodyRepo:   func(context.Context, *mockRepository.MockBodyRepository) {},
+			setMockVolumeServ: func(context.Context, *mockService.MockVolumeService) {},
+		},
+		{
+			name:           "volume has entries",
+			inputAccountID: accountID,
+			inputID:        id,
+			expectError:    service.ErrVolumeHasEntries,
+			setMockTransactionObj: func(ctx context.Context, transactionObj *mockTransaction.MockTransactionObject) {
+				transactionObj.
+					EXPECT().
+					Transaction(ctx, gomock.Any()).
+					DoAndReturn(func(ctx context.Context, fn func(context.Context) error) error {
+						return fn(ctx)
+					}).
+					Times(1)
+			},
+			setMockVolumeRepo: func(ctx context.Context, volumeRepo *mockRepository.MockVolumeRepository) {
+				volumeRepo.
+					EXPECT().
+					FindOneByIDAndAccountID(ctx, gomock.Any(), gomock.Any()).
+					Return(volume, nil).
+					Times(1)
+			},
 			setMockBodyRepo: func(context.Context, *mockRepository.MockBodyRepository) {},
+			setMockVolumeServ: func(ctx context.Context, volumeServ *mockService.MockVolumeService) {
+				volumeServ.
+					EXPECT().
+					CanDelete(ctx, gomock.Any()).
+					Return(service.ErrVolumeHasEntries).
+					Times(1)
+			},
 		},
 		{
 			name:           "delete volume error",
@@ -663,6 +703,13 @@ func TestVolume_Delete(t *testing.T) {
 					Times(1)
 			},
 			setMockBodyRepo: func(context.Context, *mockRepository.MockBodyRepository) {},
+			setMockVolumeServ: func(ctx context.Context, volumeServ *mockService.MockVolumeService) {
+				volumeServ.
+					EXPECT().
+					CanDelete(ctx, gomock.Any()).
+					Return(nil).
+					Times(1)
+			},
 		},
 		{
 			name:           "delete body error",
@@ -697,6 +744,13 @@ func TestVolume_Delete(t *testing.T) {
 					Return(afero.ErrFileClosed).
 					Times(1)
 			},
+			setMockVolumeServ: func(ctx context.Context, volumeServ *mockService.MockVolumeService) {
+				volumeServ.
+					EXPECT().
+					CanDelete(ctx, gomock.Any()).
+					Return(nil).
+					Times(1)
+			},
 		},
 	}
 	for _, tt := range tests {
@@ -715,7 +769,10 @@ func TestVolume_Delete(t *testing.T) {
 			bodyRepo := mockRepository.NewMockBodyRepository(ctrl)
 			tt.setMockBodyRepo(ctx, bodyRepo)
 
-			uc := usecase.NewVolumeUsecase(transactionObj, volumeRepo, bodyRepo, nil)
+			volumeServ := mockService.NewMockVolumeService(ctrl)
+			tt.setMockVolumeServ(ctx, volumeServ)
+
+			uc := usecase.NewVolumeUsecase(transactionObj, volumeRepo, bodyRepo, volumeServ)
 			if err := uc.Delete(ctx, tt.inputAccountID, tt.inputID); !errors.Is(err, tt.expectError) {
 				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
 			}
