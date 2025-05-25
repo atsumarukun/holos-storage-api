@@ -16,3 +16,11 @@ func ToEntryResponse(entry *dto.EntryDTO) *schema.EntryResponse {
 		UpdatedAt: entry.UpdatedAt,
 	}
 }
+
+func ToEntryResponses(entries []*dto.EntryDTO) []*schema.EntryResponse {
+	responses := make([]*schema.EntryResponse, len(entries))
+	for i, entry := range entries {
+		responses[i] = ToEntryResponse(entry)
+	}
+	return responses
+}
