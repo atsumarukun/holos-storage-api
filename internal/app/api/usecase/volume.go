@@ -29,17 +29,20 @@ type VolumeUsecase interface {
 type volumeUsecase struct {
 	transactionObj transaction.TransactionObject
 	volumeRepo     repository.VolumeRepository
+	bodyRepo       repository.BodyRepository
 	volumeServ     service.VolumeService
 }
 
 func NewVolumeUsecase(
 	transactionObj transaction.TransactionObject,
 	volumeRepo repository.VolumeRepository,
+	bodyRepo repository.BodyRepository,
 	volumeServ service.VolumeService,
 ) VolumeUsecase {
 	return &volumeUsecase{
 		transactionObj: transactionObj,
 		volumeRepo:     volumeRepo,
+		bodyRepo:       bodyRepo,
 		volumeServ:     volumeServ,
 	}
 }

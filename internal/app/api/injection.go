@@ -36,7 +36,7 @@ func inject(db *sqlx.DB, fs afero.Fs, config *serverConfig) {
 	entryServ := service.NewEntryService(entryRepo)
 
 	authorizationUC := usecase.NewAuthorizationUsecase(accountRepo)
-	volumeUC := usecase.NewVolumeUsecase(transactionObj, volumeRepo, volumeServ)
+	volumeUC := usecase.NewVolumeUsecase(transactionObj, volumeRepo, bodyRepo, volumeServ)
 	entryUC := usecase.NewEntryUsecase(transactionObj, entryRepo, bodyRepo, volumeRepo, entryServ)
 
 	authorizationMW = middleware.NewAuthorizationMiddleware(authorizationUC)

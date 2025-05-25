@@ -158,7 +158,7 @@ func TestVolume_Create(t *testing.T) {
 			volumeServ := mockService.NewMockVolumeService(ctrl)
 			tt.setMockVolumeServ(ctx, volumeServ)
 
-			uc := usecase.NewVolumeUsecase(transactionObj, volumeRepo, volumeServ)
+			uc := usecase.NewVolumeUsecase(transactionObj, volumeRepo, nil, volumeServ)
 			result, err := uc.Create(ctx, tt.inputAccountID, tt.inputName, tt.inputIsPublic)
 			if !errors.Is(err, tt.expectError) {
 				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
@@ -405,7 +405,7 @@ func TestVolume_Update(t *testing.T) {
 			volumeServ := mockService.NewMockVolumeService(ctrl)
 			tt.setMockVolumeServ(ctx, volumeServ)
 
-			uc := usecase.NewVolumeUsecase(transactionObj, volumeRepo, volumeServ)
+			uc := usecase.NewVolumeUsecase(transactionObj, volumeRepo, nil, volumeServ)
 			result, err := uc.Update(ctx, tt.inputAccountID, tt.inputID, tt.inputName, tt.inputIsPublic)
 			if !errors.Is(err, tt.expectError) {
 				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
@@ -553,7 +553,7 @@ func TestVolume_Delete(t *testing.T) {
 			volumeRepo := mockRepository.NewMockVolumeRepository(ctrl)
 			tt.setMockVolumeRepo(ctx, volumeRepo)
 
-			uc := usecase.NewVolumeUsecase(transactionObj, volumeRepo, nil)
+			uc := usecase.NewVolumeUsecase(transactionObj, volumeRepo, nil, nil)
 			if err := uc.Delete(ctx, tt.inputAccountID, tt.inputID); !errors.Is(err, tt.expectError) {
 				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
 			}
@@ -642,7 +642,7 @@ func TestVolume_GetOne(t *testing.T) {
 			volumeRepo := mockRepository.NewMockVolumeRepository(ctrl)
 			tt.setMockVolumeRepo(ctx, volumeRepo)
 
-			uc := usecase.NewVolumeUsecase(nil, volumeRepo, nil)
+			uc := usecase.NewVolumeUsecase(nil, volumeRepo, nil, nil)
 			result, err := uc.GetOne(ctx, tt.inputAccountID, tt.inputID)
 			if !errors.Is(err, tt.expectError) {
 				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
@@ -735,7 +735,7 @@ func TestVolume_GetAll(t *testing.T) {
 			volumeRepo := mockRepository.NewMockVolumeRepository(ctrl)
 			tt.setMockVolumeRepo(ctx, volumeRepo)
 
-			uc := usecase.NewVolumeUsecase(nil, volumeRepo, nil)
+			uc := usecase.NewVolumeUsecase(nil, volumeRepo, nil, nil)
 			result, err := uc.GetAll(ctx, tt.inputAccountID)
 			if !errors.Is(err, tt.expectError) {
 				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
