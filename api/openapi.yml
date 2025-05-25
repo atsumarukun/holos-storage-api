@@ -74,7 +74,7 @@ paths:
           $ref: "#/components/responses/403"
         500:
           $ref: "#/components/responses/500"
-  /volumes/{id}:
+  /volumes/{name}:
     put:
       summary: "ボリューム更新"
       tags:
@@ -90,6 +90,13 @@ paths:
           required: true
           description: "セッショントークンまたはアクセスキー"
           example: "Session 1Ty1HKTPKTt8xEi-_3HTbWf2SCHOdqOS"
+        - in: "path"
+          name: "name"
+          schema:
+            type: "string"
+          required: true
+          description: "ボリューム名"
+          example: "volume_name"
       requestBody:
         $ref: "#/components/requestBodies/update_volume"
       responses:
@@ -120,6 +127,13 @@ paths:
           required: true
           description: "セッショントークンまたはアクセスキー"
           example: "Session 1Ty1HKTPKTt8xEi-_3HTbWf2SCHOdqOS"
+        - in: "path"
+          name: "name"
+          schema:
+            type: "string"
+          required: true
+          description: "ボリューム名"
+          example: "volume_name"
       responses:
         204:
           $ref: "#/components/responses/204"
@@ -146,6 +160,13 @@ paths:
           required: true
           description: "セッショントークンまたはアクセスキー"
           example: "Session 1Ty1HKTPKTt8xEi-_3HTbWf2SCHOdqOS"
+        - in: "path"
+          name: "name"
+          schema:
+            type: "string"
+          required: true
+          description: "ボリューム名"
+          example: "volume_name"
       responses:
         200:
           $ref: "#/components/responses/get_volume"
