@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"io"
 	"testing"
 	"time"
 
@@ -41,6 +42,7 @@ func TestVolume_Create(t *testing.T) {
 		expectError           error
 		setMockTransactionObj func(context.Context, *mockTransaction.MockTransactionObject)
 		setMockVolumeRepo     func(context.Context, *mockRepository.MockVolumeRepository)
+		setMockBodyRepo       func(context.Context, *mockRepository.MockBodyRepository)
 		setMockVolumeServ     func(context.Context, *mockService.MockVolumeService)
 	}{
 		{
@@ -66,6 +68,13 @@ func TestVolume_Create(t *testing.T) {
 					Return(nil).
 					Times(1)
 			},
+			setMockBodyRepo: func(_ context.Context, bodyRepo *mockRepository.MockBodyRepository) {
+				bodyRepo.
+					EXPECT().
+					Create(gomock.Any(), gomock.Any()).
+					Return(nil).
+					Times(1)
+			},
 			setMockVolumeServ: func(ctx context.Context, volumeServ *mockService.MockVolumeService) {
 				volumeServ.
 					EXPECT().
@@ -83,6 +92,7 @@ func TestVolume_Create(t *testing.T) {
 			expectError:           entity.ErrShortVolumeName,
 			setMockTransactionObj: func(context.Context, *mockTransaction.MockTransactionObject) {},
 			setMockVolumeRepo:     func(context.Context, *mockRepository.MockVolumeRepository) {},
+			setMockBodyRepo:       func(context.Context, *mockRepository.MockBodyRepository) {},
 			setMockVolumeServ:     func(context.Context, *mockService.MockVolumeService) {},
 		},
 		{
@@ -102,6 +112,7 @@ func TestVolume_Create(t *testing.T) {
 					Times(1)
 			},
 			setMockVolumeRepo: func(context.Context, *mockRepository.MockVolumeRepository) {},
+			setMockBodyRepo:   func(context.Context, *mockRepository.MockBodyRepository) {},
 			setMockVolumeServ: func(ctx context.Context, volumeServ *mockService.MockVolumeService) {
 				volumeServ.
 					EXPECT().
@@ -111,7 +122,7 @@ func TestVolume_Create(t *testing.T) {
 			},
 		},
 		{
-			name:           "create error",
+			name:           "create volume error",
 			inputAccountID: accountID,
 			inputName:      "name",
 			inputIsPublic:  false,
@@ -131,6 +142,45 @@ func TestVolume_Create(t *testing.T) {
 					EXPECT().
 					Create(ctx, gomock.Any()).
 					Return(sql.ErrConnDone).
+					Times(1)
+			},
+			setMockBodyRepo: func(context.Context, *mockRepository.MockBodyRepository) {},
+			setMockVolumeServ: func(ctx context.Context, volumeServ *mockService.MockVolumeService) {
+				volumeServ.
+					EXPECT().
+					Exists(ctx, gomock.Any()).
+					Return(nil).
+					Times(1)
+			},
+		},
+		{
+			name:           "create body error",
+			inputAccountID: accountID,
+			inputName:      "name",
+			inputIsPublic:  false,
+			expectResult:   nil,
+			expectError:    io.ErrNoProgress,
+			setMockTransactionObj: func(ctx context.Context, transactionObj *mockTransaction.MockTransactionObject) {
+				transactionObj.
+					EXPECT().
+					Transaction(ctx, gomock.Any()).
+					DoAndReturn(func(ctx context.Context, fn func(context.Context) error) error {
+						return fn(ctx)
+					}).
+					Times(1)
+			},
+			setMockVolumeRepo: func(ctx context.Context, volumeRepo *mockRepository.MockVolumeRepository) {
+				volumeRepo.
+					EXPECT().
+					Create(ctx, gomock.Any()).
+					Return(nil).
+					Times(1)
+			},
+			setMockBodyRepo: func(_ context.Context, bodyRepo *mockRepository.MockBodyRepository) {
+				bodyRepo.
+					EXPECT().
+					Create(gomock.Any(), gomock.Any()).
+					Return(io.ErrNoProgress).
 					Times(1)
 			},
 			setMockVolumeServ: func(ctx context.Context, volumeServ *mockService.MockVolumeService) {
@@ -155,10 +205,13 @@ func TestVolume_Create(t *testing.T) {
 			volumeRepo := mockRepository.NewMockVolumeRepository(ctrl)
 			tt.setMockVolumeRepo(ctx, volumeRepo)
 
+			bodyRepo := mockRepository.NewMockBodyRepository(ctrl)
+			tt.setMockBodyRepo(ctx, bodyRepo)
+
 			volumeServ := mockService.NewMockVolumeService(ctrl)
 			tt.setMockVolumeServ(ctx, volumeServ)
 
-			uc := usecase.NewVolumeUsecase(transactionObj, volumeRepo, nil, volumeServ)
+			uc := usecase.NewVolumeUsecase(transactionObj, volumeRepo, bodyRepo, volumeServ)
 			result, err := uc.Create(ctx, tt.inputAccountID, tt.inputName, tt.inputIsPublic)
 			if !errors.Is(err, tt.expectError) {
 				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
