@@ -84,7 +84,7 @@ func TestVolume_Exists(t *testing.T) {
 			volumeRepo := mockRepository.NewMockVolumeRepository(ctrl)
 			tt.setMockVolumeRepo(ctx, volumeRepo)
 
-			serv := service.NewVolumeService(volumeRepo)
+			serv := service.NewVolumeService(volumeRepo, nil)
 			if err := serv.Exists(ctx, tt.inputVolume); !errors.Is(err, tt.expectError) {
 				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
 			}

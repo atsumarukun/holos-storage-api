@@ -21,11 +21,13 @@ type VolumeService interface {
 
 type volumeService struct {
 	volumeRepo repository.VolumeRepository
+	entryRepo  repository.EntryRepository
 }
 
-func NewVolumeService(volumeRepo repository.VolumeRepository) VolumeService {
+func NewVolumeService(volumeRepo repository.VolumeRepository, entryRepo repository.EntryRepository) VolumeService {
 	return &volumeService{
 		volumeRepo: volumeRepo,
+		entryRepo:  entryRepo,
 	}
 }
 
