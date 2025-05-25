@@ -13,13 +13,9 @@ import (
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/domain/repository"
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/domain/repository/pkg/transaction"
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/domain/service"
-	"github.com/atsumarukun/holos-storage-api/internal/app/api/pkg/status"
-	"github.com/atsumarukun/holos-storage-api/internal/app/api/pkg/status/code"
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/usecase/dto"
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/usecase/mapper"
 )
-
-var ErrEntryNotFound = status.Error(code.NotFound, "entry not found")
 
 type EntryUsecase interface {
 	Create(context.Context, uuid.UUID, string, string, uint64, io.Reader) (*dto.EntryDTO, error)
@@ -93,7 +89,6 @@ func (u *entryUsecase) Create(ctx context.Context, accountID uuid.UUID, volumeNa
 	return mapper.ToEntryDTO(entry), nil
 }
 
-// nolint:gocyclo //TODO: repositoryの戻り値をnilからerrorに変更した際に消す.
 func (u *entryUsecase) Update(ctx context.Context, accountID uuid.UUID, volumeName, key, newKey string) (*dto.EntryDTO, error) {
 	var entry *entity.Entry
 
@@ -106,9 +101,6 @@ func (u *entryUsecase) Update(ctx context.Context, accountID uuid.UUID, volumeNa
 		entry, err = u.entryRepo.FindOneByKeyAndVolumeIDAndAccountID(ctx, key, volume.ID, accountID)
 		if err != nil {
 			return err
-		}
-		if entry == nil {
-			return ErrEntryNotFound
 		}
 
 		if err := entry.SetKey(newKey); err != nil {
@@ -150,9 +142,6 @@ func (u *entryUsecase) Delete(ctx context.Context, accountID uuid.UUID, volumeNa
 		if err != nil {
 			return err
 		}
-		if entry == nil {
-			return ErrEntryNotFound
-		}
 
 		if err := u.entryServ.DeleteDescendants(ctx, entry); err != nil {
 			return err
@@ -180,9 +169,6 @@ func (u *entryUsecase) Head(ctx context.Context, accountID uuid.UUID, volumeName
 		if err != nil {
 			return err
 		}
-		if entry == nil {
-			return ErrEntryNotFound
-		}
 
 		return nil
 	}); err != nil {
@@ -205,9 +191,6 @@ func (u *entryUsecase) GetOne(ctx context.Context, accountID uuid.UUID, volumeNa
 		entry, err = u.entryRepo.FindOneByKeyAndVolumeIDAndAccountID(ctx, key, volume.ID, accountID)
 		if err != nil {
 			return err
-		}
-		if entry == nil {
-			return ErrEntryNotFound
 		}
 
 		path := volume.Name + "/" + entry.Key

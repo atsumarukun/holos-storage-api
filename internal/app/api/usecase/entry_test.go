@@ -556,40 +556,6 @@ func TestEntry_Update(t *testing.T) {
 			setMockEntryServ: func(context.Context, *mockService.MockEntryService) {},
 		},
 		{
-			name:            "entry not found",
-			inputAccountID:  entry.AccountID,
-			inputVolumeName: "volume",
-			inputKey:        "test/sample.txt",
-			inputNewKey:     "update/sample.txt",
-			expectResult:    nil,
-			expectError:     usecase.ErrEntryNotFound,
-			setMockTransactionObj: func(ctx context.Context, transactionObj *mockTransaction.MockTransactionObject) {
-				transactionObj.
-					EXPECT().
-					Transaction(ctx, gomock.Any()).
-					DoAndReturn(func(ctx context.Context, fn func(context.Context) error) error {
-						return fn(ctx)
-					}).
-					Times(1)
-			},
-			setMockEntryRepo: func(ctx context.Context, entryRepo *mockRepository.MockEntryRepository) {
-				entryRepo.
-					EXPECT().
-					FindOneByKeyAndVolumeIDAndAccountID(ctx, gomock.Any(), gomock.Any(), gomock.Any()).
-					Return(nil, nil).
-					Times(1)
-			},
-			setMockBodyRepo: func(context.Context, *mockRepository.MockBodyRepository) {},
-			setMockVolumeRepo: func(ctx context.Context, volumeRepo *mockRepository.MockVolumeRepository) {
-				volumeRepo.
-					EXPECT().
-					FindOneByNameAndAccountID(ctx, gomock.Any(), gomock.Any()).
-					Return(volume, nil).
-					Times(1)
-			},
-			setMockEntryServ: func(context.Context, *mockService.MockEntryService) {},
-		},
-		{
 			name:            "entry already exists",
 			inputAccountID:  entry.AccountID,
 			inputVolumeName: "volume",
@@ -961,38 +927,6 @@ func TestEntry_Delete(t *testing.T) {
 			},
 		},
 		{
-			name:            "entry not found",
-			inputAccountID:  entry.AccountID,
-			inputVolumeName: "volume",
-			inputKey:        "test/sample.txt",
-			expectError:     usecase.ErrEntryNotFound,
-			setMockTransactionObj: func(ctx context.Context, transactionObj *mockTransaction.MockTransactionObject) {
-				transactionObj.
-					EXPECT().
-					Transaction(ctx, gomock.Any()).
-					DoAndReturn(func(ctx context.Context, fn func(context.Context) error) error {
-						return fn(ctx)
-					}).
-					Times(1)
-			},
-			setMockEntryRepo: func(ctx context.Context, entryRepo *mockRepository.MockEntryRepository) {
-				entryRepo.
-					EXPECT().
-					FindOneByKeyAndVolumeIDAndAccountID(ctx, gomock.Any(), gomock.Any(), gomock.Any()).
-					Return(nil, nil).
-					Times(1)
-			},
-			setMockBodyRepo: func(context.Context, *mockRepository.MockBodyRepository) {},
-			setMockVolumeRepo: func(ctx context.Context, volumeRepo *mockRepository.MockVolumeRepository) {
-				volumeRepo.
-					EXPECT().
-					FindOneByNameAndAccountID(ctx, gomock.Any(), gomock.Any()).
-					Return(volume, nil).
-					Times(1)
-			},
-			setMockEntryServ: func(context.Context, *mockService.MockEntryService) {},
-		},
-		{
 			name:            "delete descendant entries error",
 			inputAccountID:  entry.AccountID,
 			inputVolumeName: "volume",
@@ -1226,37 +1160,6 @@ func TestEntry_Head(t *testing.T) {
 			},
 		},
 		{
-			name:            "entry not found",
-			inputAccountID:  entry.AccountID,
-			inputVolumeName: "volume",
-			inputKey:        "test/sample.txt",
-			expectResult:    nil,
-			expectError:     usecase.ErrEntryNotFound,
-			setMockTransactionObj: func(ctx context.Context, transactionObj *mockTransaction.MockTransactionObject) {
-				transactionObj.
-					EXPECT().
-					Transaction(ctx, gomock.Any()).
-					DoAndReturn(func(ctx context.Context, fn func(context.Context) error) error {
-						return fn(ctx)
-					}).
-					Times(1)
-			},
-			setMockEntryRepo: func(ctx context.Context, entryRepo *mockRepository.MockEntryRepository) {
-				entryRepo.
-					EXPECT().
-					FindOneByKeyAndVolumeIDAndAccountID(ctx, gomock.Any(), gomock.Any(), gomock.Any()).
-					Return(nil, nil).
-					Times(1)
-			},
-			setMockVolumeRepo: func(ctx context.Context, volumeRepo *mockRepository.MockVolumeRepository) {
-				volumeRepo.
-					EXPECT().
-					FindOneByNameAndAccountID(ctx, gomock.Any(), gomock.Any()).
-					Return(volume, nil).
-					Times(1)
-			},
-		},
-		{
 			name:            "find entry error",
 			inputAccountID:  entry.AccountID,
 			inputVolumeName: "volume",
@@ -1391,39 +1294,6 @@ func TestEntry_GetOne(t *testing.T) {
 					Return(nil, nil).
 					Times(1)
 			},
-			setMockVolumeRepo: func(ctx context.Context, volumeRepo *mockRepository.MockVolumeRepository) {
-				volumeRepo.
-					EXPECT().
-					FindOneByNameAndAccountID(ctx, gomock.Any(), gomock.Any()).
-					Return(volume, nil).
-					Times(1)
-			},
-		},
-		{
-			name:            "entry not found",
-			inputAccountID:  entry.AccountID,
-			inputVolumeName: "volume",
-			inputKey:        "test/sample.txt",
-			expectEntry:     nil,
-			expectBody:      nil,
-			expectError:     usecase.ErrEntryNotFound,
-			setMockTransactionObj: func(ctx context.Context, transactionObj *mockTransaction.MockTransactionObject) {
-				transactionObj.
-					EXPECT().
-					Transaction(ctx, gomock.Any()).
-					DoAndReturn(func(ctx context.Context, fn func(context.Context) error) error {
-						return fn(ctx)
-					}).
-					Times(1)
-			},
-			setMockEntryRepo: func(ctx context.Context, entryRepo *mockRepository.MockEntryRepository) {
-				entryRepo.
-					EXPECT().
-					FindOneByKeyAndVolumeIDAndAccountID(ctx, gomock.Any(), gomock.Any(), gomock.Any()).
-					Return(nil, nil).
-					Times(1)
-			},
-			setMockBodyRepo: func(context.Context, *mockRepository.MockBodyRepository) {},
 			setMockVolumeRepo: func(ctx context.Context, volumeRepo *mockRepository.MockVolumeRepository) {
 				volumeRepo.
 					EXPECT().

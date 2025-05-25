@@ -40,12 +40,12 @@ func (s *entryService) Exists(ctx context.Context, entry *entity.Entry) error {
 		return ErrRequiredEntry
 	}
 
-	ent, err := s.entryRepo.FindOneByKeyAndVolumeID(ctx, entry.Key, entry.VolumeID)
+	_, err := s.entryRepo.FindOneByKeyAndVolumeID(ctx, entry.Key, entry.VolumeID)
 	if err != nil {
+		if errors.Is(err, repository.ErrEntryNotFound) {
+			return nil
+		}
 		return err
-	}
-	if ent == nil {
-		return nil
 	}
 	return ErrEntryAlreadyExists
 }

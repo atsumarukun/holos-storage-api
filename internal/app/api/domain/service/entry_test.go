@@ -11,6 +11,7 @@ import (
 	"go.uber.org/mock/gomock"
 
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/domain/entity"
+	"github.com/atsumarukun/holos-storage-api/internal/app/api/domain/repository"
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/domain/service"
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/pkg/types"
 	mockRepository "github.com/atsumarukun/holos-storage-api/test/mock/domain/repository"
@@ -42,7 +43,7 @@ func TestEntry_Exists(t *testing.T) {
 				entryRepo.
 					EXPECT().
 					FindOneByKeyAndVolumeID(ctx, entry.Key, entry.VolumeID).
-					Return(nil, nil).
+					Return(nil, repository.ErrEntryNotFound).
 					Times(1)
 			},
 		},
@@ -185,7 +186,7 @@ func TestEntry_CreateAncestors(t *testing.T) {
 				entryRepo.
 					EXPECT().
 					FindOneByKeyAndVolumeID(ctx, ancestorEntry.Key, ancestorEntry.VolumeID).
-					Return(nil, nil).
+					Return(nil, repository.ErrEntryNotFound).
 					AnyTimes()
 				entryRepo.
 					EXPECT().
