@@ -27,6 +27,7 @@ type EntryHandler interface {
 	Delete(*gin.Context)
 	Head(*gin.Context)
 	GetOne(*gin.Context)
+	Search(*gin.Context)
 }
 
 type entryHandler struct {
@@ -192,6 +193,8 @@ func (h *entryHandler) GetOne(c *gin.Context) {
 		return
 	}
 }
+
+func (h *entryHandler) Search(c *gin.Context) {}
 
 func (h *entryHandler) openFile(fileHeader *multipart.FileHeader) (uint64, multipart.File, error) {
 	if fileHeader == nil {
