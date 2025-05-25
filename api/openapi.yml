@@ -354,7 +354,6 @@ paths:
           name: "Authorization"
           schema:
             type: "string"
-          required: true
           description: "セッショントークンまたはアクセスキー"
           example: "Session 1Ty1HKTPKTt8xEi-_3HTbWf2SCHOdqOS"
         - in: "path"
@@ -407,7 +406,6 @@ paths:
           name: "Authorization"
           schema:
             type: "string"
-          required: true
           description: "セッショントークンまたはアクセスキー"
           example: "Session 1Ty1HKTPKTt8xEi-_3HTbWf2SCHOdqOS"
         - in: "path"
