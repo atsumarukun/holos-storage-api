@@ -83,6 +83,8 @@ func (u *volumeUsecase) Update(ctx context.Context, accountID, id uuid.UUID, nam
 			return ErrVolumeNotFound
 		}
 
+		oldName := volume.Name
+
 		if err := volume.SetName(name); err != nil {
 			return err
 		}
@@ -92,7 +94,11 @@ func (u *volumeUsecase) Update(ctx context.Context, accountID, id uuid.UUID, nam
 			return err
 		}
 
-		return u.volumeRepo.Update(ctx, volume)
+		if err := u.volumeRepo.Update(ctx, volume); err != nil {
+			return err
+		}
+
+		return u.bodyRepo.Update(oldName, volume.Name)
 	}); err != nil {
 		return nil, err
 	}
