@@ -78,7 +78,7 @@ func TestEntry_Create(t *testing.T) {
 			buildBody:      buildMultipartBody,
 			isSetAccountID: true,
 			expectCode:     http.StatusCreated,
-			expectResponse: map[string]any{"id": entryDTO.ID.String(), "volume_id": entryDTO.VolumeID.String(), "key": entryDTO.Key, "size": entryDTO.Size, "type": entryDTO.Type, "created_at": entryDTO.CreatedAt.Format(time.RFC3339Nano), "updated_at": entryDTO.UpdatedAt.Format(time.RFC3339Nano)},
+			expectResponse: map[string]any{"key": entryDTO.Key, "size": entryDTO.Size, "type": entryDTO.Type, "created_at": entryDTO.CreatedAt.Format(time.RFC3339Nano), "updated_at": entryDTO.UpdatedAt.Format(time.RFC3339Nano)},
 			setMockEntryUC: func(ctx context.Context, entryUC *mockUsecase.MockEntryUsecase) {
 				entryUC.
 					EXPECT().
@@ -199,7 +199,7 @@ func TestEntry_Update(t *testing.T) {
 			requestJSON:    []byte(`{"key": "update/sample.txt"}`),
 			isSetAccountID: true,
 			expectCode:     http.StatusOK,
-			expectResponse: map[string]any{"id": entryDTO.ID.String(), "volume_id": entryDTO.VolumeID.String(), "key": entryDTO.Key, "size": entryDTO.Size, "type": entryDTO.Type, "created_at": entryDTO.CreatedAt.Format(time.RFC3339Nano), "updated_at": entryDTO.UpdatedAt.Format(time.RFC3339Nano)},
+			expectResponse: map[string]any{"key": entryDTO.Key, "size": entryDTO.Size, "type": entryDTO.Type, "created_at": entryDTO.CreatedAt.Format(time.RFC3339Nano), "updated_at": entryDTO.UpdatedAt.Format(time.RFC3339Nano)},
 			setMockEntryUC: func(ctx context.Context, entryUC *mockUsecase.MockEntryUsecase) {
 				entryUC.
 					EXPECT().
@@ -637,7 +637,7 @@ func TestEntry_Search(t *testing.T) {
 			name:           "success",
 			isSetAccountID: true,
 			expectCode:     http.StatusOK,
-			expectResponse: map[string][]*schema.EntryResponse{"entries": {{ID: entryDTO.ID, VolumeID: entryDTO.VolumeID, Key: entryDTO.Key, Size: entryDTO.Size, Type: entryDTO.Type, CreatedAt: entryDTO.CreatedAt, UpdatedAt: entryDTO.UpdatedAt}}},
+			expectResponse: map[string][]*schema.EntryResponse{"entries": {{Key: entryDTO.Key, Size: entryDTO.Size, Type: entryDTO.Type, CreatedAt: entryDTO.CreatedAt, UpdatedAt: entryDTO.UpdatedAt}}},
 			setMockEntryUC: func(ctx context.Context, entryUC *mockUsecase.MockEntryUsecase) {
 				entryUC.
 					EXPECT().

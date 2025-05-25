@@ -1,10 +1,6 @@
 package schema
 
-import (
-	"time"
-
-	"github.com/google/uuid"
-)
+import "time"
 
 type CreateEntryRequest struct {
 	VolumeName string `form:"volume_name" binding:"required"`
@@ -16,8 +12,6 @@ type UpdateEntryRequest struct {
 }
 
 type EntryResponse struct {
-	ID        uuid.UUID `json:"id"`
-	VolumeID  uuid.UUID `json:"volume_id"`
 	Key       string    `json:"key"`
 	Size      uint64    `json:"size"`
 	Type      string    `json:"type"`
