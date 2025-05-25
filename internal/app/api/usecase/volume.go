@@ -16,9 +16,9 @@ import (
 
 type VolumeUsecase interface {
 	Create(context.Context, uuid.UUID, string, bool) (*dto.VolumeDTO, error)
-	Update(context.Context, uuid.UUID, uuid.UUID, string, bool) (*dto.VolumeDTO, error)
-	Delete(context.Context, uuid.UUID, uuid.UUID) error
-	GetOne(context.Context, uuid.UUID, uuid.UUID) (*dto.VolumeDTO, error)
+	Update(context.Context, uuid.UUID, string, string, bool) (*dto.VolumeDTO, error)
+	Delete(context.Context, uuid.UUID, string) error
+	GetOne(context.Context, uuid.UUID, string) (*dto.VolumeDTO, error)
 	GetAll(context.Context, uuid.UUID) ([]*dto.VolumeDTO, error)
 }
 
@@ -66,19 +66,17 @@ func (u *volumeUsecase) Create(ctx context.Context, accountID uuid.UUID, name st
 	return mapper.ToVolumeDTO(volume), nil
 }
 
-func (u *volumeUsecase) Update(ctx context.Context, accountID, id uuid.UUID, name string, isPublic bool) (*dto.VolumeDTO, error) {
+func (u *volumeUsecase) Update(ctx context.Context, accountID uuid.UUID, name, newName string, isPublic bool) (*dto.VolumeDTO, error) {
 	var volume *entity.Volume
 
 	if err := u.transactionObj.Transaction(ctx, func(ctx context.Context) error {
 		var err error
-		volume, err = u.volumeRepo.FindOneByIDAndAccountID(ctx, id, accountID)
+		volume, err = u.volumeRepo.FindOneByNameAndAccountID(ctx, name, accountID)
 		if err != nil {
 			return err
 		}
 
-		oldName := volume.Name
-
-		if err := volume.SetName(name); err != nil {
+		if err := volume.SetName(newName); err != nil {
 			return err
 		}
 		volume.SetIsPublic(isPublic)
@@ -91,7 +89,7 @@ func (u *volumeUsecase) Update(ctx context.Context, accountID, id uuid.UUID, nam
 			return err
 		}
 
-		return u.bodyRepo.Update(oldName, volume.Name)
+		return u.bodyRepo.Update(name, volume.Name)
 	}); err != nil {
 		return nil, err
 	}
@@ -99,9 +97,9 @@ func (u *volumeUsecase) Update(ctx context.Context, accountID, id uuid.UUID, nam
 	return mapper.ToVolumeDTO(volume), nil
 }
 
-func (u *volumeUsecase) Delete(ctx context.Context, accountID, id uuid.UUID) error {
+func (u *volumeUsecase) Delete(ctx context.Context, accountID uuid.UUID, name string) error {
 	return u.transactionObj.Transaction(ctx, func(ctx context.Context) error {
-		volume, err := u.volumeRepo.FindOneByIDAndAccountID(ctx, id, accountID)
+		volume, err := u.volumeRepo.FindOneByNameAndAccountID(ctx, name, accountID)
 		if err != nil {
 			return err
 		}
@@ -118,8 +116,8 @@ func (u *volumeUsecase) Delete(ctx context.Context, accountID, id uuid.UUID) err
 	})
 }
 
-func (u *volumeUsecase) GetOne(ctx context.Context, accountID, id uuid.UUID) (*dto.VolumeDTO, error) {
-	volume, err := u.volumeRepo.FindOneByIDAndAccountID(ctx, id, accountID)
+func (u *volumeUsecase) GetOne(ctx context.Context, accountID uuid.UUID, name string) (*dto.VolumeDTO, error) {
+	volume, err := u.volumeRepo.FindOneByNameAndAccountID(ctx, name, accountID)
 	if err != nil {
 		return nil, err
 	}
