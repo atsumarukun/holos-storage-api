@@ -1,11 +1,9 @@
 package service_test
 
 import (
-	"bytes"
 	"context"
 	"database/sql"
 	"errors"
-	"io"
 	"testing"
 	"time"
 
@@ -97,7 +95,7 @@ func TestEntry_Exists(t *testing.T) {
 	}
 }
 
-func TestEntry_Create(t *testing.T) {
+func TestEntry_CreateAncestors(t *testing.T) {
 	accountID := uuid.New()
 	volumeID := uuid.New()
 	entry := &entity.Entry{
@@ -110,7 +108,7 @@ func TestEntry_Create(t *testing.T) {
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	}
-	parentEntry := &entity.Entry{
+	ancestorEntry := &entity.Entry{
 		ID:        uuid.New(),
 		AccountID: accountID,
 		VolumeID:  volumeID,
@@ -124,19 +122,17 @@ func TestEntry_Create(t *testing.T) {
 	tests := []struct {
 		name             string
 		inputEntry       *entity.Entry
-		inputBody        io.Reader
 		expectError      error
 		setMockEntryRepo func(context.Context, *mockRepository.MockEntryRepository)
 	}{
 		{
 			name:        "success",
 			inputEntry:  entry,
-			inputBody:   bytes.NewBufferString("test"),
 			expectError: nil,
 			setMockEntryRepo: func(ctx context.Context, entryRepo *mockRepository.MockEntryRepository) {
 				entryRepo.
 					EXPECT().
-					FindOneByKeyAndVolumeID(ctx, parentEntry.Key, parentEntry.VolumeID).
+					FindOneByKeyAndVolumeID(ctx, ancestorEntry.Key, ancestorEntry.VolumeID).
 					Return(nil, nil).
 					AnyTimes()
 				entryRepo.
@@ -149,20 +145,18 @@ func TestEntry_Create(t *testing.T) {
 		{
 			name:             "entry is nil",
 			inputEntry:       nil,
-			inputBody:        bytes.NewBufferString("test"),
 			expectError:      service.ErrRequiredEntry,
 			setMockEntryRepo: func(context.Context, *mockRepository.MockEntryRepository) {},
 		},
 		{
-			name:        "parent entry already exists",
+			name:        "ancestor entry already exists",
 			inputEntry:  entry,
-			inputBody:   bytes.NewBufferString("test"),
 			expectError: nil,
 			setMockEntryRepo: func(ctx context.Context, entryRepo *mockRepository.MockEntryRepository) {
 				entryRepo.
 					EXPECT().
-					FindOneByKeyAndVolumeID(ctx, parentEntry.Key, parentEntry.VolumeID).
-					Return(parentEntry, nil).
+					FindOneByKeyAndVolumeID(ctx, ancestorEntry.Key, ancestorEntry.VolumeID).
+					Return(ancestorEntry, nil).
 					AnyTimes()
 				entryRepo.
 					EXPECT().
@@ -174,12 +168,11 @@ func TestEntry_Create(t *testing.T) {
 		{
 			name:        "find entry error",
 			inputEntry:  entry,
-			inputBody:   bytes.NewBufferString("test"),
 			expectError: sql.ErrConnDone,
 			setMockEntryRepo: func(ctx context.Context, entryRepo *mockRepository.MockEntryRepository) {
 				entryRepo.
 					EXPECT().
-					FindOneByKeyAndVolumeID(ctx, parentEntry.Key, parentEntry.VolumeID).
+					FindOneByKeyAndVolumeID(ctx, ancestorEntry.Key, ancestorEntry.VolumeID).
 					Return(nil, sql.ErrConnDone).
 					AnyTimes()
 			},
@@ -187,12 +180,11 @@ func TestEntry_Create(t *testing.T) {
 		{
 			name:        "create entry error",
 			inputEntry:  entry,
-			inputBody:   bytes.NewBufferString("test"),
 			expectError: sql.ErrConnDone,
 			setMockEntryRepo: func(ctx context.Context, entryRepo *mockRepository.MockEntryRepository) {
 				entryRepo.
 					EXPECT().
-					FindOneByKeyAndVolumeID(ctx, parentEntry.Key, parentEntry.VolumeID).
+					FindOneByKeyAndVolumeID(ctx, ancestorEntry.Key, ancestorEntry.VolumeID).
 					Return(nil, nil).
 					AnyTimes()
 				entryRepo.
@@ -214,14 +206,14 @@ func TestEntry_Create(t *testing.T) {
 			tt.setMockEntryRepo(ctx, entryRepo)
 
 			serv := service.NewEntryService(entryRepo)
-			if err := serv.Create(ctx, tt.inputEntry, tt.inputBody); !errors.Is(err, tt.expectError) {
+			if err := serv.CreateAncestors(ctx, tt.inputEntry); !errors.Is(err, tt.expectError) {
 				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
 			}
 		})
 	}
 }
 
-func TestEntry_Update(t *testing.T) {
+func TestEntry_UpdateDescendants(t *testing.T) {
 	accountID := uuid.New()
 	volumeID := uuid.New()
 	entry := &entity.Entry{
@@ -234,7 +226,7 @@ func TestEntry_Update(t *testing.T) {
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	}
-	childEntry := &entity.Entry{
+	descendantEntry := &entity.Entry{
 		ID:        uuid.New(),
 		AccountID: accountID,
 		VolumeID:  volumeID,
@@ -261,7 +253,7 @@ func TestEntry_Update(t *testing.T) {
 				entryRepo.
 					EXPECT().
 					FindByVolumeIDAndAccountID(ctx, entry.VolumeID, entry.AccountID, types.ToPointer("update"), nil).
-					Return([]*entity.Entry{childEntry}, nil).
+					Return([]*entity.Entry{descendantEntry}, nil).
 					AnyTimes()
 				entryRepo.
 					EXPECT().
@@ -299,7 +291,7 @@ func TestEntry_Update(t *testing.T) {
 				entryRepo.
 					EXPECT().
 					FindByVolumeIDAndAccountID(ctx, entry.VolumeID, entry.AccountID, types.ToPointer("update"), nil).
-					Return([]*entity.Entry{childEntry}, nil).
+					Return([]*entity.Entry{descendantEntry}, nil).
 					AnyTimes()
 				entryRepo.
 					EXPECT().
@@ -320,14 +312,14 @@ func TestEntry_Update(t *testing.T) {
 			tt.setMockEntryRepo(ctx, entryRepo)
 
 			serv := service.NewEntryService(entryRepo)
-			if err := serv.Update(ctx, tt.inputEntry, tt.inputSrc); !errors.Is(err, tt.expectError) {
+			if err := serv.UpdateDescendants(ctx, tt.inputEntry, tt.inputSrc); !errors.Is(err, tt.expectError) {
 				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
 			}
 		})
 	}
 }
 
-func TestEntry_Delete(t *testing.T) {
+func TestEntry_DeleteDescendants(t *testing.T) {
 	accountID := uuid.New()
 	volumeID := uuid.New()
 	entry := &entity.Entry{
@@ -340,7 +332,7 @@ func TestEntry_Delete(t *testing.T) {
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	}
-	childEntry := &entity.Entry{
+	descendantEntry := &entity.Entry{
 		ID:        uuid.New(),
 		AccountID: accountID,
 		VolumeID:  volumeID,
@@ -365,7 +357,7 @@ func TestEntry_Delete(t *testing.T) {
 				entryRepo.
 					EXPECT().
 					FindByVolumeIDAndAccountID(ctx, entry.VolumeID, entry.AccountID, types.ToPointer("test"), nil).
-					Return([]*entity.Entry{childEntry}, nil).
+					Return([]*entity.Entry{descendantEntry}, nil).
 					AnyTimes()
 				entryRepo.
 					EXPECT().
@@ -400,7 +392,7 @@ func TestEntry_Delete(t *testing.T) {
 				entryRepo.
 					EXPECT().
 					FindByVolumeIDAndAccountID(ctx, entry.VolumeID, entry.AccountID, types.ToPointer("test"), nil).
-					Return([]*entity.Entry{childEntry}, nil).
+					Return([]*entity.Entry{descendantEntry}, nil).
 					AnyTimes()
 				entryRepo.
 					EXPECT().
@@ -421,7 +413,7 @@ func TestEntry_Delete(t *testing.T) {
 			tt.setMockEntryRepo(ctx, entryRepo)
 
 			serv := service.NewEntryService(entryRepo)
-			if err := serv.Delete(ctx, tt.inputEntry); !errors.Is(err, tt.expectError) {
+			if err := serv.DeleteDescendants(ctx, tt.inputEntry); !errors.Is(err, tt.expectError) {
 				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
 			}
 		})

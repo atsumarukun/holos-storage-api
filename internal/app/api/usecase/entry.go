@@ -86,8 +86,11 @@ func (u *entryUsecase) Create(ctx context.Context, accountID uuid.UUID, volumeNa
 		if err := u.entryServ.Exists(ctx, entry); err != nil {
 			return err
 		}
+		if err := u.entryServ.CreateAncestors(ctx, entry); err != nil {
+			return err
+		}
 
-		if err := u.entryServ.Create(ctx, entry, bodyReader); err != nil {
+		if err := u.entryRepo.Create(ctx, entry); err != nil {
 			return err
 		}
 
@@ -127,8 +130,14 @@ func (u *entryUsecase) Update(ctx context.Context, accountID uuid.UUID, volumeNa
 		if err := u.entryServ.Exists(ctx, entry); err != nil {
 			return err
 		}
+		if err := u.entryServ.CreateAncestors(ctx, entry); err != nil {
+			return err
+		}
+		if err := u.entryServ.UpdateDescendants(ctx, entry, key); err != nil {
+			return err
+		}
 
-		if err := u.entryServ.Update(ctx, entry, key); err != nil {
+		if err := u.entryRepo.Update(ctx, entry); err != nil {
 			return err
 		}
 
@@ -160,7 +169,11 @@ func (u *entryUsecase) Delete(ctx context.Context, accountID uuid.UUID, volumeNa
 			return ErrEntryNotFound
 		}
 
-		if err := u.entryServ.Delete(ctx, entry); err != nil {
+		if err := u.entryServ.DeleteDescendants(ctx, entry); err != nil {
+			return err
+		}
+
+		if err := u.entryRepo.Delete(ctx, entry); err != nil {
 			return err
 		}
 
