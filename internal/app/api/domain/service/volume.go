@@ -3,6 +3,7 @@ package service
 
 import (
 	"context"
+	"errors"
 
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/domain/entity"
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/domain/repository"
@@ -37,13 +38,12 @@ func (s *volumeService) Exists(ctx context.Context, volume *entity.Volume) error
 	if volume == nil {
 		return ErrRequiredVolume
 	}
-
-	vol, err := s.volumeRepo.FindOneByName(ctx, volume.Name)
+	_, err := s.volumeRepo.FindOneByName(ctx, volume.Name)
 	if err != nil {
+		if errors.Is(err, repository.ErrVolumeNotFound) {
+			return nil
+		}
 		return err
-	}
-	if vol == nil {
-		return nil
 	}
 	return ErrVolumeAlreadyExists
 }

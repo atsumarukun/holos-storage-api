@@ -11,6 +11,7 @@ import (
 	"go.uber.org/mock/gomock"
 
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/domain/entity"
+	"github.com/atsumarukun/holos-storage-api/internal/app/api/domain/repository"
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/domain/service"
 	mockRepository "github.com/atsumarukun/holos-storage-api/test/mock/domain/repository"
 )
@@ -39,7 +40,7 @@ func TestVolume_Exists(t *testing.T) {
 				volumeRepo.
 					EXPECT().
 					FindOneByName(ctx, volume.Name).
-					Return(nil, nil).
+					Return(nil, repository.ErrVolumeNotFound).
 					Times(1)
 			},
 		},
