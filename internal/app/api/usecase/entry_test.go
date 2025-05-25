@@ -1087,7 +1087,7 @@ func TestEntry_Delete(t *testing.T) {
 	}
 }
 
-func TestEntry_Head(t *testing.T) {
+func TestEntry_GetMeta(t *testing.T) {
 	volume := &entity.Volume{
 		ID:        uuid.New(),
 		AccountID: uuid.New(),
@@ -1208,7 +1208,7 @@ func TestEntry_Head(t *testing.T) {
 			tt.setMockVolumeRepo(ctx, volumeRepo)
 
 			uc := usecase.NewEntryUsecase(transactionObj, entryRepo, nil, volumeRepo, nil)
-			result, err := uc.Head(ctx, tt.inputAccountID, tt.inputVolumeName, tt.inputKey)
+			result, err := uc.GetMeta(ctx, tt.inputAccountID, tt.inputVolumeName, tt.inputKey)
 			if !errors.Is(err, tt.expectError) {
 				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
 			}

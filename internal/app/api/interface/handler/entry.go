@@ -25,7 +25,7 @@ type EntryHandler interface {
 	Create(*gin.Context)
 	Update(*gin.Context)
 	Delete(*gin.Context)
-	Head(*gin.Context)
+	GetMeta(*gin.Context)
 	GetOne(*gin.Context)
 	Search(*gin.Context)
 }
@@ -123,7 +123,7 @@ func (h *entryHandler) Delete(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
-func (h *entryHandler) Head(c *gin.Context) {
+func (h *entryHandler) GetMeta(c *gin.Context) {
 	volumeName := c.Param("volumeName")
 	key := strings.TrimPrefix(c.Param("key"), "/")
 
@@ -137,7 +137,7 @@ func (h *entryHandler) Head(c *gin.Context) {
 
 	ctx := c.Request.Context()
 
-	entry, err := h.entryUC.Head(ctx, accountID, volumeName, key)
+	entry, err := h.entryUC.GetMeta(ctx, accountID, volumeName, key)
 	if err != nil {
 		log.Println(err)
 		c.Header("Content-Length", "0")
