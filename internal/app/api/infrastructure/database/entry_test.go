@@ -12,6 +12,7 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/domain/entity"
+	"github.com/atsumarukun/holos-storage-api/internal/app/api/domain/repository"
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/infrastructure/database"
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/pkg/types"
 	mockDatabase "github.com/atsumarukun/holos-storage-api/test/mock/database"
@@ -255,7 +256,7 @@ func TestEntry_FindOneByKeyAndVolumeID(t *testing.T) {
 			inputKey:      "key",
 			inputVolumeID: volumeID,
 			expectResult:  nil,
-			expectError:   nil,
+			expectError:   repository.ErrEntryNotFound,
 			setMockDB: func(mock sqlmock.Sqlmock) {
 				mock.ExpectQuery(regexp.QuoteMeta("SELECT id, account_id, volume_id, `key`, size, type, created_at, updated_at FROM entries WHERE `key` = ? AND volume_id = ? LIMIT 1;")).
 					WithArgs("key", volumeID).
@@ -343,7 +344,7 @@ func TestEntry_FindOneByKeyAndVolumeIDAndAccountID(t *testing.T) {
 			inputVolumeID:  volumeID,
 			inputAccountID: accountID,
 			expectResult:   nil,
-			expectError:    nil,
+			expectError:    repository.ErrEntryNotFound,
 			setMockDB: func(mock sqlmock.Sqlmock) {
 				mock.ExpectQuery(regexp.QuoteMeta("SELECT id, account_id, volume_id, `key`, size, type, created_at, updated_at FROM entries WHERE `key` = ? AND volume_id = ? AND account_id = ? LIMIT 1;")).
 					WithArgs("key", volumeID, accountID).
