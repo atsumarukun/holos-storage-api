@@ -1,13 +1,9 @@
 package middleware
 
 import (
-	"strings"
-
 	"github.com/gin-gonic/gin"
 
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/interface/pkg/errors"
-	"github.com/atsumarukun/holos-storage-api/internal/app/api/pkg/status"
-	"github.com/atsumarukun/holos-storage-api/internal/app/api/pkg/status/code"
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/usecase"
 )
 
@@ -27,16 +23,13 @@ func NewAuthorizationMiddleware(authorizationUC usecase.AuthorizationUsecase) Au
 
 func (m *authorizationMiddleware) Authorize(c *gin.Context) {
 	credential := c.Request.Header.Get("Authorization")
-	if len(strings.Split(credential, " ")) != 2 {
-		err := status.Error(code.Unauthorized, "unauthorized")
-		errors.Handle(c, err)
-		c.Abort()
-		return
-	}
+	volumeName := c.Param("volumeName")
+	key := c.Param("key")
+	method := c.Request.Method
 
 	ctx := c.Request.Context()
 
-	account, err := m.authorizationUC.Authorize(ctx, credential)
+	account, err := m.authorizationUC.Authorize(ctx, credential, volumeName, key, method)
 	if err != nil {
 		errors.Handle(c, err)
 		c.Abort()

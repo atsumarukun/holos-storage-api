@@ -42,7 +42,9 @@ func (r *accountRepository) FindOneByCredential(ctx context.Context, credential 
 		}
 	}()
 
-	if resp.StatusCode != http.StatusOK {
+	if resp.StatusCode == http.StatusUnauthorized {
+		return nil, repository.ErrUnauthorized
+	} else if resp.StatusCode != http.StatusOK {
 		return nil, errors.Decode(resp)
 	}
 

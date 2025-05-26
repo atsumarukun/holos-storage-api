@@ -27,13 +27,20 @@ func TestAuthorization_Authorize(t *testing.T) {
 	tests := []struct {
 		name               string
 		inputCredential    string
+		inputVolumeName    string
+		inputKey           string
+		inputMethod        string
 		expectResult       *dto.AccountDTO
 		expectError        error
 		setMockAccountRepo func(context.Context, *mockRepository.MockAccountRepository)
+		setMockVolumeRepo  func(context.Context, *mockRepository.MockVolumeRepository)
 	}{
 		{
 			name:            "success",
 			inputCredential: "Session: YNDNun_KFu1uFmS691yJ6eqJ9eczRVKn",
+			inputVolumeName: "",
+			inputKey:        "",
+			inputMethod:     "",
 			expectResult:    accountDTO,
 			expectError:     nil,
 			setMockAccountRepo: func(ctx context.Context, accountRepo *mockRepository.MockAccountRepository) {
@@ -42,10 +49,14 @@ func TestAuthorization_Authorize(t *testing.T) {
 					Return(account, nil).
 					Times(1)
 			},
+			setMockVolumeRepo: func(context.Context, *mockRepository.MockVolumeRepository) {},
 		},
 		{
 			name:            "authorize error",
 			inputCredential: "Session: YNDNun_KFu1uFmS691yJ6eqJ9eczRVKn",
+			inputVolumeName: "",
+			inputKey:        "",
+			inputMethod:     "",
 			expectResult:    nil,
 			expectError:     http.ErrServerClosed,
 			setMockAccountRepo: func(ctx context.Context, accountRepo *mockRepository.MockAccountRepository) {
@@ -54,6 +65,7 @@ func TestAuthorization_Authorize(t *testing.T) {
 					Return(nil, http.ErrServerClosed).
 					Times(1)
 			},
+			setMockVolumeRepo: func(context.Context, *mockRepository.MockVolumeRepository) {},
 		},
 	}
 	for _, tt := range tests {
@@ -66,8 +78,11 @@ func TestAuthorization_Authorize(t *testing.T) {
 			accountRepo := mockRepository.NewMockAccountRepository(ctrl)
 			tt.setMockAccountRepo(ctx, accountRepo)
 
-			uc := usecase.NewAuthorizationUsecase(accountRepo)
-			result, err := uc.Authorize(ctx, tt.inputCredential)
+			volumeRepo := mockRepository.NewMockVolumeRepository(ctrl)
+			tt.setMockVolumeRepo(ctx, volumeRepo)
+
+			uc := usecase.NewAuthorizationUsecase(accountRepo, volumeRepo)
+			result, err := uc.Authorize(ctx, tt.inputCredential, tt.inputVolumeName, tt.inputKey, tt.inputMethod)
 			if !errors.Is(err, tt.expectError) {
 				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
 			}

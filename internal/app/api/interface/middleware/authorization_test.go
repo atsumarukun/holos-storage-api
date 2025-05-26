@@ -35,16 +35,10 @@ func TestAuthorization_Authorize(t *testing.T) {
 			expectResult:        accountDTO.ID,
 			setMockAuthorizationUC: func(ctx context.Context, authorizationUC *mockUsecase.MockAuthorizationUsecase) {
 				authorizationUC.EXPECT().
-					Authorize(ctx, gomock.Any()).
+					Authorize(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 					Return(accountDTO, nil).
 					Times(1)
 			},
-		},
-		{
-			name:                   "invalid authorization header",
-			authorizationHeader:    "",
-			expectResult:           uuid.Nil,
-			setMockAuthorizationUC: func(context.Context, *mockUsecase.MockAuthorizationUsecase) {},
 		},
 		{
 			name:                "authorize error",
@@ -52,7 +46,7 @@ func TestAuthorization_Authorize(t *testing.T) {
 			expectResult:        uuid.Nil,
 			setMockAuthorizationUC: func(ctx context.Context, authorizationUC *mockUsecase.MockAuthorizationUsecase) {
 				authorizationUC.EXPECT().
-					Authorize(ctx, gomock.Any()).
+					Authorize(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 					Return(nil, http.ErrServerClosed).
 					Times(1)
 			},
