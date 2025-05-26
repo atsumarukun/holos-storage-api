@@ -33,25 +33,35 @@ func NewAuthorizationUsecase(accountRepo repository.AccountRepository, volumeRep
 
 func (u *authorizationUsecase) Authorize(ctx context.Context, credential, volumeName, key, method string) (*dto.AccountDTO, error) {
 	isGetEntry := volumeName != "" && key != "" && (method == "GET" || method == "HEAD")
-
 	if isGetEntry {
-		volume, err := u.volumeRepo.FindOneByName(ctx, volumeName)
-		if err != nil {
-			return nil, err
-		}
-		if volume.IsPublic {
-			account := entity.NewAccount(volume.AccountID)
-			return mapper.ToAccountDTO(account), nil
-		}
+		return u.authorizeForGetEntry(ctx, credential, volumeName)
 	}
+	return u.authorizeByCredential(ctx, credential)
+}
 
+func (u *authorizationUsecase) authorizeForGetEntry(ctx context.Context, credential, volumeName string) (*dto.AccountDTO, error) {
+	volume, err := u.volumeRepo.FindOneByName(ctx, volumeName)
+	if err != nil {
+		return nil, err
+	}
+	if volume.IsPublic {
+		account := entity.NewAccount(volume.AccountID)
+		return mapper.ToAccountDTO(account), nil
+	}
 	account, err := u.accountRepo.FindOneByCredential(ctx, credential)
 	if err != nil {
-		if isGetEntry && credential == "" && errors.Is(err, repository.ErrUnauthorized) {
+		if credential == "" && errors.Is(err, repository.ErrUnauthorized) {
 			return nil, ErrForbidden
 		}
 		return nil, err
 	}
+	return mapper.ToAccountDTO(account), nil
+}
 
+func (u *authorizationUsecase) authorizeByCredential(ctx context.Context, credential string) (*dto.AccountDTO, error) {
+	account, err := u.accountRepo.FindOneByCredential(ctx, credential)
+	if err != nil {
+		return nil, err
+	}
 	return mapper.ToAccountDTO(account), nil
 }
