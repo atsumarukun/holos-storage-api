@@ -26,9 +26,9 @@ func TestBody_Create(t *testing.T) {
 		expectResult bool
 		expectError  error
 	}{
-		{name: "success", inputPath: "sample/test.txt", inputReader: bytes.NewBufferString("test"), expectResult: true, expectError: nil},
-		{name: "reader is nil", inputPath: "sample/test", inputReader: nil, expectResult: true, expectError: nil},
-		{name: "create error", inputPath: "sample/test.txt", inputReader: &errReader{}, expectResult: true, expectError: io.ErrNoProgress},
+		{name: "create file", inputPath: "key/sample.txt", inputReader: bytes.NewBufferString("test"), expectResult: true, expectError: nil},
+		{name: "create folder", inputPath: "key", inputReader: nil, expectResult: true, expectError: nil},
+		{name: "create error", inputPath: "key/sample.txt", inputReader: &errReader{}, expectResult: true, expectError: io.ErrNoProgress},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -61,28 +61,24 @@ func TestBody_Update(t *testing.T) {
 		setMockFS    func(fs afero.Fs)
 	}{
 		{
-			name:         "success",
-			inputSrc:     "sample/test.txt",
-			inputDst:     "update/test.txt",
+			name:         "successfully updated",
+			inputSrc:     "key/sample.txt",
+			inputDst:     "key/update.txt",
 			expectResult: true,
 			expectError:  nil,
 			setMockFS: func(fs afero.Fs) {
-				if err := afero.WriteFile(fs, "sample/test.txt", []byte("test"), 0o755); err != nil {
+				if err := afero.WriteFile(fs, "key/sample.txt", []byte("test"), 0o755); err != nil {
 					t.Error(err)
 				}
 			},
 		},
 		{
-			name:         "update error",
-			inputSrc:     "sample/test.txt",
-			inputDst:     "update/test.txt",
+			name:         "not found",
+			inputSrc:     "key/sample.txt",
+			inputDst:     "key/update.txt",
 			expectResult: false,
 			expectError:  afero.ErrFileNotFound,
-			setMockFS: func(fs afero.Fs) {
-				if err := afero.WriteFile(fs, "test.txt", []byte("test"), 0o755); err != nil {
-					t.Error(err)
-				}
-			},
+			setMockFS:    func(afero.Fs) {},
 		},
 	}
 	for _, tt := range tests {
@@ -127,15 +123,22 @@ func TestBody_Delete(t *testing.T) {
 		setMockFS    func(fs afero.Fs)
 	}{
 		{
-			name:         "success",
-			inputPath:    "sample/test.txt",
+			name:         "successfully deleted",
+			inputPath:    "key/sample.txt",
 			expectResult: false,
 			expectError:  nil,
 			setMockFS: func(fs afero.Fs) {
-				if err := afero.WriteFile(fs, "sample/test.txt", []byte("test"), 0o755); err != nil {
+				if err := afero.WriteFile(fs, "key/sample.txt", []byte("test"), 0o755); err != nil {
 					t.Error(err)
 				}
 			},
+		},
+		{
+			name:         "not found",
+			inputPath:    "key/sample.txt",
+			expectResult: false,
+			expectError:  nil,
+			setMockFS:    func(afero.Fs) {},
 		},
 	}
 	for _, tt := range tests {
@@ -170,19 +173,19 @@ func TestBody_FindOneByPath(t *testing.T) {
 		setMockFS    func(fs afero.Fs)
 	}{
 		{
-			name:         "success",
-			inputPath:    "sample/test.txt",
+			name:         "found",
+			inputPath:    "key/sample.txt",
 			expectResult: []byte("test"),
 			expectError:  nil,
 			setMockFS: func(fs afero.Fs) {
-				if err := afero.WriteFile(fs, "sample/test.txt", []byte("test"), 0o755); err != nil {
+				if err := afero.WriteFile(fs, "key/sample.txt", []byte("test"), 0o755); err != nil {
 					t.Error(err)
 				}
 			},
 		},
 		{
-			name:         "find error",
-			inputPath:    "sample/test.txt",
+			name:         "not found",
+			inputPath:    "key/sample.txt",
 			expectResult: nil,
 			expectError:  afero.ErrFileNotFound,
 			setMockFS:    func(afero.Fs) {},
@@ -206,7 +209,7 @@ func TestBody_FindOneByPath(t *testing.T) {
 				if err != nil {
 					t.Error(err)
 				}
-				if diff := cmp.Diff(result, tt.expectResult); diff != "" {
+				if diff := cmp.Diff(tt.expectResult, result); diff != "" {
 					t.Error(diff)
 				}
 			}
