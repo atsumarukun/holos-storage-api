@@ -41,45 +41,45 @@ func TestVolume_Create(t *testing.T) {
 		inputIsPublic         bool
 		expectResult          *dto.VolumeDTO
 		expectError           error
-		setMockTransactionObj func(context.Context, *mockTransaction.MockTransactionObject)
-		setMockVolumeRepo     func(context.Context, *mockRepository.MockVolumeRepository)
-		setMockBodyRepo       func(context.Context, *mockRepository.MockBodyRepository)
-		setMockVolumeServ     func(context.Context, *mockService.MockVolumeService)
+		setMockTransactionObj func(*mockTransaction.MockTransactionObject)
+		setMockVolumeRepo     func(*mockRepository.MockVolumeRepository)
+		setMockBodyRepo       func(*mockRepository.MockBodyRepository)
+		setMockVolumeServ     func(*mockService.MockVolumeService)
 	}{
 		{
-			name:           "success",
+			name:           "successfully created",
 			inputAccountID: accountID,
 			inputName:      "name",
 			inputIsPublic:  false,
 			expectResult:   volumeDTO,
 			expectError:    nil,
-			setMockTransactionObj: func(ctx context.Context, transactionObj *mockTransaction.MockTransactionObject) {
+			setMockTransactionObj: func(transactionObj *mockTransaction.MockTransactionObject) {
 				transactionObj.
 					EXPECT().
-					Transaction(ctx, gomock.Any()).
+					Transaction(gomock.Any(), gomock.Any()).
 					DoAndReturn(func(ctx context.Context, fn func(context.Context) error) error {
 						return fn(ctx)
 					}).
 					Times(1)
 			},
-			setMockVolumeRepo: func(ctx context.Context, volumeRepo *mockRepository.MockVolumeRepository) {
+			setMockVolumeRepo: func(volumeRepo *mockRepository.MockVolumeRepository) {
 				volumeRepo.
 					EXPECT().
-					Create(ctx, gomock.Any()).
+					Create(gomock.Any(), gomock.Any()).
 					Return(nil).
 					Times(1)
 			},
-			setMockBodyRepo: func(_ context.Context, bodyRepo *mockRepository.MockBodyRepository) {
+			setMockBodyRepo: func(bodyRepo *mockRepository.MockBodyRepository) {
 				bodyRepo.
 					EXPECT().
 					Create(gomock.Any(), gomock.Any()).
 					Return(nil).
 					Times(1)
 			},
-			setMockVolumeServ: func(ctx context.Context, volumeServ *mockService.MockVolumeService) {
+			setMockVolumeServ: func(volumeServ *mockService.MockVolumeService) {
 				volumeServ.
 					EXPECT().
-					Exists(ctx, gomock.Any()).
+					Exists(gomock.Any(), gomock.Any()).
 					Return(nil).
 					Times(1)
 			},
@@ -91,10 +91,10 @@ func TestVolume_Create(t *testing.T) {
 			inputIsPublic:         false,
 			expectResult:          nil,
 			expectError:           entity.ErrShortVolumeName,
-			setMockTransactionObj: func(context.Context, *mockTransaction.MockTransactionObject) {},
-			setMockVolumeRepo:     func(context.Context, *mockRepository.MockVolumeRepository) {},
-			setMockBodyRepo:       func(context.Context, *mockRepository.MockBodyRepository) {},
-			setMockVolumeServ:     func(context.Context, *mockService.MockVolumeService) {},
+			setMockTransactionObj: func(*mockTransaction.MockTransactionObject) {},
+			setMockVolumeRepo:     func(*mockRepository.MockVolumeRepository) {},
+			setMockBodyRepo:       func(*mockRepository.MockBodyRepository) {},
+			setMockVolumeServ:     func(*mockService.MockVolumeService) {},
 		},
 		{
 			name:           "volume already exists",
@@ -103,21 +103,21 @@ func TestVolume_Create(t *testing.T) {
 			inputIsPublic:  false,
 			expectResult:   nil,
 			expectError:    service.ErrVolumeAlreadyExists,
-			setMockTransactionObj: func(ctx context.Context, transactionObj *mockTransaction.MockTransactionObject) {
+			setMockTransactionObj: func(transactionObj *mockTransaction.MockTransactionObject) {
 				transactionObj.
 					EXPECT().
-					Transaction(ctx, gomock.Any()).
+					Transaction(gomock.Any(), gomock.Any()).
 					DoAndReturn(func(ctx context.Context, fn func(context.Context) error) error {
 						return fn(ctx)
 					}).
 					Times(1)
 			},
-			setMockVolumeRepo: func(context.Context, *mockRepository.MockVolumeRepository) {},
-			setMockBodyRepo:   func(context.Context, *mockRepository.MockBodyRepository) {},
-			setMockVolumeServ: func(ctx context.Context, volumeServ *mockService.MockVolumeService) {
+			setMockVolumeRepo: func(*mockRepository.MockVolumeRepository) {},
+			setMockBodyRepo:   func(*mockRepository.MockBodyRepository) {},
+			setMockVolumeServ: func(volumeServ *mockService.MockVolumeService) {
 				volumeServ.
 					EXPECT().
-					Exists(ctx, gomock.Any()).
+					Exists(gomock.Any(), gomock.Any()).
 					Return(service.ErrVolumeAlreadyExists).
 					Times(1)
 			},
@@ -129,27 +129,27 @@ func TestVolume_Create(t *testing.T) {
 			inputIsPublic:  false,
 			expectResult:   nil,
 			expectError:    sql.ErrConnDone,
-			setMockTransactionObj: func(ctx context.Context, transactionObj *mockTransaction.MockTransactionObject) {
+			setMockTransactionObj: func(transactionObj *mockTransaction.MockTransactionObject) {
 				transactionObj.
 					EXPECT().
-					Transaction(ctx, gomock.Any()).
+					Transaction(gomock.Any(), gomock.Any()).
 					DoAndReturn(func(ctx context.Context, fn func(context.Context) error) error {
 						return fn(ctx)
 					}).
 					Times(1)
 			},
-			setMockVolumeRepo: func(ctx context.Context, volumeRepo *mockRepository.MockVolumeRepository) {
+			setMockVolumeRepo: func(volumeRepo *mockRepository.MockVolumeRepository) {
 				volumeRepo.
 					EXPECT().
-					Create(ctx, gomock.Any()).
+					Create(gomock.Any(), gomock.Any()).
 					Return(sql.ErrConnDone).
 					Times(1)
 			},
-			setMockBodyRepo: func(context.Context, *mockRepository.MockBodyRepository) {},
-			setMockVolumeServ: func(ctx context.Context, volumeServ *mockService.MockVolumeService) {
+			setMockBodyRepo: func(*mockRepository.MockBodyRepository) {},
+			setMockVolumeServ: func(volumeServ *mockService.MockVolumeService) {
 				volumeServ.
 					EXPECT().
-					Exists(ctx, gomock.Any()).
+					Exists(gomock.Any(), gomock.Any()).
 					Return(nil).
 					Times(1)
 			},
@@ -161,33 +161,33 @@ func TestVolume_Create(t *testing.T) {
 			inputIsPublic:  false,
 			expectResult:   nil,
 			expectError:    io.ErrNoProgress,
-			setMockTransactionObj: func(ctx context.Context, transactionObj *mockTransaction.MockTransactionObject) {
+			setMockTransactionObj: func(transactionObj *mockTransaction.MockTransactionObject) {
 				transactionObj.
 					EXPECT().
-					Transaction(ctx, gomock.Any()).
+					Transaction(gomock.Any(), gomock.Any()).
 					DoAndReturn(func(ctx context.Context, fn func(context.Context) error) error {
 						return fn(ctx)
 					}).
 					Times(1)
 			},
-			setMockVolumeRepo: func(ctx context.Context, volumeRepo *mockRepository.MockVolumeRepository) {
+			setMockVolumeRepo: func(volumeRepo *mockRepository.MockVolumeRepository) {
 				volumeRepo.
 					EXPECT().
-					Create(ctx, gomock.Any()).
+					Create(gomock.Any(), gomock.Any()).
 					Return(nil).
 					Times(1)
 			},
-			setMockBodyRepo: func(_ context.Context, bodyRepo *mockRepository.MockBodyRepository) {
+			setMockBodyRepo: func(bodyRepo *mockRepository.MockBodyRepository) {
 				bodyRepo.
 					EXPECT().
 					Create(gomock.Any(), gomock.Any()).
 					Return(io.ErrNoProgress).
 					Times(1)
 			},
-			setMockVolumeServ: func(ctx context.Context, volumeServ *mockService.MockVolumeService) {
+			setMockVolumeServ: func(volumeServ *mockService.MockVolumeService) {
 				volumeServ.
 					EXPECT().
-					Exists(ctx, gomock.Any()).
+					Exists(gomock.Any(), gomock.Any()).
 					Return(nil).
 					Times(1)
 			},
@@ -201,16 +201,16 @@ func TestVolume_Create(t *testing.T) {
 			ctx := t.Context()
 
 			transactionObj := mockTransaction.NewMockTransactionObject(ctrl)
-			tt.setMockTransactionObj(ctx, transactionObj)
+			tt.setMockTransactionObj(transactionObj)
 
 			volumeRepo := mockRepository.NewMockVolumeRepository(ctrl)
-			tt.setMockVolumeRepo(ctx, volumeRepo)
+			tt.setMockVolumeRepo(volumeRepo)
 
 			bodyRepo := mockRepository.NewMockBodyRepository(ctrl)
-			tt.setMockBodyRepo(ctx, bodyRepo)
+			tt.setMockBodyRepo(bodyRepo)
 
 			volumeServ := mockService.NewMockVolumeService(ctrl)
-			tt.setMockVolumeServ(ctx, volumeServ)
+			tt.setMockVolumeServ(volumeServ)
 
 			uc := usecase.NewVolumeUsecase(transactionObj, volumeRepo, bodyRepo, volumeServ)
 			result, err := uc.Create(ctx, tt.inputAccountID, tt.inputName, tt.inputIsPublic)
@@ -221,7 +221,7 @@ func TestVolume_Create(t *testing.T) {
 			opts := cmp.Options{
 				cmpopts.IgnoreFields(dto.VolumeDTO{}, "ID", "CreatedAt", "UpdatedAt"),
 			}
-			if diff := cmp.Diff(result, tt.expectResult, opts...); diff != "" {
+			if diff := cmp.Diff(tt.expectResult, result, opts...); diff != "" {
 				t.Error(diff)
 			}
 		})
@@ -229,10 +229,9 @@ func TestVolume_Create(t *testing.T) {
 }
 
 func TestVolume_Update(t *testing.T) {
-	id := uuid.New()
 	accountID := uuid.New()
 	volume := &entity.Volume{
-		ID:        id,
+		ID:        uuid.New(),
 		AccountID: accountID,
 		Name:      "name",
 		IsPublic:  false,
@@ -240,10 +239,10 @@ func TestVolume_Update(t *testing.T) {
 		UpdatedAt: time.Now(),
 	}
 	volumeDTO := &dto.VolumeDTO{
-		ID:        id,
-		AccountID: accountID,
+		ID:        volume.ID,
+		AccountID: volume.AccountID,
 		Name:      "update",
-		IsPublic:  false,
+		IsPublic:  volume.IsPublic,
 		CreatedAt: volume.CreatedAt,
 		UpdatedAt: volume.UpdatedAt,
 	}
@@ -251,58 +250,56 @@ func TestVolume_Update(t *testing.T) {
 	tests := []struct {
 		name                  string
 		inputAccountID        uuid.UUID
-		inputID               uuid.UUID
 		inputName             string
 		inputNewName          string
 		inputIsPublic         bool
 		expectResult          *dto.VolumeDTO
 		expectError           error
-		setMockTransactionObj func(context.Context, *mockTransaction.MockTransactionObject)
-		setMockVolumeRepo     func(context.Context, *mockRepository.MockVolumeRepository)
-		setMockBodyRepo       func(context.Context, *mockRepository.MockBodyRepository)
-		setMockVolumeServ     func(context.Context, *mockService.MockVolumeService)
+		setMockTransactionObj func(*mockTransaction.MockTransactionObject)
+		setMockVolumeRepo     func(*mockRepository.MockVolumeRepository)
+		setMockBodyRepo       func(*mockRepository.MockBodyRepository)
+		setMockVolumeServ     func(*mockService.MockVolumeService)
 	}{
 		{
-			name:           "success",
+			name:           "successfully updated",
 			inputAccountID: accountID,
-			inputID:        id,
 			inputName:      "name",
 			inputNewName:   "update",
 			inputIsPublic:  false,
 			expectResult:   volumeDTO,
 			expectError:    nil,
-			setMockTransactionObj: func(ctx context.Context, transactionObj *mockTransaction.MockTransactionObject) {
+			setMockTransactionObj: func(transactionObj *mockTransaction.MockTransactionObject) {
 				transactionObj.
 					EXPECT().
-					Transaction(ctx, gomock.Any()).
+					Transaction(gomock.Any(), gomock.Any()).
 					DoAndReturn(func(ctx context.Context, fn func(context.Context) error) error {
 						return fn(ctx)
 					}).
 					Times(1)
 			},
-			setMockVolumeRepo: func(ctx context.Context, volumeRepo *mockRepository.MockVolumeRepository) {
+			setMockVolumeRepo: func(volumeRepo *mockRepository.MockVolumeRepository) {
 				volumeRepo.
 					EXPECT().
-					FindOneByNameAndAccountID(ctx, gomock.Any(), gomock.Any()).
+					FindOneByNameAndAccountID(gomock.Any(), gomock.Any(), gomock.Any()).
 					Return(volume, nil).
 					Times(1)
 				volumeRepo.
 					EXPECT().
-					Update(ctx, gomock.Any()).
+					Update(gomock.Any(), gomock.Any()).
 					Return(nil).
 					Times(1)
 			},
-			setMockBodyRepo: func(_ context.Context, bodyRepo *mockRepository.MockBodyRepository) {
+			setMockBodyRepo: func(bodyRepo *mockRepository.MockBodyRepository) {
 				bodyRepo.
 					EXPECT().
 					Update(gomock.Any(), gomock.Any()).
 					Return(nil).
 					Times(1)
 			},
-			setMockVolumeServ: func(ctx context.Context, volumeServ *mockService.MockVolumeService) {
+			setMockVolumeServ: func(volumeServ *mockService.MockVolumeService) {
 				volumeServ.
 					EXPECT().
-					Exists(ctx, gomock.Any()).
+					Exists(gomock.Any(), gomock.Any()).
 					Return(nil).
 					Times(1)
 			},
@@ -310,61 +307,59 @@ func TestVolume_Update(t *testing.T) {
 		{
 			name:           "invalid name",
 			inputAccountID: accountID,
-			inputID:        id,
 			inputName:      "name",
 			inputNewName:   "",
 			inputIsPublic:  false,
 			expectResult:   nil,
 			expectError:    entity.ErrShortVolumeName,
-			setMockTransactionObj: func(ctx context.Context, transactionObj *mockTransaction.MockTransactionObject) {
+			setMockTransactionObj: func(transactionObj *mockTransaction.MockTransactionObject) {
 				transactionObj.
 					EXPECT().
-					Transaction(ctx, gomock.Any()).
+					Transaction(gomock.Any(), gomock.Any()).
 					DoAndReturn(func(ctx context.Context, fn func(context.Context) error) error {
 						return fn(ctx)
 					}).
 					Times(1)
 			},
-			setMockVolumeRepo: func(ctx context.Context, volumeRepo *mockRepository.MockVolumeRepository) {
+			setMockVolumeRepo: func(volumeRepo *mockRepository.MockVolumeRepository) {
 				volumeRepo.
 					EXPECT().
-					FindOneByNameAndAccountID(ctx, gomock.Any(), gomock.Any()).
+					FindOneByNameAndAccountID(gomock.Any(), gomock.Any(), gomock.Any()).
 					Return(volume, nil).
 					Times(1)
 			},
-			setMockBodyRepo:   func(context.Context, *mockRepository.MockBodyRepository) {},
-			setMockVolumeServ: func(context.Context, *mockService.MockVolumeService) {},
+			setMockBodyRepo:   func(*mockRepository.MockBodyRepository) {},
+			setMockVolumeServ: func(*mockService.MockVolumeService) {},
 		},
 		{
 			name:           "volume already exists",
 			inputAccountID: accountID,
-			inputID:        id,
 			inputName:      "name",
 			inputNewName:   "update",
 			inputIsPublic:  false,
 			expectResult:   nil,
 			expectError:    service.ErrVolumeAlreadyExists,
-			setMockTransactionObj: func(ctx context.Context, transactionObj *mockTransaction.MockTransactionObject) {
+			setMockTransactionObj: func(transactionObj *mockTransaction.MockTransactionObject) {
 				transactionObj.
 					EXPECT().
-					Transaction(ctx, gomock.Any()).
+					Transaction(gomock.Any(), gomock.Any()).
 					DoAndReturn(func(ctx context.Context, fn func(context.Context) error) error {
 						return fn(ctx)
 					}).
 					Times(1)
 			},
-			setMockVolumeRepo: func(ctx context.Context, volumeRepo *mockRepository.MockVolumeRepository) {
+			setMockVolumeRepo: func(volumeRepo *mockRepository.MockVolumeRepository) {
 				volumeRepo.
 					EXPECT().
-					FindOneByNameAndAccountID(ctx, gomock.Any(), gomock.Any()).
+					FindOneByNameAndAccountID(gomock.Any(), gomock.Any(), gomock.Any()).
 					Return(volume, nil).
 					Times(1)
 			},
-			setMockBodyRepo: func(context.Context, *mockRepository.MockBodyRepository) {},
-			setMockVolumeServ: func(ctx context.Context, volumeServ *mockService.MockVolumeService) {
+			setMockBodyRepo: func(*mockRepository.MockBodyRepository) {},
+			setMockVolumeServ: func(volumeServ *mockService.MockVolumeService) {
 				volumeServ.
 					EXPECT().
-					Exists(ctx, gomock.Any()).
+					Exists(gomock.Any(), gomock.Any()).
 					Return(service.ErrVolumeAlreadyExists).
 					Times(1)
 			},
@@ -372,66 +367,64 @@ func TestVolume_Update(t *testing.T) {
 		{
 			name:           "find volume error",
 			inputAccountID: accountID,
-			inputID:        id,
 			inputName:      "name",
 			inputNewName:   "update",
 			inputIsPublic:  false,
 			expectResult:   nil,
 			expectError:    sql.ErrConnDone,
-			setMockTransactionObj: func(ctx context.Context, transactionObj *mockTransaction.MockTransactionObject) {
+			setMockTransactionObj: func(transactionObj *mockTransaction.MockTransactionObject) {
 				transactionObj.
 					EXPECT().
-					Transaction(ctx, gomock.Any()).
+					Transaction(gomock.Any(), gomock.Any()).
 					DoAndReturn(func(ctx context.Context, fn func(context.Context) error) error {
 						return fn(ctx)
 					}).
 					Times(1)
 			},
-			setMockVolumeRepo: func(ctx context.Context, volumeRepo *mockRepository.MockVolumeRepository) {
+			setMockVolumeRepo: func(volumeRepo *mockRepository.MockVolumeRepository) {
 				volumeRepo.
 					EXPECT().
-					FindOneByNameAndAccountID(ctx, gomock.Any(), gomock.Any()).
+					FindOneByNameAndAccountID(gomock.Any(), gomock.Any(), gomock.Any()).
 					Return(nil, sql.ErrConnDone).
 					Times(1)
 			},
-			setMockBodyRepo:   func(context.Context, *mockRepository.MockBodyRepository) {},
-			setMockVolumeServ: func(context.Context, *mockService.MockVolumeService) {},
+			setMockBodyRepo:   func(*mockRepository.MockBodyRepository) {},
+			setMockVolumeServ: func(*mockService.MockVolumeService) {},
 		},
 		{
 			name:           "update volume error",
 			inputAccountID: accountID,
-			inputID:        id,
 			inputName:      "name",
 			inputNewName:   "update",
 			inputIsPublic:  false,
 			expectResult:   nil,
 			expectError:    sql.ErrConnDone,
-			setMockTransactionObj: func(ctx context.Context, transactionObj *mockTransaction.MockTransactionObject) {
+			setMockTransactionObj: func(transactionObj *mockTransaction.MockTransactionObject) {
 				transactionObj.
 					EXPECT().
-					Transaction(ctx, gomock.Any()).
+					Transaction(gomock.Any(), gomock.Any()).
 					DoAndReturn(func(ctx context.Context, fn func(context.Context) error) error {
 						return fn(ctx)
 					}).
 					Times(1)
 			},
-			setMockVolumeRepo: func(ctx context.Context, volumeRepo *mockRepository.MockVolumeRepository) {
+			setMockVolumeRepo: func(volumeRepo *mockRepository.MockVolumeRepository) {
 				volumeRepo.
 					EXPECT().
-					FindOneByNameAndAccountID(ctx, gomock.Any(), gomock.Any()).
+					FindOneByNameAndAccountID(gomock.Any(), gomock.Any(), gomock.Any()).
 					Return(volume, nil).
 					Times(1)
 				volumeRepo.
 					EXPECT().
-					Update(ctx, gomock.Any()).
+					Update(gomock.Any(), gomock.Any()).
 					Return(sql.ErrConnDone).
 					Times(1)
 			},
-			setMockBodyRepo: func(context.Context, *mockRepository.MockBodyRepository) {},
-			setMockVolumeServ: func(ctx context.Context, volumeServ *mockService.MockVolumeService) {
+			setMockBodyRepo: func(*mockRepository.MockBodyRepository) {},
+			setMockVolumeServ: func(volumeServ *mockService.MockVolumeService) {
 				volumeServ.
 					EXPECT().
-					Exists(ctx, gomock.Any()).
+					Exists(gomock.Any(), gomock.Any()).
 					Return(nil).
 					Times(1)
 			},
@@ -444,38 +437,38 @@ func TestVolume_Update(t *testing.T) {
 			inputIsPublic:  false,
 			expectResult:   nil,
 			expectError:    afero.ErrFileClosed,
-			setMockTransactionObj: func(ctx context.Context, transactionObj *mockTransaction.MockTransactionObject) {
+			setMockTransactionObj: func(transactionObj *mockTransaction.MockTransactionObject) {
 				transactionObj.
 					EXPECT().
-					Transaction(ctx, gomock.Any()).
+					Transaction(gomock.Any(), gomock.Any()).
 					DoAndReturn(func(ctx context.Context, fn func(context.Context) error) error {
 						return fn(ctx)
 					}).
 					Times(1)
 			},
-			setMockVolumeRepo: func(ctx context.Context, volumeRepo *mockRepository.MockVolumeRepository) {
+			setMockVolumeRepo: func(volumeRepo *mockRepository.MockVolumeRepository) {
 				volumeRepo.
 					EXPECT().
-					FindOneByNameAndAccountID(ctx, gomock.Any(), gomock.Any()).
+					FindOneByNameAndAccountID(gomock.Any(), gomock.Any(), gomock.Any()).
 					Return(volume, nil).
 					Times(1)
 				volumeRepo.
 					EXPECT().
-					Update(ctx, gomock.Any()).
+					Update(gomock.Any(), gomock.Any()).
 					Return(nil).
 					Times(1)
 			},
-			setMockBodyRepo: func(_ context.Context, bodyRepo *mockRepository.MockBodyRepository) {
+			setMockBodyRepo: func(bodyRepo *mockRepository.MockBodyRepository) {
 				bodyRepo.
 					EXPECT().
 					Update(gomock.Any(), gomock.Any()).
 					Return(afero.ErrFileClosed).
 					Times(1)
 			},
-			setMockVolumeServ: func(ctx context.Context, volumeServ *mockService.MockVolumeService) {
+			setMockVolumeServ: func(volumeServ *mockService.MockVolumeService) {
 				volumeServ.
 					EXPECT().
-					Exists(ctx, gomock.Any()).
+					Exists(gomock.Any(), gomock.Any()).
 					Return(nil).
 					Times(1)
 			},
@@ -489,16 +482,16 @@ func TestVolume_Update(t *testing.T) {
 			ctx := t.Context()
 
 			transactionObj := mockTransaction.NewMockTransactionObject(ctrl)
-			tt.setMockTransactionObj(ctx, transactionObj)
+			tt.setMockTransactionObj(transactionObj)
 
 			volumeRepo := mockRepository.NewMockVolumeRepository(ctrl)
-			tt.setMockVolumeRepo(ctx, volumeRepo)
+			tt.setMockVolumeRepo(volumeRepo)
 
 			bodyRepo := mockRepository.NewMockBodyRepository(ctrl)
-			tt.setMockBodyRepo(ctx, bodyRepo)
+			tt.setMockBodyRepo(bodyRepo)
 
 			volumeServ := mockService.NewMockVolumeService(ctrl)
-			tt.setMockVolumeServ(ctx, volumeServ)
+			tt.setMockVolumeServ(volumeServ)
 
 			uc := usecase.NewVolumeUsecase(transactionObj, volumeRepo, bodyRepo, volumeServ)
 			result, err := uc.Update(ctx, tt.inputAccountID, tt.inputName, tt.inputNewName, tt.inputIsPublic)
@@ -507,9 +500,9 @@ func TestVolume_Update(t *testing.T) {
 			}
 
 			opts := cmp.Options{
-				cmpopts.IgnoreFields(dto.VolumeDTO{}, "ID", "UpdatedAt"),
+				cmpopts.IgnoreFields(dto.VolumeDTO{}, "UpdatedAt"),
 			}
-			if diff := cmp.Diff(result, tt.expectResult, opts...); diff != "" {
+			if diff := cmp.Diff(tt.expectResult, result, opts...); diff != "" {
 				t.Error(diff)
 			}
 		})
@@ -517,10 +510,9 @@ func TestVolume_Update(t *testing.T) {
 }
 
 func TestVolume_Delete(t *testing.T) {
-	id := uuid.New()
 	accountID := uuid.New()
 	volume := &entity.Volume{
-		ID:        id,
+		ID:        uuid.New(),
 		AccountID: accountID,
 		Name:      "name",
 		IsPublic:  false,
@@ -533,48 +525,48 @@ func TestVolume_Delete(t *testing.T) {
 		inputAccountID        uuid.UUID
 		inputName             string
 		expectError           error
-		setMockTransactionObj func(context.Context, *mockTransaction.MockTransactionObject)
-		setMockVolumeRepo     func(context.Context, *mockRepository.MockVolumeRepository)
-		setMockBodyRepo       func(context.Context, *mockRepository.MockBodyRepository)
-		setMockVolumeServ     func(context.Context, *mockService.MockVolumeService)
+		setMockTransactionObj func(*mockTransaction.MockTransactionObject)
+		setMockVolumeRepo     func(*mockRepository.MockVolumeRepository)
+		setMockBodyRepo       func(*mockRepository.MockBodyRepository)
+		setMockVolumeServ     func(*mockService.MockVolumeService)
 	}{
 		{
-			name:           "success",
+			name:           "successfully deleted",
 			inputAccountID: accountID,
 			inputName:      "name",
 			expectError:    nil,
-			setMockTransactionObj: func(ctx context.Context, transactionObj *mockTransaction.MockTransactionObject) {
+			setMockTransactionObj: func(transactionObj *mockTransaction.MockTransactionObject) {
 				transactionObj.
 					EXPECT().
-					Transaction(ctx, gomock.Any()).
+					Transaction(gomock.Any(), gomock.Any()).
 					DoAndReturn(func(ctx context.Context, fn func(context.Context) error) error {
 						return fn(ctx)
 					}).
 					Times(1)
 			},
-			setMockVolumeRepo: func(ctx context.Context, volumeRepo *mockRepository.MockVolumeRepository) {
+			setMockVolumeRepo: func(volumeRepo *mockRepository.MockVolumeRepository) {
 				volumeRepo.
 					EXPECT().
-					FindOneByNameAndAccountID(ctx, gomock.Any(), gomock.Any()).
+					FindOneByNameAndAccountID(gomock.Any(), gomock.Any(), gomock.Any()).
 					Return(volume, nil).
 					Times(1)
 				volumeRepo.
 					EXPECT().
-					Delete(ctx, gomock.Any()).
+					Delete(gomock.Any(), gomock.Any()).
 					Return(nil).
 					Times(1)
 			},
-			setMockBodyRepo: func(_ context.Context, bodyRepo *mockRepository.MockBodyRepository) {
+			setMockBodyRepo: func(bodyRepo *mockRepository.MockBodyRepository) {
 				bodyRepo.
 					EXPECT().
 					Delete(gomock.Any()).
 					Return(nil).
 					Times(1)
 			},
-			setMockVolumeServ: func(ctx context.Context, volumeServ *mockService.MockVolumeService) {
+			setMockVolumeServ: func(volumeServ *mockService.MockVolumeService) {
 				volumeServ.
 					EXPECT().
-					CanDelete(ctx, gomock.Any()).
+					CanDelete(gomock.Any(), gomock.Any()).
 					Return(nil).
 					Times(1)
 			},
@@ -584,51 +576,51 @@ func TestVolume_Delete(t *testing.T) {
 			inputAccountID: accountID,
 			inputName:      "name",
 			expectError:    sql.ErrConnDone,
-			setMockTransactionObj: func(ctx context.Context, transactionObj *mockTransaction.MockTransactionObject) {
+			setMockTransactionObj: func(transactionObj *mockTransaction.MockTransactionObject) {
 				transactionObj.
 					EXPECT().
-					Transaction(ctx, gomock.Any()).
+					Transaction(gomock.Any(), gomock.Any()).
 					DoAndReturn(func(ctx context.Context, fn func(context.Context) error) error {
 						return fn(ctx)
 					}).
 					Times(1)
 			},
-			setMockVolumeRepo: func(ctx context.Context, volumeRepo *mockRepository.MockVolumeRepository) {
+			setMockVolumeRepo: func(volumeRepo *mockRepository.MockVolumeRepository) {
 				volumeRepo.
 					EXPECT().
-					FindOneByNameAndAccountID(ctx, gomock.Any(), gomock.Any()).
+					FindOneByNameAndAccountID(gomock.Any(), gomock.Any(), gomock.Any()).
 					Return(nil, sql.ErrConnDone).
 					Times(1)
 			},
-			setMockBodyRepo:   func(context.Context, *mockRepository.MockBodyRepository) {},
-			setMockVolumeServ: func(context.Context, *mockService.MockVolumeService) {},
+			setMockBodyRepo:   func(*mockRepository.MockBodyRepository) {},
+			setMockVolumeServ: func(*mockService.MockVolumeService) {},
 		},
 		{
 			name:           "volume has entries",
 			inputAccountID: accountID,
 			inputName:      "name",
 			expectError:    service.ErrVolumeHasEntries,
-			setMockTransactionObj: func(ctx context.Context, transactionObj *mockTransaction.MockTransactionObject) {
+			setMockTransactionObj: func(transactionObj *mockTransaction.MockTransactionObject) {
 				transactionObj.
 					EXPECT().
-					Transaction(ctx, gomock.Any()).
+					Transaction(gomock.Any(), gomock.Any()).
 					DoAndReturn(func(ctx context.Context, fn func(context.Context) error) error {
 						return fn(ctx)
 					}).
 					Times(1)
 			},
-			setMockVolumeRepo: func(ctx context.Context, volumeRepo *mockRepository.MockVolumeRepository) {
+			setMockVolumeRepo: func(volumeRepo *mockRepository.MockVolumeRepository) {
 				volumeRepo.
 					EXPECT().
-					FindOneByNameAndAccountID(ctx, gomock.Any(), gomock.Any()).
+					FindOneByNameAndAccountID(gomock.Any(), gomock.Any(), gomock.Any()).
 					Return(volume, nil).
 					Times(1)
 			},
-			setMockBodyRepo: func(context.Context, *mockRepository.MockBodyRepository) {},
-			setMockVolumeServ: func(ctx context.Context, volumeServ *mockService.MockVolumeService) {
+			setMockBodyRepo: func(*mockRepository.MockBodyRepository) {},
+			setMockVolumeServ: func(volumeServ *mockService.MockVolumeService) {
 				volumeServ.
 					EXPECT().
-					CanDelete(ctx, gomock.Any()).
+					CanDelete(gomock.Any(), gomock.Any()).
 					Return(service.ErrVolumeHasEntries).
 					Times(1)
 			},
@@ -638,32 +630,32 @@ func TestVolume_Delete(t *testing.T) {
 			inputAccountID: accountID,
 			inputName:      "name",
 			expectError:    sql.ErrConnDone,
-			setMockTransactionObj: func(ctx context.Context, transactionObj *mockTransaction.MockTransactionObject) {
+			setMockTransactionObj: func(transactionObj *mockTransaction.MockTransactionObject) {
 				transactionObj.
 					EXPECT().
-					Transaction(ctx, gomock.Any()).
+					Transaction(gomock.Any(), gomock.Any()).
 					DoAndReturn(func(ctx context.Context, fn func(context.Context) error) error {
 						return fn(ctx)
 					}).
 					Times(1)
 			},
-			setMockVolumeRepo: func(ctx context.Context, volumeRepo *mockRepository.MockVolumeRepository) {
+			setMockVolumeRepo: func(volumeRepo *mockRepository.MockVolumeRepository) {
 				volumeRepo.
 					EXPECT().
-					FindOneByNameAndAccountID(ctx, gomock.Any(), gomock.Any()).
+					FindOneByNameAndAccountID(gomock.Any(), gomock.Any(), gomock.Any()).
 					Return(volume, nil).
 					Times(1)
 				volumeRepo.
 					EXPECT().
-					Delete(ctx, gomock.Any()).
+					Delete(gomock.Any(), gomock.Any()).
 					Return(sql.ErrConnDone).
 					Times(1)
 			},
-			setMockBodyRepo: func(context.Context, *mockRepository.MockBodyRepository) {},
-			setMockVolumeServ: func(ctx context.Context, volumeServ *mockService.MockVolumeService) {
+			setMockBodyRepo: func(*mockRepository.MockBodyRepository) {},
+			setMockVolumeServ: func(volumeServ *mockService.MockVolumeService) {
 				volumeServ.
 					EXPECT().
-					CanDelete(ctx, gomock.Any()).
+					CanDelete(gomock.Any(), gomock.Any()).
 					Return(nil).
 					Times(1)
 			},
@@ -673,38 +665,38 @@ func TestVolume_Delete(t *testing.T) {
 			inputAccountID: accountID,
 			inputName:      "name",
 			expectError:    afero.ErrFileClosed,
-			setMockTransactionObj: func(ctx context.Context, transactionObj *mockTransaction.MockTransactionObject) {
+			setMockTransactionObj: func(transactionObj *mockTransaction.MockTransactionObject) {
 				transactionObj.
 					EXPECT().
-					Transaction(ctx, gomock.Any()).
+					Transaction(gomock.Any(), gomock.Any()).
 					DoAndReturn(func(ctx context.Context, fn func(context.Context) error) error {
 						return fn(ctx)
 					}).
 					Times(1)
 			},
-			setMockVolumeRepo: func(ctx context.Context, volumeRepo *mockRepository.MockVolumeRepository) {
+			setMockVolumeRepo: func(volumeRepo *mockRepository.MockVolumeRepository) {
 				volumeRepo.
 					EXPECT().
-					FindOneByNameAndAccountID(ctx, gomock.Any(), gomock.Any()).
+					FindOneByNameAndAccountID(gomock.Any(), gomock.Any(), gomock.Any()).
 					Return(volume, nil).
 					Times(1)
 				volumeRepo.
 					EXPECT().
-					Delete(ctx, gomock.Any()).
+					Delete(gomock.Any(), gomock.Any()).
 					Return(nil).
 					Times(1)
 			},
-			setMockBodyRepo: func(_ context.Context, bodyRepo *mockRepository.MockBodyRepository) {
+			setMockBodyRepo: func(bodyRepo *mockRepository.MockBodyRepository) {
 				bodyRepo.
 					EXPECT().
 					Delete(gomock.Any()).
 					Return(afero.ErrFileClosed).
 					Times(1)
 			},
-			setMockVolumeServ: func(ctx context.Context, volumeServ *mockService.MockVolumeService) {
+			setMockVolumeServ: func(volumeServ *mockService.MockVolumeService) {
 				volumeServ.
 					EXPECT().
-					CanDelete(ctx, gomock.Any()).
+					CanDelete(gomock.Any(), gomock.Any()).
 					Return(nil).
 					Times(1)
 			},
@@ -718,16 +710,16 @@ func TestVolume_Delete(t *testing.T) {
 			ctx := t.Context()
 
 			transactionObj := mockTransaction.NewMockTransactionObject(ctrl)
-			tt.setMockTransactionObj(ctx, transactionObj)
+			tt.setMockTransactionObj(transactionObj)
 
 			volumeRepo := mockRepository.NewMockVolumeRepository(ctrl)
-			tt.setMockVolumeRepo(ctx, volumeRepo)
+			tt.setMockVolumeRepo(volumeRepo)
 
 			bodyRepo := mockRepository.NewMockBodyRepository(ctrl)
-			tt.setMockBodyRepo(ctx, bodyRepo)
+			tt.setMockBodyRepo(bodyRepo)
 
 			volumeServ := mockService.NewMockVolumeService(ctrl)
-			tt.setMockVolumeServ(ctx, volumeServ)
+			tt.setMockVolumeServ(volumeServ)
 
 			uc := usecase.NewVolumeUsecase(transactionObj, volumeRepo, bodyRepo, volumeServ)
 			if err := uc.Delete(ctx, tt.inputAccountID, tt.inputName); !errors.Is(err, tt.expectError) {
@@ -738,10 +730,9 @@ func TestVolume_Delete(t *testing.T) {
 }
 
 func TestVolume_GetOne(t *testing.T) {
-	id := uuid.New()
 	accountID := uuid.New()
 	volume := &entity.Volume{
-		ID:        id,
+		ID:        uuid.New(),
 		AccountID: accountID,
 		Name:      "name",
 		IsPublic:  false,
@@ -749,10 +740,10 @@ func TestVolume_GetOne(t *testing.T) {
 		UpdatedAt: time.Now(),
 	}
 	volumeDTO := &dto.VolumeDTO{
-		ID:        id,
-		AccountID: accountID,
-		Name:      "name",
-		IsPublic:  false,
+		ID:        volume.ID,
+		AccountID: volume.AccountID,
+		Name:      volume.Name,
+		IsPublic:  volume.IsPublic,
 		CreatedAt: volume.CreatedAt,
 		UpdatedAt: volume.UpdatedAt,
 	}
@@ -763,18 +754,18 @@ func TestVolume_GetOne(t *testing.T) {
 		inputName         string
 		expectResult      *dto.VolumeDTO
 		expectError       error
-		setMockVolumeRepo func(context.Context, *mockRepository.MockVolumeRepository)
+		setMockVolumeRepo func(*mockRepository.MockVolumeRepository)
 	}{
 		{
-			name:           "success",
+			name:           "successfully got one",
 			inputAccountID: accountID,
 			inputName:      "name",
 			expectResult:   volumeDTO,
 			expectError:    nil,
-			setMockVolumeRepo: func(ctx context.Context, volumeRepo *mockRepository.MockVolumeRepository) {
+			setMockVolumeRepo: func(volumeRepo *mockRepository.MockVolumeRepository) {
 				volumeRepo.
 					EXPECT().
-					FindOneByNameAndAccountID(ctx, gomock.Any(), gomock.Any()).
+					FindOneByNameAndAccountID(gomock.Any(), gomock.Any(), gomock.Any()).
 					Return(volume, nil).
 					Times(1)
 			},
@@ -785,10 +776,10 @@ func TestVolume_GetOne(t *testing.T) {
 			inputName:      "name",
 			expectResult:   nil,
 			expectError:    sql.ErrConnDone,
-			setMockVolumeRepo: func(ctx context.Context, volumeRepo *mockRepository.MockVolumeRepository) {
+			setMockVolumeRepo: func(volumeRepo *mockRepository.MockVolumeRepository) {
 				volumeRepo.
 					EXPECT().
-					FindOneByNameAndAccountID(ctx, gomock.Any(), gomock.Any()).
+					FindOneByNameAndAccountID(gomock.Any(), gomock.Any(), gomock.Any()).
 					Return(nil, sql.ErrConnDone).
 					Times(1)
 			},
@@ -802,7 +793,7 @@ func TestVolume_GetOne(t *testing.T) {
 			ctx := t.Context()
 
 			volumeRepo := mockRepository.NewMockVolumeRepository(ctrl)
-			tt.setMockVolumeRepo(ctx, volumeRepo)
+			tt.setMockVolumeRepo(volumeRepo)
 
 			uc := usecase.NewVolumeUsecase(nil, volumeRepo, nil, nil)
 			result, err := uc.GetOne(ctx, tt.inputAccountID, tt.inputName)
@@ -810,10 +801,7 @@ func TestVolume_GetOne(t *testing.T) {
 				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
 			}
 
-			opts := cmp.Options{
-				cmpopts.IgnoreFields(dto.VolumeDTO{}),
-			}
-			if diff := cmp.Diff(result, tt.expectResult, opts...); diff != "" {
+			if diff := cmp.Diff(tt.expectResult, result); diff != "" {
 				t.Error(diff)
 			}
 		})
@@ -821,10 +809,9 @@ func TestVolume_GetOne(t *testing.T) {
 }
 
 func TestVolume_GetAll(t *testing.T) {
-	id := uuid.New()
 	accountID := uuid.New()
 	volume := &entity.Volume{
-		ID:        id,
+		ID:        uuid.New(),
 		AccountID: accountID,
 		Name:      "name",
 		IsPublic:  false,
@@ -832,10 +819,10 @@ func TestVolume_GetAll(t *testing.T) {
 		UpdatedAt: time.Now(),
 	}
 	volumeDTO := &dto.VolumeDTO{
-		ID:        id,
-		AccountID: accountID,
-		Name:      "name",
-		IsPublic:  false,
+		ID:        volume.ID,
+		AccountID: volume.AccountID,
+		Name:      volume.Name,
+		IsPublic:  volume.IsPublic,
 		CreatedAt: volume.CreatedAt,
 		UpdatedAt: volume.UpdatedAt,
 	}
@@ -845,17 +832,17 @@ func TestVolume_GetAll(t *testing.T) {
 		inputAccountID    uuid.UUID
 		expectResult      []*dto.VolumeDTO
 		expectError       error
-		setMockVolumeRepo func(context.Context, *mockRepository.MockVolumeRepository)
+		setMockVolumeRepo func(*mockRepository.MockVolumeRepository)
 	}{
 		{
-			name:           "success",
+			name:           "successfully got all",
 			inputAccountID: accountID,
 			expectResult:   []*dto.VolumeDTO{volumeDTO},
 			expectError:    nil,
-			setMockVolumeRepo: func(ctx context.Context, volumeRepo *mockRepository.MockVolumeRepository) {
+			setMockVolumeRepo: func(volumeRepo *mockRepository.MockVolumeRepository) {
 				volumeRepo.
 					EXPECT().
-					FindByAccountID(ctx, gomock.Any()).
+					FindByAccountID(gomock.Any(), gomock.Any()).
 					Return([]*entity.Volume{volume}, nil).
 					Times(1)
 			},
@@ -865,10 +852,10 @@ func TestVolume_GetAll(t *testing.T) {
 			inputAccountID: accountID,
 			expectResult:   []*dto.VolumeDTO{},
 			expectError:    nil,
-			setMockVolumeRepo: func(ctx context.Context, volumeRepo *mockRepository.MockVolumeRepository) {
+			setMockVolumeRepo: func(volumeRepo *mockRepository.MockVolumeRepository) {
 				volumeRepo.
 					EXPECT().
-					FindByAccountID(ctx, gomock.Any()).
+					FindByAccountID(gomock.Any(), gomock.Any()).
 					Return(nil, nil).
 					Times(1)
 			},
@@ -878,10 +865,10 @@ func TestVolume_GetAll(t *testing.T) {
 			inputAccountID: accountID,
 			expectResult:   nil,
 			expectError:    sql.ErrConnDone,
-			setMockVolumeRepo: func(ctx context.Context, volumeRepo *mockRepository.MockVolumeRepository) {
+			setMockVolumeRepo: func(volumeRepo *mockRepository.MockVolumeRepository) {
 				volumeRepo.
 					EXPECT().
-					FindByAccountID(ctx, gomock.Any()).
+					FindByAccountID(gomock.Any(), gomock.Any()).
 					Return(nil, sql.ErrConnDone).
 					Times(1)
 			},
@@ -895,7 +882,7 @@ func TestVolume_GetAll(t *testing.T) {
 			ctx := t.Context()
 
 			volumeRepo := mockRepository.NewMockVolumeRepository(ctrl)
-			tt.setMockVolumeRepo(ctx, volumeRepo)
+			tt.setMockVolumeRepo(volumeRepo)
 
 			uc := usecase.NewVolumeUsecase(nil, volumeRepo, nil, nil)
 			result, err := uc.GetAll(ctx, tt.inputAccountID)
@@ -903,10 +890,7 @@ func TestVolume_GetAll(t *testing.T) {
 				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
 			}
 
-			opts := cmp.Options{
-				cmpopts.IgnoreFields(dto.VolumeDTO{}),
-			}
-			if diff := cmp.Diff(result, tt.expectResult, opts...); diff != "" {
+			if diff := cmp.Diff(tt.expectResult, result); diff != "" {
 				t.Error(diff)
 			}
 		})
