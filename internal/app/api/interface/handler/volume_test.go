@@ -2,9 +2,8 @@ package handler_test
 
 import (
 	"bytes"
-	"context"
 	"database/sql"
-	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -34,53 +33,53 @@ func TestVolume_Create(t *testing.T) {
 	}
 
 	tests := []struct {
-		name            string
-		requestJSON     []byte
-		isSetAccountID  bool
-		expectCode      int
-		expectResponse  map[string]any
-		setMockVolumeUC func(context.Context, *mockUsecase.MockVolumeUsecase)
+		name                  string
+		requestBody           []byte
+		hasAccountIDInContext bool
+		expectCode            int
+		expectResponse        []byte
+		setMockVolumeUC       func(*mockUsecase.MockVolumeUsecase)
 	}{
 		{
-			name:           "success",
-			requestJSON:    []byte(`{"name": "name", "is_public": false}`),
-			isSetAccountID: true,
-			expectCode:     http.StatusCreated,
-			expectResponse: map[string]any{"name": volumeDTO.Name, "is_public": volumeDTO.IsPublic, "created_at": volumeDTO.CreatedAt.Format(time.RFC3339Nano), "updated_at": volumeDTO.UpdatedAt.Format(time.RFC3339Nano)},
-			setMockVolumeUC: func(ctx context.Context, volumeUC *mockUsecase.MockVolumeUsecase) {
+			name:                  "successfully created",
+			requestBody:           []byte(`{"name":"name","is_public":false}`),
+			hasAccountIDInContext: true,
+			expectCode:            http.StatusCreated,
+			expectResponse:        fmt.Appendf(nil, `{"name":"%s","is_public":%t,"created_at":"%s","updated_at":"%s"}`, volumeDTO.Name, volumeDTO.IsPublic, volumeDTO.CreatedAt.Format(time.RFC3339Nano), volumeDTO.UpdatedAt.Format(time.RFC3339Nano)),
+			setMockVolumeUC: func(volumeUC *mockUsecase.MockVolumeUsecase) {
 				volumeUC.
 					EXPECT().
-					Create(ctx, gomock.Any(), gomock.Any(), gomock.Any()).
+					Create(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 					Return(volumeDTO, nil).
 					Times(1)
 			},
 		},
 		{
-			name:            "invalid request",
-			requestJSON:     nil,
-			isSetAccountID:  true,
-			expectCode:      http.StatusBadRequest,
-			expectResponse:  map[string]any{"message": "failed to parse json"},
-			setMockVolumeUC: func(context.Context, *mockUsecase.MockVolumeUsecase) {},
+			name:                  "invalid request",
+			requestBody:           nil,
+			hasAccountIDInContext: true,
+			expectCode:            http.StatusBadRequest,
+			expectResponse:        []byte(`{"message":"failed to parse json"}`),
+			setMockVolumeUC:       func(*mockUsecase.MockVolumeUsecase) {},
 		},
 		{
-			name:            "account id not found",
-			requestJSON:     []byte(`{"name": "name", "is_public": false}`),
-			isSetAccountID:  false,
-			expectCode:      http.StatusInternalServerError,
-			expectResponse:  map[string]any{"message": "internal server error"},
-			setMockVolumeUC: func(context.Context, *mockUsecase.MockVolumeUsecase) {},
+			name:                  "account id not set",
+			requestBody:           []byte(`{"name":"name","is_public":false}`),
+			hasAccountIDInContext: false,
+			expectCode:            http.StatusInternalServerError,
+			expectResponse:        []byte(`{"message":"internal server error"}`),
+			setMockVolumeUC:       func(*mockUsecase.MockVolumeUsecase) {},
 		},
 		{
-			name:           "create error",
-			requestJSON:    []byte(`{"name": "name", "is_public": false}`),
-			isSetAccountID: true,
-			expectCode:     http.StatusInternalServerError,
-			expectResponse: map[string]any{"message": "internal server error"},
-			setMockVolumeUC: func(ctx context.Context, volumeUC *mockUsecase.MockVolumeUsecase) {
+			name:                  "create error",
+			requestBody:           []byte(`{"name":"name","is_public":false}`),
+			hasAccountIDInContext: true,
+			expectCode:            http.StatusInternalServerError,
+			expectResponse:        []byte(`{"message":"internal server error"}`),
+			setMockVolumeUC: func(volumeUC *mockUsecase.MockVolumeUsecase) {
 				volumeUC.
 					EXPECT().
-					Create(ctx, gomock.Any(), gomock.Any(), gomock.Any()).
+					Create(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 					Return(nil, sql.ErrConnDone).
 					Times(1)
 			},
@@ -93,11 +92,11 @@ func TestVolume_Create(t *testing.T) {
 
 			c, _ := gin.CreateTestContext(w)
 			var err error
-			c.Request, err = http.NewRequestWithContext(ctx, "POST", "/volumes", bytes.NewBuffer(tt.requestJSON))
+			c.Request, err = http.NewRequestWithContext(ctx, "POST", "/volumes", bytes.NewBuffer(tt.requestBody))
 			if err != nil {
 				t.Error(err)
 			}
-			if tt.isSetAccountID {
+			if tt.hasAccountIDInContext {
 				c.Set("accountID", accountID)
 			}
 
@@ -105,7 +104,7 @@ func TestVolume_Create(t *testing.T) {
 			defer ctrl.Finish()
 
 			volumeUC := mockUsecase.NewMockVolumeUsecase(ctrl)
-			tt.setMockVolumeUC(ctx, volumeUC)
+			tt.setMockVolumeUC(volumeUC)
 
 			hdl := handler.NewVolumeHandler(volumeUC)
 			hdl.Create(c)
@@ -116,11 +115,7 @@ func TestVolume_Create(t *testing.T) {
 				t.Errorf("\nexpect: %v\ngot: %v", tt.expectCode, w.Code)
 			}
 
-			var response map[string]any
-			if err := json.Unmarshal(w.Body.Bytes(), &response); err != nil {
-				t.Error(err)
-			}
-			if diff := cmp.Diff(response, tt.expectResponse); diff != "" {
+			if diff := cmp.Diff(tt.expectResponse, w.Body.Bytes()); diff != "" {
 				t.Error(diff)
 			}
 		})
@@ -130,10 +125,9 @@ func TestVolume_Create(t *testing.T) {
 func TestVolume_Update(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
-	id := uuid.New()
 	accountID := uuid.New()
 	volumeDTO := &dto.VolumeDTO{
-		ID:        id,
+		ID:        uuid.New(),
 		AccountID: accountID,
 		Name:      "name",
 		IsPublic:  false,
@@ -142,53 +136,53 @@ func TestVolume_Update(t *testing.T) {
 	}
 
 	tests := []struct {
-		name            string
-		requestJSON     []byte
-		isSetAccountID  bool
-		expectCode      int
-		expectResponse  map[string]any
-		setMockVolumeUC func(context.Context, *mockUsecase.MockVolumeUsecase)
+		name                  string
+		requestBody           []byte
+		hasAccountIDInContext bool
+		expectCode            int
+		expectResponse        []byte
+		setMockVolumeUC       func(*mockUsecase.MockVolumeUsecase)
 	}{
 		{
-			name:           "success",
-			requestJSON:    []byte(`{"name": "name", "is_public": false}`),
-			isSetAccountID: true,
-			expectCode:     http.StatusOK,
-			expectResponse: map[string]any{"name": volumeDTO.Name, "is_public": volumeDTO.IsPublic, "created_at": volumeDTO.CreatedAt.Format(time.RFC3339Nano), "updated_at": volumeDTO.UpdatedAt.Format(time.RFC3339Nano)},
-			setMockVolumeUC: func(ctx context.Context, volumeUC *mockUsecase.MockVolumeUsecase) {
+			name:                  "successfully updated",
+			requestBody:           []byte(`{"name": "name", "is_public": false}`),
+			hasAccountIDInContext: true,
+			expectCode:            http.StatusOK,
+			expectResponse:        fmt.Appendf(nil, `{"name":"%s","is_public":%t,"created_at":"%s","updated_at":"%s"}`, volumeDTO.Name, volumeDTO.IsPublic, volumeDTO.CreatedAt.Format(time.RFC3339Nano), volumeDTO.UpdatedAt.Format(time.RFC3339Nano)),
+			setMockVolumeUC: func(volumeUC *mockUsecase.MockVolumeUsecase) {
 				volumeUC.
 					EXPECT().
-					Update(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+					Update(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 					Return(volumeDTO, nil).
 					Times(1)
 			},
 		},
 		{
-			name:            "invalid request",
-			requestJSON:     nil,
-			isSetAccountID:  true,
-			expectCode:      http.StatusBadRequest,
-			expectResponse:  map[string]any{"message": "failed to parse json"},
-			setMockVolumeUC: func(context.Context, *mockUsecase.MockVolumeUsecase) {},
+			name:                  "invalid request",
+			requestBody:           nil,
+			hasAccountIDInContext: true,
+			expectCode:            http.StatusBadRequest,
+			expectResponse:        []byte(`{"message":"failed to parse json"}`),
+			setMockVolumeUC:       func(*mockUsecase.MockVolumeUsecase) {},
 		},
 		{
-			name:            "account id not found",
-			requestJSON:     []byte(`{"name": "name", "is_public": false}`),
-			isSetAccountID:  false,
-			expectCode:      http.StatusInternalServerError,
-			expectResponse:  map[string]any{"message": "internal server error"},
-			setMockVolumeUC: func(context.Context, *mockUsecase.MockVolumeUsecase) {},
+			name:                  "account id not set",
+			requestBody:           []byte(`{"name": "name", "is_public": false}`),
+			hasAccountIDInContext: false,
+			expectCode:            http.StatusInternalServerError,
+			expectResponse:        []byte(`{"message":"internal server error"}`),
+			setMockVolumeUC:       func(*mockUsecase.MockVolumeUsecase) {},
 		},
 		{
-			name:           "update error",
-			requestJSON:    []byte(`{"name": "name", "is_public": false}`),
-			isSetAccountID: true,
-			expectCode:     http.StatusInternalServerError,
-			expectResponse: map[string]any{"message": "internal server error"},
-			setMockVolumeUC: func(ctx context.Context, volumeUC *mockUsecase.MockVolumeUsecase) {
+			name:                  "update error",
+			requestBody:           []byte(`{"name": "name", "is_public": false}`),
+			hasAccountIDInContext: true,
+			expectCode:            http.StatusInternalServerError,
+			expectResponse:        []byte(`{"message":"internal server error"}`),
+			setMockVolumeUC: func(volumeUC *mockUsecase.MockVolumeUsecase) {
 				volumeUC.
 					EXPECT().
-					Update(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+					Update(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 					Return(nil, sql.ErrConnDone).
 					Times(1)
 			},
@@ -201,12 +195,12 @@ func TestVolume_Update(t *testing.T) {
 
 			c, _ := gin.CreateTestContext(w)
 			var err error
-			c.Request, err = http.NewRequestWithContext(ctx, "PUT", "/volumes/name", bytes.NewBuffer(tt.requestJSON))
+			c.Request, err = http.NewRequestWithContext(ctx, "PUT", "/volumes/name", bytes.NewBuffer(tt.requestBody))
 			if err != nil {
 				t.Error(err)
 			}
 			c.Params = append(c.Params, gin.Param{Key: "name", Value: "name"})
-			if tt.isSetAccountID {
+			if tt.hasAccountIDInContext {
 				c.Set("accountID", accountID)
 			}
 
@@ -214,7 +208,7 @@ func TestVolume_Update(t *testing.T) {
 			defer ctrl.Finish()
 
 			volumeUC := mockUsecase.NewMockVolumeUsecase(ctrl)
-			tt.setMockVolumeUC(ctx, volumeUC)
+			tt.setMockVolumeUC(volumeUC)
 
 			hdl := handler.NewVolumeHandler(volumeUC)
 			hdl.Update(c)
@@ -225,11 +219,7 @@ func TestVolume_Update(t *testing.T) {
 				t.Errorf("\nexpect: %v\ngot: %v", tt.expectCode, w.Code)
 			}
 
-			var response map[string]any
-			if err := json.Unmarshal(w.Body.Bytes(), &response); err != nil {
-				t.Error(err)
-			}
-			if diff := cmp.Diff(response, tt.expectResponse); diff != "" {
+			if diff := cmp.Diff(tt.expectResponse, w.Body.Bytes()); diff != "" {
 				t.Error(diff)
 			}
 		})
@@ -242,41 +232,41 @@ func TestVolume_Delete(t *testing.T) {
 	accountID := uuid.New()
 
 	tests := []struct {
-		name            string
-		isSetAccountID  bool
-		expectCode      int
-		expectResponse  *map[string]any
-		setMockVolumeUC func(context.Context, *mockUsecase.MockVolumeUsecase)
+		name                  string
+		hasAccountIDInContext bool
+		expectCode            int
+		expectResponse        []byte
+		setMockVolumeUC       func(*mockUsecase.MockVolumeUsecase)
 	}{
 		{
-			name:           "success",
-			isSetAccountID: true,
-			expectCode:     http.StatusNoContent,
-			expectResponse: nil,
-			setMockVolumeUC: func(ctx context.Context, volumeUC *mockUsecase.MockVolumeUsecase) {
+			name:                  "successfully deleted",
+			hasAccountIDInContext: true,
+			expectCode:            http.StatusNoContent,
+			expectResponse:        nil,
+			setMockVolumeUC: func(volumeUC *mockUsecase.MockVolumeUsecase) {
 				volumeUC.
 					EXPECT().
-					Delete(ctx, gomock.Any(), gomock.Any()).
+					Delete(gomock.Any(), gomock.Any(), gomock.Any()).
 					Return(nil).
 					Times(1)
 			},
 		},
 		{
-			name:            "account id not found",
-			isSetAccountID:  false,
-			expectCode:      http.StatusInternalServerError,
-			expectResponse:  &map[string]any{"message": "internal server error"},
-			setMockVolumeUC: func(context.Context, *mockUsecase.MockVolumeUsecase) {},
+			name:                  "account id not set",
+			hasAccountIDInContext: false,
+			expectCode:            http.StatusInternalServerError,
+			expectResponse:        []byte(`{"message":"internal server error"}`),
+			setMockVolumeUC:       func(*mockUsecase.MockVolumeUsecase) {},
 		},
 		{
-			name:           "delete error",
-			isSetAccountID: true,
-			expectCode:     http.StatusInternalServerError,
-			expectResponse: &map[string]any{"message": "internal server error"},
-			setMockVolumeUC: func(ctx context.Context, volumeUC *mockUsecase.MockVolumeUsecase) {
+			name:                  "delete error",
+			hasAccountIDInContext: true,
+			expectCode:            http.StatusInternalServerError,
+			expectResponse:        []byte(`{"message":"internal server error"}`),
+			setMockVolumeUC: func(volumeUC *mockUsecase.MockVolumeUsecase) {
 				volumeUC.
 					EXPECT().
-					Delete(ctx, gomock.Any(), gomock.Any()).
+					Delete(gomock.Any(), gomock.Any(), gomock.Any()).
 					Return(sql.ErrConnDone).
 					Times(1)
 			},
@@ -294,7 +284,7 @@ func TestVolume_Delete(t *testing.T) {
 				t.Error(err)
 			}
 			c.Params = append(c.Params, gin.Param{Key: "name", Value: "name"})
-			if tt.isSetAccountID {
+			if tt.hasAccountIDInContext {
 				c.Set("accountID", accountID)
 			}
 
@@ -302,7 +292,7 @@ func TestVolume_Delete(t *testing.T) {
 			defer ctrl.Finish()
 
 			volumeUC := mockUsecase.NewMockVolumeUsecase(ctrl)
-			tt.setMockVolumeUC(ctx, volumeUC)
+			tt.setMockVolumeUC(volumeUC)
 
 			hdl := handler.NewVolumeHandler(volumeUC)
 			hdl.Delete(c)
@@ -313,14 +303,8 @@ func TestVolume_Delete(t *testing.T) {
 				t.Errorf("\nexpect: %v\ngot: %v", tt.expectCode, w.Code)
 			}
 
-			if tt.expectCode != http.StatusNoContent {
-				var response map[string]any
-				if err := json.Unmarshal(w.Body.Bytes(), &response); err != nil {
-					t.Error(err)
-				}
-				if diff := cmp.Diff(&response, tt.expectResponse); diff != "" {
-					t.Error(diff)
-				}
+			if diff := cmp.Diff(tt.expectResponse, w.Body.Bytes()); diff != "" {
+				t.Error(diff)
 			}
 		})
 	}
@@ -329,10 +313,9 @@ func TestVolume_Delete(t *testing.T) {
 func TestVolume_GetOne(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
-	id := uuid.New()
 	accountID := uuid.New()
 	volumeDTO := &dto.VolumeDTO{
-		ID:        id,
+		ID:        uuid.New(),
 		AccountID: accountID,
 		Name:      "name",
 		IsPublic:  false,
@@ -341,41 +324,41 @@ func TestVolume_GetOne(t *testing.T) {
 	}
 
 	tests := []struct {
-		name            string
-		isSetAccountID  bool
-		expectCode      int
-		expectResponse  map[string]any
-		setMockVolumeUC func(context.Context, *mockUsecase.MockVolumeUsecase)
+		name                  string
+		hasAccountIDInContext bool
+		expectCode            int
+		expectResponse        []byte
+		setMockVolumeUC       func(*mockUsecase.MockVolumeUsecase)
 	}{
 		{
-			name:           "success",
-			isSetAccountID: true,
-			expectCode:     http.StatusOK,
-			expectResponse: map[string]any{"name": volumeDTO.Name, "is_public": volumeDTO.IsPublic, "created_at": volumeDTO.CreatedAt.Format(time.RFC3339Nano), "updated_at": volumeDTO.UpdatedAt.Format(time.RFC3339Nano)},
-			setMockVolumeUC: func(ctx context.Context, volumeUC *mockUsecase.MockVolumeUsecase) {
+			name:                  "successfully got one",
+			hasAccountIDInContext: true,
+			expectCode:            http.StatusOK,
+			expectResponse:        fmt.Appendf(nil, `{"name":"%s","is_public":%t,"created_at":"%s","updated_at":"%s"}`, volumeDTO.Name, volumeDTO.IsPublic, volumeDTO.CreatedAt.Format(time.RFC3339Nano), volumeDTO.UpdatedAt.Format(time.RFC3339Nano)),
+			setMockVolumeUC: func(volumeUC *mockUsecase.MockVolumeUsecase) {
 				volumeUC.
 					EXPECT().
-					GetOne(ctx, gomock.Any(), gomock.Any()).
+					GetOne(gomock.Any(), gomock.Any(), gomock.Any()).
 					Return(volumeDTO, nil).
 					Times(1)
 			},
 		},
 		{
-			name:            "account id not found",
-			isSetAccountID:  false,
-			expectCode:      http.StatusInternalServerError,
-			expectResponse:  map[string]any{"message": "internal server error"},
-			setMockVolumeUC: func(context.Context, *mockUsecase.MockVolumeUsecase) {},
+			name:                  "account id not set",
+			hasAccountIDInContext: false,
+			expectCode:            http.StatusInternalServerError,
+			expectResponse:        []byte(`{"message":"internal server error"}`),
+			setMockVolumeUC:       func(*mockUsecase.MockVolumeUsecase) {},
 		},
 		{
-			name:           "get error",
-			isSetAccountID: true,
-			expectCode:     http.StatusInternalServerError,
-			expectResponse: map[string]any{"message": "internal server error"},
-			setMockVolumeUC: func(ctx context.Context, volumeUC *mockUsecase.MockVolumeUsecase) {
+			name:                  "get error",
+			hasAccountIDInContext: true,
+			expectCode:            http.StatusInternalServerError,
+			expectResponse:        []byte(`{"message":"internal server error"}`),
+			setMockVolumeUC: func(volumeUC *mockUsecase.MockVolumeUsecase) {
 				volumeUC.
 					EXPECT().
-					GetOne(ctx, gomock.Any(), gomock.Any()).
+					GetOne(gomock.Any(), gomock.Any(), gomock.Any()).
 					Return(nil, sql.ErrConnDone).
 					Times(1)
 			},
@@ -393,7 +376,7 @@ func TestVolume_GetOne(t *testing.T) {
 				t.Error(err)
 			}
 			c.Params = append(c.Params, gin.Param{Key: "name", Value: "name"})
-			if tt.isSetAccountID {
+			if tt.hasAccountIDInContext {
 				c.Set("accountID", accountID)
 			}
 
@@ -401,7 +384,7 @@ func TestVolume_GetOne(t *testing.T) {
 			defer ctrl.Finish()
 
 			volumeUC := mockUsecase.NewMockVolumeUsecase(ctrl)
-			tt.setMockVolumeUC(ctx, volumeUC)
+			tt.setMockVolumeUC(volumeUC)
 
 			hdl := handler.NewVolumeHandler(volumeUC)
 			hdl.GetOne(c)
@@ -412,11 +395,7 @@ func TestVolume_GetOne(t *testing.T) {
 				t.Errorf("\nexpect: %v\ngot: %v", tt.expectCode, w.Code)
 			}
 
-			var response map[string]any
-			if err := json.Unmarshal(w.Body.Bytes(), &response); err != nil {
-				t.Error(err)
-			}
-			if diff := cmp.Diff(response, tt.expectResponse); diff != "" {
+			if diff := cmp.Diff(tt.expectResponse, w.Body.Bytes()); diff != "" {
 				t.Error(diff)
 			}
 		})
@@ -437,54 +416,54 @@ func TestVolume_GetAll(t *testing.T) {
 	}
 
 	tests := []struct {
-		name            string
-		isSetAccountID  bool
-		expectCode      int
-		expectResponse  any
-		setMockVolumeUC func(context.Context, *mockUsecase.MockVolumeUsecase)
+		name                  string
+		hasAccountIDInContext bool
+		expectCode            int
+		expectResponse        []byte
+		setMockVolumeUC       func(*mockUsecase.MockVolumeUsecase)
 	}{
 		{
-			name:           "success",
-			isSetAccountID: true,
-			expectCode:     http.StatusOK,
-			expectResponse: map[string][]map[string]any{"volumes": {{"name": volumeDTO.Name, "is_public": volumeDTO.IsPublic, "created_at": volumeDTO.CreatedAt.Format(time.RFC3339Nano), "updated_at": volumeDTO.UpdatedAt.Format(time.RFC3339Nano)}}},
-			setMockVolumeUC: func(ctx context.Context, volumeUC *mockUsecase.MockVolumeUsecase) {
+			name:                  "successfully got all",
+			hasAccountIDInContext: true,
+			expectCode:            http.StatusOK,
+			expectResponse:        fmt.Appendf(nil, `{"volumes":[{"name":"%s","is_public":%t,"created_at":"%s","updated_at":"%s"}]}`, volumeDTO.Name, volumeDTO.IsPublic, volumeDTO.CreatedAt.Format(time.RFC3339Nano), volumeDTO.UpdatedAt.Format(time.RFC3339Nano)),
+			setMockVolumeUC: func(volumeUC *mockUsecase.MockVolumeUsecase) {
 				volumeUC.
 					EXPECT().
-					GetAll(ctx, gomock.Any()).
+					GetAll(gomock.Any(), gomock.Any()).
 					Return([]*dto.VolumeDTO{volumeDTO}, nil).
 					Times(1)
 			},
 		},
 		{
-			name:           "not found",
-			isSetAccountID: true,
-			expectCode:     http.StatusOK,
-			expectResponse: map[string][]map[string]any{"volumes": {}},
-			setMockVolumeUC: func(ctx context.Context, volumeUC *mockUsecase.MockVolumeUsecase) {
+			name:                  "not found",
+			hasAccountIDInContext: true,
+			expectCode:            http.StatusOK,
+			expectResponse:        []byte(`{"volumes":[]}`),
+			setMockVolumeUC: func(volumeUC *mockUsecase.MockVolumeUsecase) {
 				volumeUC.
 					EXPECT().
-					GetAll(ctx, gomock.Any()).
+					GetAll(gomock.Any(), gomock.Any()).
 					Return([]*dto.VolumeDTO{}, nil).
 					Times(1)
 			},
 		},
 		{
-			name:            "account id not found",
-			isSetAccountID:  false,
-			expectCode:      http.StatusInternalServerError,
-			expectResponse:  map[string]any{"message": "internal server error"},
-			setMockVolumeUC: func(context.Context, *mockUsecase.MockVolumeUsecase) {},
+			name:                  "account id not set",
+			hasAccountIDInContext: false,
+			expectCode:            http.StatusInternalServerError,
+			expectResponse:        []byte(`{"message":"internal server error"}`),
+			setMockVolumeUC:       func(*mockUsecase.MockVolumeUsecase) {},
 		},
 		{
-			name:           "get error",
-			isSetAccountID: true,
-			expectCode:     http.StatusInternalServerError,
-			expectResponse: map[string]any{"message": "internal server error"},
-			setMockVolumeUC: func(ctx context.Context, volumeUC *mockUsecase.MockVolumeUsecase) {
+			name:                  "get error",
+			hasAccountIDInContext: true,
+			expectCode:            http.StatusInternalServerError,
+			expectResponse:        []byte(`{"message":"internal server error"}`),
+			setMockVolumeUC: func(volumeUC *mockUsecase.MockVolumeUsecase) {
 				volumeUC.
 					EXPECT().
-					GetAll(ctx, gomock.Any()).
+					GetAll(gomock.Any(), gomock.Any()).
 					Return(nil, sql.ErrConnDone).
 					Times(1)
 			},
@@ -501,7 +480,7 @@ func TestVolume_GetAll(t *testing.T) {
 			if err != nil {
 				t.Error(err)
 			}
-			if tt.isSetAccountID {
+			if tt.hasAccountIDInContext {
 				c.Set("accountID", accountID)
 			}
 
@@ -509,7 +488,7 @@ func TestVolume_GetAll(t *testing.T) {
 			defer ctrl.Finish()
 
 			volumeUC := mockUsecase.NewMockVolumeUsecase(ctrl)
-			tt.setMockVolumeUC(ctx, volumeUC)
+			tt.setMockVolumeUC(volumeUC)
 
 			hdl := handler.NewVolumeHandler(volumeUC)
 			hdl.GetAll(c)
@@ -520,22 +499,8 @@ func TestVolume_GetAll(t *testing.T) {
 				t.Errorf("\nexpect: %v\ngot: %v", tt.expectCode, w.Code)
 			}
 
-			if tt.expectCode == http.StatusOK {
-				var response map[string][]map[string]any
-				if err := json.Unmarshal(w.Body.Bytes(), &response); err != nil {
-					t.Error(err)
-				}
-				if diff := cmp.Diff(response, tt.expectResponse); diff != "" {
-					t.Error(diff)
-				}
-			} else {
-				var response map[string]any
-				if err := json.Unmarshal(w.Body.Bytes(), &response); err != nil {
-					t.Error(err)
-				}
-				if diff := cmp.Diff(response, tt.expectResponse); diff != "" {
-					t.Error(diff)
-				}
+			if diff := cmp.Diff(tt.expectResponse, w.Body.Bytes()); diff != "" {
+				t.Error(diff)
 			}
 		})
 	}

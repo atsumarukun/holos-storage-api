@@ -1,7 +1,6 @@
 package middleware_test
 
 import (
-	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -11,6 +10,7 @@ import (
 	"github.com/google/uuid"
 	"go.uber.org/mock/gomock"
 
+	"github.com/atsumarukun/holos-storage-api/internal/app/api/domain/repository"
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/interface/middleware"
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/usecase/dto"
 	mockUsecase "github.com/atsumarukun/holos-storage-api/test/mock/usecase"
@@ -27,16 +27,30 @@ func TestAuthorization_Authorize(t *testing.T) {
 		name                   string
 		authorizationHeader    string
 		expectResult           uuid.UUID
-		setMockAuthorizationUC func(context.Context, *mockUsecase.MockAuthorizationUsecase)
+		expectError            []byte
+		setMockAuthorizationUC func(*mockUsecase.MockAuthorizationUsecase)
 	}{
 		{
-			name:                "success",
+			name:                "session token is set",
 			authorizationHeader: "Session 1Ty1HKTPKTt8xEi-_3HTbWf2SCHOdqOS",
 			expectResult:        accountDTO.ID,
-			setMockAuthorizationUC: func(ctx context.Context, authorizationUC *mockUsecase.MockAuthorizationUsecase) {
+			expectError:         nil,
+			setMockAuthorizationUC: func(authorizationUC *mockUsecase.MockAuthorizationUsecase) {
 				authorizationUC.EXPECT().
-					Authorize(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+					Authorize(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 					Return(accountDTO, nil).
+					Times(1)
+			},
+		},
+		{
+			name:                "session token not set",
+			authorizationHeader: "",
+			expectResult:        uuid.Nil,
+			expectError:         []byte(`{"message":"unauthorized"}`),
+			setMockAuthorizationUC: func(authorizationUC *mockUsecase.MockAuthorizationUsecase) {
+				authorizationUC.EXPECT().
+					Authorize(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+					Return(nil, repository.ErrUnauthorized).
 					Times(1)
 			},
 		},
@@ -44,9 +58,10 @@ func TestAuthorization_Authorize(t *testing.T) {
 			name:                "authorize error",
 			authorizationHeader: "Session 1Ty1HKTPKTt8xEi-_3HTbWf2SCHOdqOS",
 			expectResult:        uuid.Nil,
-			setMockAuthorizationUC: func(ctx context.Context, authorizationUC *mockUsecase.MockAuthorizationUsecase) {
+			expectError:         []byte(`{"message":"internal server error"}`),
+			setMockAuthorizationUC: func(authorizationUC *mockUsecase.MockAuthorizationUsecase) {
 				authorizationUC.EXPECT().
-					Authorize(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+					Authorize(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 					Return(nil, http.ErrServerClosed).
 					Times(1)
 			},
@@ -59,7 +74,7 @@ func TestAuthorization_Authorize(t *testing.T) {
 
 			c, _ := gin.CreateTestContext(w)
 			var err error
-			c.Request, err = http.NewRequestWithContext(ctx, "GET", "/folders", http.NoBody)
+			c.Request, err = http.NewRequestWithContext(ctx, "GET", "/volumes", http.NoBody)
 			if err != nil {
 				t.Error(err)
 			}
@@ -69,19 +84,19 @@ func TestAuthorization_Authorize(t *testing.T) {
 			defer ctrl.Finish()
 
 			authorizationUC := mockUsecase.NewMockAuthorizationUsecase(ctrl)
-			tt.setMockAuthorizationUC(ctx, authorizationUC)
+			tt.setMockAuthorizationUC(authorizationUC)
 
 			mw := middleware.NewAuthorizationMiddleware(authorizationUC)
 			mw.Authorize(c)
 
-			accountID, exists := c.Get("accountID")
-			if exists && tt.expectResult == uuid.Nil {
-				t.Errorf("\nexpect: %v\ngot: %v", tt.expectResult, accountID)
-			} else {
-				result, _ := accountID.(uuid.UUID)
-				if diff := cmp.Diff(result, tt.expectResult); diff != "" {
-					t.Error(diff)
-				}
+			accountID, _ := c.Get("accountID")
+			result, _ := accountID.(uuid.UUID)
+			if diff := cmp.Diff(result, tt.expectResult); diff != "" {
+				t.Error(diff)
+			}
+
+			if diff := cmp.Diff(tt.expectError, w.Body.Bytes()); diff != "" {
+				t.Error(diff)
 			}
 		})
 	}
