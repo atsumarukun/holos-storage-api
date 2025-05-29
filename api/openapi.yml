@@ -286,7 +286,7 @@ paths:
             type: "string"
           required: true
           description: "キー"
-          example: "volume/entry.png"
+          example: "key/sample.txt"
       requestBody:
         $ref: "#/components/requestBodies/update_entry"
       responses:
@@ -330,7 +330,7 @@ paths:
             type: "string"
           required: true
           description: "キー"
-          example: "volume/entry.png"
+          example: "key/sample.txt"
       responses:
         204:
           $ref: "#/components/responses/204"
@@ -369,7 +369,7 @@ paths:
             type: "string"
           required: true
           description: "キー"
-          example: "volume/entry.png"
+          example: "key/sample.txt"
       responses:
         200:
           description: "Success"
@@ -377,15 +377,19 @@ paths:
             Content-Length:
               schema:
                 type: "integer"
-                example: 6937039
+                example: 4
             Content-Type:
               schema:
                 type: "string"
-                example: "image/png"
+                example: "text/plain; charset=utf-8"
             Last-Modified:
               schema:
                 type: "string"
                 example: "Wed, 07 May 2025 17:22:51 GMT"
+            Holos-Entry-Type:
+              schema:
+                type: "string"
+                example: "text/plain; charset=utf-8"
         400:
           $ref: "#/components/responses/400"
         401:
@@ -421,7 +425,7 @@ paths:
             type: "string"
           required: true
           description: "キー"
-          example: "volume/entry.png"
+          example: "key/sample.txt"
       responses:
         200:
           $ref: "#/components/responses/get_entry"
@@ -487,16 +491,16 @@ components:
         key:
           type: "string"
           description: "キー"
-          example: "volume/entry.png"
+          example: "key/sample.txt"
         size:
           type: "number"
           description: "サイズ"
-          example: 1000
+          example: 4
           readOnly: true
         type:
           type: "string"
           description: "タイプ"
-          example: "image/png"
+          example: "text/plain; charset=utf-8"
           readOnly: true
         created_at:
           $ref: "#/components/schemas/created_at"
@@ -598,6 +602,23 @@ components:
             $ref: "#/components/schemas/entry"
     get_entry:
       description: "Success"
+      headers:
+        Content-Length:
+          schema:
+            type: "integer"
+            example: 4
+        Content-Type:
+          schema:
+            type: "string"
+            example: "text/plain; charset=utf-8"
+        Last-Modified:
+          schema:
+            type: "string"
+            example: "Wed, 07 May 2025 17:22:51 GMT"
+        Holos-Entry-Type:
+          schema:
+            type: "string"
+            example: "text/plain; charset=utf-8"
       content:
         application/json:
           schema:
