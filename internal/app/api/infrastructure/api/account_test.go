@@ -28,7 +28,7 @@ func TestAccount_FindOneByCredential(t *testing.T) {
 		mockHandlerFunc http.HandlerFunc
 	}{
 		{
-			name:            "success",
+			name:            "successfully authorized",
 			inputCredential: "Session: YNDNun_KFu1uFmS691yJ6eqJ9eczRVKn",
 			expectResult:    account,
 			expectError:     nil,
@@ -56,7 +56,7 @@ func TestAccount_FindOneByCredential(t *testing.T) {
 			},
 		},
 		{
-			name:            "authorization faild",
+			name:            "authorize error",
 			inputCredential: "Session: YNDNun_KFu1uFmS691yJ6eqJ9eczRVKn",
 			expectResult:    nil,
 			expectError:     status.Error(code.Internal, "internal server error"),
@@ -82,7 +82,7 @@ func TestAccount_FindOneByCredential(t *testing.T) {
 				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
 			}
 
-			if diff := cmp.Diff(result, tt.expectResult); diff != "" {
+			if diff := cmp.Diff(tt.expectResult, result); diff != "" {
 				t.Error(diff)
 			}
 		})

@@ -34,7 +34,7 @@ func TestVolume_Create(t *testing.T) {
 		setMockDB   func(mock sqlmock.Sqlmock)
 	}{
 		{
-			name:        "success",
+			name:        "successfully inserted",
 			inputVolume: volume,
 			expectError: nil,
 			setMockDB: func(mock sqlmock.Sqlmock) {
@@ -98,7 +98,7 @@ func TestVolume_Update(t *testing.T) {
 		setMockDB   func(mock sqlmock.Sqlmock)
 	}{
 		{
-			name:        "success",
+			name:        "successfully updated",
 			inputVolume: volume,
 			expectError: nil,
 			setMockDB: func(mock sqlmock.Sqlmock) {
@@ -162,7 +162,7 @@ func TestVolume_Delete(t *testing.T) {
 		setMockDB   func(mock sqlmock.Sqlmock)
 	}{
 		{
-			name:        "success",
+			name:        "successfully deleted",
 			inputVolume: volume,
 			expectError: nil,
 			setMockDB: func(mock sqlmock.Sqlmock) {
@@ -228,7 +228,7 @@ func TestVolume_FindOneByName(t *testing.T) {
 		setMockDB    func(mock sqlmock.Sqlmock)
 	}{
 		{
-			name:         "success",
+			name:         "successfully found",
 			inputName:    "name",
 			expectResult: volume,
 			expectError:  nil,
@@ -276,7 +276,7 @@ func TestVolume_FindOneByName(t *testing.T) {
 				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
 			}
 
-			if diff := cmp.Diff(result, tt.expectResult); diff != "" {
+			if diff := cmp.Diff(tt.expectResult, result); diff != "" {
 				t.Error(diff)
 			}
 
@@ -307,7 +307,7 @@ func TestVolume_FindOneByNameAndAccountID(t *testing.T) {
 		setMockDB      func(mock sqlmock.Sqlmock)
 	}{
 		{
-			name:           "success",
+			name:           "successfully found",
 			inputName:      "name",
 			inputAccountID: accountID,
 			expectResult:   volume,
@@ -358,7 +358,7 @@ func TestVolume_FindOneByNameAndAccountID(t *testing.T) {
 				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
 			}
 
-			if diff := cmp.Diff(result, tt.expectResult); diff != "" {
+			if diff := cmp.Diff(tt.expectResult, result); diff != "" {
 				t.Error(diff)
 			}
 
@@ -390,7 +390,7 @@ func TestVolume_FindOneByIDAndAccountID(t *testing.T) {
 		setMockDB      func(mock sqlmock.Sqlmock)
 	}{
 		{
-			name:           "success",
+			name:           "successfully found",
 			inputID:        id,
 			inputAccountID: accountID,
 			expectResult:   volume,
@@ -441,7 +441,7 @@ func TestVolume_FindOneByIDAndAccountID(t *testing.T) {
 				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
 			}
 
-			if diff := cmp.Diff(result, tt.expectResult); diff != "" {
+			if diff := cmp.Diff(tt.expectResult, result); diff != "" {
 				t.Error(diff)
 			}
 
@@ -471,7 +471,7 @@ func TestVolume_FindByAccountID(t *testing.T) {
 		setMockDB      func(mock sqlmock.Sqlmock)
 	}{
 		{
-			name:           "success",
+			name:           "successfully found",
 			inputAccountID: accountID,
 			expectResult:   []*entity.Volume{volume},
 			expectError:    nil,
@@ -519,7 +519,7 @@ func TestVolume_FindByAccountID(t *testing.T) {
 				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
 			}
 
-			if diff := cmp.Diff(result, tt.expectResult); diff != "" {
+			if diff := cmp.Diff(tt.expectResult, result); diff != "" {
 				t.Error(diff)
 			}
 

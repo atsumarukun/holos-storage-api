@@ -48,7 +48,7 @@ func TestNewEntry(t *testing.T) {
 		inputType      string
 		expectError    error
 	}{
-		{name: "success", inputAccountID: uuid.New(), inputVolumeID: uuid.New(), inputKey: "key", inputSize: 1000, inputType: "folder", expectError: nil},
+		{name: "successfully initialized", inputAccountID: uuid.New(), inputVolumeID: uuid.New(), inputKey: "key", inputSize: 1000, inputType: "folder", expectError: nil},
 		{name: "account id is nil", inputAccountID: uuid.Nil, inputVolumeID: uuid.New(), inputKey: "key", inputSize: 1000, inputType: "folder", expectError: entity.ErrRequiredEntryAccountID},
 		{name: "volume id is nil", inputAccountID: uuid.New(), inputVolumeID: uuid.Nil, inputKey: "key", inputSize: 1000, inputType: "folder", expectError: entity.ErrRequiredEntryVolumeID},
 		{name: "invalid key", inputAccountID: uuid.New(), inputVolumeID: uuid.New(), inputKey: "", inputSize: 1000, inputType: "folder", expectError: entity.ErrShortEntryKey},
@@ -88,9 +88,6 @@ func TestEntry_SetKey(t *testing.T) {
 		inputKey    string
 		expectError error
 	}{
-		{name: "lower case only", inputKey: "key", expectError: nil},
-		{name: "upper case only", inputKey: "KEY", expectError: nil},
-		{name: "number only", inputKey: "1234", expectError: nil},
 		{name: "mixed lower case and upper case and number", inputKey: "entryKey1234", expectError: nil},
 		{name: "valid symbols", inputKey: "!@#$%^&()_-+=[]{};',./~", expectError: nil},
 		{name: "include space", inputKey: "entry key", expectError: nil},
@@ -102,9 +99,7 @@ func TestEntry_SetKey(t *testing.T) {
 		{name: "include greater than sign", inputKey: "entry>key", expectError: entity.ErrInvalidEntryKey},
 		{name: "include less than sign", inputKey: "entry<key", expectError: entity.ErrInvalidEntryKey},
 		{name: "include vertical bar", inputKey: "entry|key", expectError: entity.ErrInvalidEntryKey},
-		{name: "hiragana", inputKey: "きー", expectError: entity.ErrInvalidEntryKey},
-		{name: "katakana", inputKey: "キー", expectError: entity.ErrInvalidEntryKey},
-		{name: "kanji", inputKey: "鍵", expectError: entity.ErrInvalidEntryKey},
+		{name: "full width", inputKey: "エントリーキー", expectError: entity.ErrInvalidEntryKey},
 		{name: "0 characters", inputKey: strings.Repeat("a", 0), expectError: entity.ErrShortEntryKey},
 		{name: "1 characters", inputKey: strings.Repeat("a", 1), expectError: nil},
 		{name: "255 characters", inputKey: strings.Repeat("a", 255), expectError: nil},

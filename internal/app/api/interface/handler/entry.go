@@ -130,7 +130,6 @@ func (h *entryHandler) GetMeta(c *gin.Context) {
 	accountID, err := parameter.GetContextParameter[uuid.UUID](c, "accountID")
 	if err != nil {
 		log.Println(err)
-		c.Header("Content-Length", "0")
 		c.Status(errors.GetStatusCode(err))
 		return
 	}
@@ -140,14 +139,18 @@ func (h *entryHandler) GetMeta(c *gin.Context) {
 	entry, err := h.entryUC.GetMeta(ctx, accountID, volumeName, key)
 	if err != nil {
 		log.Println(err)
-		c.Header("Content-Length", "0")
 		c.Status(errors.GetStatusCode(err))
 		return
 	}
 
+	contentType := entry.Type
+	if entry.Size == 0 {
+		contentType = "application/octet-stream"
+	}
 	c.Header("Content-Length", strconv.FormatUint(entry.Size, 10))
-	c.Header("Content-Type", entry.Type)
+	c.Header("Content-Type", contentType)
 	c.Header("Last-Modified", entry.UpdatedAt.Format(http.TimeFormat))
+	c.Header("Holos-Entry-Type", entry.Type)
 
 	c.Status(http.StatusOK)
 }
@@ -174,6 +177,7 @@ func (h *entryHandler) GetOne(c *gin.Context) {
 		c.Header("Content-Length", strconv.FormatUint(entry.Size, 10))
 		c.Header("Content-Type", "application/octet-stream")
 		c.Header("Last-Modified", entry.UpdatedAt.Format(http.TimeFormat))
+		c.Header("Holos-Entry-Type", entry.Type)
 		return
 	}
 
@@ -187,6 +191,7 @@ func (h *entryHandler) GetOne(c *gin.Context) {
 	c.Header("Content-Length", strconv.FormatUint(entry.Size, 10))
 	c.Header("Content-Type", entry.Type)
 	c.Header("Last-Modified", entry.UpdatedAt.Format(http.TimeFormat))
+	c.Header("Holos-Entry-Type", entry.Type)
 
 	if _, err := io.Copy(c.Writer, body); err != nil {
 		errors.Handle(c, err)

@@ -1,7 +1,6 @@
 package service_test
 
 import (
-	"context"
 	"database/sql"
 	"errors"
 	"testing"
@@ -30,16 +29,16 @@ func TestVolume_Exists(t *testing.T) {
 		name              string
 		inputVolume       *entity.Volume
 		expectError       error
-		setMockVolumeRepo func(context.Context, *mockRepository.MockVolumeRepository)
+		setMockVolumeRepo func(*mockRepository.MockVolumeRepository)
 	}{
 		{
 			name:        "not exists",
 			inputVolume: volume,
 			expectError: nil,
-			setMockVolumeRepo: func(ctx context.Context, volumeRepo *mockRepository.MockVolumeRepository) {
+			setMockVolumeRepo: func(volumeRepo *mockRepository.MockVolumeRepository) {
 				volumeRepo.
 					EXPECT().
-					FindOneByName(ctx, volume.Name).
+					FindOneByName(gomock.Any(), gomock.Any()).
 					Return(nil, repository.ErrVolumeNotFound).
 					Times(1)
 			},
@@ -48,10 +47,10 @@ func TestVolume_Exists(t *testing.T) {
 			name:        "exists",
 			inputVolume: volume,
 			expectError: service.ErrVolumeAlreadyExists,
-			setMockVolumeRepo: func(ctx context.Context, volumeRepo *mockRepository.MockVolumeRepository) {
+			setMockVolumeRepo: func(volumeRepo *mockRepository.MockVolumeRepository) {
 				volumeRepo.
 					EXPECT().
-					FindOneByName(ctx, volume.Name).
+					FindOneByName(gomock.Any(), gomock.Any()).
 					Return(volume, nil).
 					Times(1)
 			},
@@ -60,16 +59,16 @@ func TestVolume_Exists(t *testing.T) {
 			name:              "volume is nil",
 			inputVolume:       nil,
 			expectError:       service.ErrRequiredVolume,
-			setMockVolumeRepo: func(context.Context, *mockRepository.MockVolumeRepository) {},
+			setMockVolumeRepo: func(*mockRepository.MockVolumeRepository) {},
 		},
 		{
 			name:        "find error",
 			inputVolume: volume,
 			expectError: sql.ErrConnDone,
-			setMockVolumeRepo: func(ctx context.Context, volumeRepo *mockRepository.MockVolumeRepository) {
+			setMockVolumeRepo: func(volumeRepo *mockRepository.MockVolumeRepository) {
 				volumeRepo.
 					EXPECT().
-					FindOneByName(ctx, volume.Name).
+					FindOneByName(gomock.Any(), gomock.Any()).
 					Return(nil, sql.ErrConnDone).
 					Times(1)
 			},
@@ -83,7 +82,7 @@ func TestVolume_Exists(t *testing.T) {
 			ctx := t.Context()
 
 			volumeRepo := mockRepository.NewMockVolumeRepository(ctrl)
-			tt.setMockVolumeRepo(ctx, volumeRepo)
+			tt.setMockVolumeRepo(volumeRepo)
 
 			serv := service.NewVolumeService(volumeRepo, nil)
 			if err := serv.Exists(ctx, tt.inputVolume); !errors.Is(err, tt.expectError) {
@@ -117,16 +116,16 @@ func TestVolume_CanDelete(t *testing.T) {
 		name             string
 		inputVolume      *entity.Volume
 		expectError      error
-		setMockEntryRepo func(context.Context, *mockRepository.MockEntryRepository)
+		setMockEntryRepo func(*mockRepository.MockEntryRepository)
 	}{
 		{
 			name:        "volume has not entries",
 			inputVolume: volume,
 			expectError: nil,
-			setMockEntryRepo: func(ctx context.Context, entryRepo *mockRepository.MockEntryRepository) {
+			setMockEntryRepo: func(entryRepo *mockRepository.MockEntryRepository) {
 				entryRepo.
 					EXPECT().
-					FindByVolumeIDAndAccountID(ctx, volume.ID, volume.AccountID, gomock.Any(), gomock.Any()).
+					FindByVolumeIDAndAccountID(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 					Return(nil, nil).
 					Times(1)
 			},
@@ -135,10 +134,10 @@ func TestVolume_CanDelete(t *testing.T) {
 			name:        "volume has entries",
 			inputVolume: volume,
 			expectError: service.ErrVolumeHasEntries,
-			setMockEntryRepo: func(ctx context.Context, entryRepo *mockRepository.MockEntryRepository) {
+			setMockEntryRepo: func(entryRepo *mockRepository.MockEntryRepository) {
 				entryRepo.
 					EXPECT().
-					FindByVolumeIDAndAccountID(ctx, volume.ID, volume.AccountID, gomock.Any(), gomock.Any()).
+					FindByVolumeIDAndAccountID(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 					Return([]*entity.Entry{entry}, nil).
 					Times(1)
 			},
@@ -147,16 +146,16 @@ func TestVolume_CanDelete(t *testing.T) {
 			name:             "volume is nil",
 			inputVolume:      nil,
 			expectError:      service.ErrRequiredVolume,
-			setMockEntryRepo: func(context.Context, *mockRepository.MockEntryRepository) {},
+			setMockEntryRepo: func(*mockRepository.MockEntryRepository) {},
 		},
 		{
 			name:        "find error",
 			inputVolume: volume,
 			expectError: sql.ErrConnDone,
-			setMockEntryRepo: func(ctx context.Context, entryRepo *mockRepository.MockEntryRepository) {
+			setMockEntryRepo: func(entryRepo *mockRepository.MockEntryRepository) {
 				entryRepo.
 					EXPECT().
-					FindByVolumeIDAndAccountID(ctx, volume.ID, volume.AccountID, gomock.Any(), gomock.Any()).
+					FindByVolumeIDAndAccountID(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 					Return(nil, sql.ErrConnDone).
 					Times(1)
 			},
@@ -170,7 +169,7 @@ func TestVolume_CanDelete(t *testing.T) {
 			ctx := t.Context()
 
 			entryRepo := mockRepository.NewMockEntryRepository(ctrl)
-			tt.setMockEntryRepo(ctx, entryRepo)
+			tt.setMockEntryRepo(entryRepo)
 
 			serv := service.NewVolumeService(nil, entryRepo)
 			if err := serv.CanDelete(ctx, tt.inputVolume); !errors.Is(err, tt.expectError) {

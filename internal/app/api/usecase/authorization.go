@@ -44,10 +44,12 @@ func (u *authorizationUsecase) authorizeForGetEntry(ctx context.Context, credent
 	if err != nil {
 		return nil, err
 	}
+
 	if volume.IsPublic {
 		account := entity.NewAccount(volume.AccountID)
 		return mapper.ToAccountDTO(account), nil
 	}
+
 	account, err := u.accountRepo.FindOneByCredential(ctx, credential)
 	if err != nil {
 		if credential == "" && errors.Is(err, repository.ErrUnauthorized) {
@@ -55,6 +57,10 @@ func (u *authorizationUsecase) authorizeForGetEntry(ctx context.Context, credent
 		}
 		return nil, err
 	}
+	if account.ID != volume.AccountID {
+		return nil, ErrForbidden
+	}
+
 	return mapper.ToAccountDTO(account), nil
 }
 
