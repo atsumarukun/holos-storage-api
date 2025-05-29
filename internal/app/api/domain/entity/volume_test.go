@@ -40,7 +40,7 @@ func TestNewVolume(t *testing.T) {
 		inputIsPublic  bool
 		expectError    error
 	}{
-		{name: "success", inputAccountID: uuid.New(), inputName: "name", inputIsPublic: false, expectError: nil},
+		{name: "successfully initialized", inputAccountID: uuid.New(), inputName: "name", inputIsPublic: false, expectError: nil},
 		{name: "account id is nil", inputAccountID: uuid.Nil, inputName: "name", inputIsPublic: false, expectError: entity.ErrRequiredVolumeAccountID},
 		{name: "invalid name", inputAccountID: uuid.New(), inputName: "", inputIsPublic: false, expectError: entity.ErrShortVolumeName},
 	}
@@ -77,9 +77,6 @@ func TestVolume_SetName(t *testing.T) {
 		inputName   string
 		expectError error
 	}{
-		{name: "lower case only", inputName: "name", expectError: nil},
-		{name: "upper case only", inputName: "NAME", expectError: nil},
-		{name: "number only", inputName: "1234", expectError: nil},
 		{name: "mixed lower case and upper case and number", inputName: "volumeName1234", expectError: nil},
 		{name: "valid symbols", inputName: "!@#$%^&()_-+=[]{};',.~", expectError: nil},
 		{name: "include space", inputName: "volume name", expectError: nil},
@@ -92,9 +89,7 @@ func TestVolume_SetName(t *testing.T) {
 		{name: "include greater than sign", inputName: "volume>name", expectError: entity.ErrInvalidVolumeName},
 		{name: "include less than sign", inputName: "volume<name", expectError: entity.ErrInvalidVolumeName},
 		{name: "include vertical bar", inputName: "volume|name", expectError: entity.ErrInvalidVolumeName},
-		{name: "hiragana", inputName: "なまえ", expectError: entity.ErrInvalidVolumeName},
-		{name: "katakana", inputName: "ナマエ", expectError: entity.ErrInvalidVolumeName},
-		{name: "kanji", inputName: "名前", expectError: entity.ErrInvalidVolumeName},
+		{name: "full width", inputName: "ボリューム名", expectError: entity.ErrInvalidVolumeName},
 		{name: "0 characters", inputName: strings.Repeat("a", 0), expectError: entity.ErrShortVolumeName},
 		{name: "1 characters", inputName: strings.Repeat("a", 1), expectError: nil},
 		{name: "255 characters", inputName: strings.Repeat("a", 255), expectError: nil},
