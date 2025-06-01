@@ -124,7 +124,26 @@ func (h *entryHandler) Delete(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
-func (h *entryHandler) Copy(c *gin.Context) {}
+func (h *entryHandler) Copy(c *gin.Context) {
+	volumeName := c.Param("volumeName")
+	key := strings.TrimPrefix(c.Param("key"), "/")
+
+	accountID, err := parameter.GetContextParameter[uuid.UUID](c, "accountID")
+	if err != nil {
+		errors.Handle(c, err)
+		return
+	}
+
+	ctx := c.Request.Context()
+
+	entry, err := h.entryUC.Copy(ctx, accountID, volumeName, key)
+	if err != nil {
+		errors.Handle(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, builder.ToEntryResponse(entry))
+}
 
 func (h *entryHandler) GetMeta(c *gin.Context) {
 	volumeName := c.Param("volumeName")
