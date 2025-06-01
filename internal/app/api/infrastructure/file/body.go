@@ -45,6 +45,12 @@ func (r *bodyRepository) Create(path string, reader io.Reader) (err error) {
 }
 
 func (r *bodyRepository) Update(src, dst string) error {
+	// NOTE: srcで指定されたpathが存在するか判定する.
+	_, err := r.fs.Stat(r.basePath + src)
+	if err != nil {
+		return err
+	}
+
 	if err := r.fs.MkdirAll(r.basePath+filepath.Dir(dst), 0o755); err != nil {
 		return err
 	}
