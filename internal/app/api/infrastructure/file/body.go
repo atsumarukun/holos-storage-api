@@ -96,18 +96,26 @@ func (r *bodyRepository) FindOneByPath(path string) (io.ReadCloser, error) {
 	return r.fs.Open(r.basePath + path)
 }
 
-func (r *bodyRepository) copyFile(src, dst string) error {
+func (r *bodyRepository) copyFile(src, dst string) (err error) {
 	in, err := r.fs.Open(r.basePath + src)
 	if err != nil {
 		return err
 	}
-	defer in.Close()
+	defer func() {
+		if closeErr := in.Close(); closeErr != nil {
+			err = closeErr
+		}
+	}()
 
 	out, err := r.fs.Create(r.basePath + dst)
 	if err != nil {
 		return err
 	}
-	defer out.Close()
+	defer func() {
+		if closeErr := out.Close(); closeErr != nil {
+			err = closeErr
+		}
+	}()
 
 	_, err = io.Copy(out, in)
 	return err
