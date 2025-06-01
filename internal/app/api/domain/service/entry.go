@@ -23,6 +23,7 @@ type EntryService interface {
 	CreateAncestors(context.Context, *entity.Entry) error
 	UpdateDescendants(context.Context, *entity.Entry, string) error
 	DeleteDescendants(context.Context, *entity.Entry) error
+	Copy(context.Context, *entity.Entry) (*entity.Entry, error)
 }
 
 type entryService struct {
@@ -119,6 +120,10 @@ func (s *entryService) DeleteDescendants(ctx context.Context, entry *entity.Entr
 	}
 
 	return nil
+}
+
+func (s *entryService) Copy(ctx context.Context, entry *entity.Entry) (*entity.Entry, error) {
+	return nil, errors.New("not implemented")
 }
 
 func (s *entryService) extractDirs(key string) []string {
