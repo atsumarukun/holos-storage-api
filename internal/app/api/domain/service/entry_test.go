@@ -601,3 +601,126 @@ func TestEntry_Copy(t *testing.T) {
 		})
 	}
 }
+
+func CopyDescendants(t *testing.T) {
+	accountID := uuid.New()
+	volumeID := uuid.New()
+	fileEntry := &entity.Entry{
+		ID:        uuid.New(),
+		AccountID: accountID,
+		VolumeID:  volumeID,
+		Key:       "key/sample.txt",
+		Size:      4,
+		Type:      "text/plain; charset=utf-8",
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
+	copiedFileEntry := &entity.Entry{
+		ID:        uuid.New(),
+		AccountID: fileEntry.AccountID,
+		VolumeID:  fileEntry.VolumeID,
+		Key:       "key/sample copy.txt",
+		Size:      fileEntry.Size,
+		Type:      fileEntry.Type,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
+	copiedFolderEntry := &entity.Entry{
+		ID:        uuid.New(),
+		AccountID: accountID,
+		VolumeID:  volumeID,
+		Key:       "key copy",
+		Size:      0,
+		Type:      "folder",
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
+
+	tests := []struct {
+		name             string
+		inputEntry       *entity.Entry
+		inputSrc         string
+		expectError      error
+		setMockEntryRepo func(*mockRepository.MockEntryRepository)
+	}{
+		{
+			name:             "copy file entry",
+			inputEntry:       copiedFileEntry,
+			inputSrc:         "key/sample.txt",
+			expectError:      nil,
+			setMockEntryRepo: func(*mockRepository.MockEntryRepository) {},
+		},
+		{
+			name:        "copy folder entry",
+			inputEntry:  copiedFolderEntry,
+			inputSrc:    "key",
+			expectError: nil,
+			setMockEntryRepo: func(entryRepo *mockRepository.MockEntryRepository) {
+				entryRepo.
+					EXPECT().
+					FindByVolumeIDAndAccountID(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+					Return([]*entity.Entry{fileEntry}, nil).
+					Times(1)
+				entryRepo.
+					EXPECT().
+					Create(gomock.Any(), gomock.Any()).
+					Return(nil).
+					Times(1)
+			},
+		},
+		{
+			name:             "entry is nil",
+			inputEntry:       nil,
+			inputSrc:         "key",
+			expectError:      service.ErrRequiredEntry,
+			setMockEntryRepo: func(*mockRepository.MockEntryRepository) {},
+		},
+		{
+			name:        "find entry error",
+			inputEntry:  copiedFolderEntry,
+			inputSrc:    "key",
+			expectError: sql.ErrConnDone,
+			setMockEntryRepo: func(entryRepo *mockRepository.MockEntryRepository) {
+				entryRepo.
+					EXPECT().
+					FindByVolumeIDAndAccountID(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+					Return(nil, sql.ErrConnDone).
+					Times(1)
+			},
+		},
+		{
+			name:        "create entry error",
+			inputEntry:  copiedFolderEntry,
+			inputSrc:    "key",
+			expectError: sql.ErrConnDone,
+			setMockEntryRepo: func(entryRepo *mockRepository.MockEntryRepository) {
+				entryRepo.
+					EXPECT().
+					FindByVolumeIDAndAccountID(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+					Return([]*entity.Entry{fileEntry}, nil).
+					Times(1)
+				entryRepo.
+					EXPECT().
+					Create(gomock.Any(), gomock.Any()).
+					Return(sql.ErrConnDone).
+					Times(1)
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			ctx := t.Context()
+
+			entryRepo := mockRepository.NewMockEntryRepository(ctrl)
+			tt.setMockEntryRepo(entryRepo)
+
+			serv := service.NewEntryService(entryRepo)
+			if err := serv.CopyDescendants(ctx, tt.inputEntry, tt.inputSrc); !errors.Is(err, tt.expectError) {
+				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
+			}
+		})
+	}
+}
