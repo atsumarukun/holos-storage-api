@@ -131,9 +131,9 @@ func (s *entryService) Copy(ctx context.Context, entry *entity.Entry) (*entity.E
 	name := filepath.Base(entry.Key)
 	ext := filepath.Ext(name)
 	base := strings.TrimSuffix(name, ext)
-	copiedKey := strings.Replace(entry.Key, name, base+" copy"+ext, 1)
+	key := strings.Replace(entry.Key, name, base+" copy"+ext, 1)
 
-	copied, err := entity.NewEntry(entry.AccountID, entry.VolumeID, copiedKey, entry.Size, entry.Type)
+	copied, err := entity.NewEntry(entry.AccountID, entry.VolumeID, key, entry.Size, entry.Type)
 	if err != nil {
 		return nil, err
 	}
@@ -153,7 +153,29 @@ func (s *entryService) Copy(ctx context.Context, entry *entity.Entry) (*entity.E
 }
 
 func (s *entryService) CopyDescendants(ctx context.Context, entry *entity.Entry, src string) error {
-	return errors.New("not implemented")
+	if entry == nil {
+		return ErrRequiredEntry
+	}
+
+	if entry.IsFolder() {
+		descendants, err := s.entryRepo.FindByVolumeIDAndAccountID(ctx, entry.VolumeID, entry.AccountID, &entry.Key, nil)
+		if err != nil {
+			return err
+		}
+
+		for _, descendant := range descendants {
+			key := strings.Replace(descendant.Key, src, entry.Key, 1)
+			copied, err := entity.NewEntry(descendant.AccountID, descendant.VolumeID, key, descendant.Size, descendant.Type)
+			if err != nil {
+				return err
+			}
+			if err := s.entryRepo.Create(ctx, copied); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
 }
 
 func (s *entryService) extractDirs(key string) []string {
