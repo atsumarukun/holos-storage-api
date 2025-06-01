@@ -4,6 +4,7 @@ package usecase
 import (
 	"bytes"
 	"context"
+	"errors"
 	"io"
 	"net/http"
 
@@ -21,6 +22,7 @@ type EntryUsecase interface {
 	Create(context.Context, uuid.UUID, string, string, uint64, io.Reader) (*dto.EntryDTO, error)
 	Update(context.Context, uuid.UUID, string, string, string) (*dto.EntryDTO, error)
 	Delete(context.Context, uuid.UUID, string, string) error
+	Copy(context.Context, uuid.UUID, string, string) (*dto.EntryDTO, error)
 	GetMeta(context.Context, uuid.UUID, string, string) (*dto.EntryDTO, error)
 	GetOne(context.Context, uuid.UUID, string, string) (*dto.EntryDTO, io.ReadCloser, error)
 	Search(context.Context, uuid.UUID, string, *string, *uint64) ([]*dto.EntryDTO, error)
@@ -154,6 +156,10 @@ func (u *entryUsecase) Delete(ctx context.Context, accountID uuid.UUID, volumeNa
 		path := volume.Name + "/" + entry.Key
 		return u.bodyRepo.Delete(path)
 	})
+}
+
+func (u *entryUsecase) Copy(ctx context.Context, accountID uuid.UUID, volumeName, key string) (*dto.EntryDTO, error) {
+	return nil, errors.New("not implemented")
 }
 
 func (u *entryUsecase) GetMeta(ctx context.Context, accountID uuid.UUID, volumeName, key string) (*dto.EntryDTO, error) {
