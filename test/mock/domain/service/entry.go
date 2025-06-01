@@ -56,6 +56,20 @@ func (mr *MockEntryServiceMockRecorder) Copy(arg0, arg1 any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Copy", reflect.TypeOf((*MockEntryService)(nil).Copy), arg0, arg1)
 }
 
+// CopyDescendants mocks base method.
+func (m *MockEntryService) CopyDescendants(arg0 context.Context, arg1 *entity.Entry, arg2 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CopyDescendants", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CopyDescendants indicates an expected call of CopyDescendants.
+func (mr *MockEntryServiceMockRecorder) CopyDescendants(arg0, arg1, arg2 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CopyDescendants", reflect.TypeOf((*MockEntryService)(nil).CopyDescendants), arg0, arg1, arg2)
+}
+
 // CreateAncestors mocks base method.
 func (m *MockEntryService) CreateAncestors(arg0 context.Context, arg1 *entity.Entry) error {
 	m.ctrl.T.Helper()
