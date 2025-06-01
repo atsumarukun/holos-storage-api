@@ -158,7 +158,7 @@ func (s *entryService) CopyDescendants(ctx context.Context, entry *entity.Entry,
 	}
 
 	if entry.IsFolder() {
-		descendants, err := s.entryRepo.FindByVolumeIDAndAccountID(ctx, entry.VolumeID, entry.AccountID, &entry.Key, nil)
+		descendants, err := s.entryRepo.FindByVolumeIDAndAccountID(ctx, entry.VolumeID, entry.AccountID, &src, nil)
 		if err != nil {
 			return err
 		}

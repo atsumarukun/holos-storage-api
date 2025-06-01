@@ -63,15 +63,16 @@ func (r *bodyRepository) Copy(src, dst string) error {
 	}
 
 	if info.IsDir() {
+		if err := r.fs.Mkdir(r.basePath+dst, 0o755); err != nil {
+			return err
+		}
 		entries, err := afero.ReadDir(r.fs, r.basePath+src)
 		if err != nil {
 			return err
 		}
 		for _, entry := range entries {
-			if entry.IsDir() {
-				if err := r.Copy(src+"/"+entry.Name(), dst+"/"+entry.Name()); err != nil {
-					return err
-				}
+			if err := r.Copy(src+"/"+entry.Name(), dst+"/"+entry.Name()); err != nil {
+				return err
 			}
 		}
 	} else {
