@@ -1,7 +1,6 @@
 package file
 
 import (
-	"errors"
 	"io"
 	"path/filepath"
 
@@ -58,7 +57,30 @@ func (r *bodyRepository) Delete(path string) error {
 }
 
 func (r *bodyRepository) Copy(src, dst string) error {
-	return errors.New("not implemented")
+	info, err := r.fs.Stat(r.basePath + src)
+	if err != nil {
+		return err
+	}
+
+	if info.IsDir() {
+		entries, err := afero.ReadDir(r.fs, r.basePath+src)
+		if err != nil {
+			return err
+		}
+		for _, entry := range entries {
+			if entry.IsDir() {
+				if err := r.Copy(src+"/"+entry.Name(), dst+"/"+entry.Name()); err != nil {
+					return err
+				}
+			}
+		}
+	} else {
+		if err := r.copyFile(src, dst); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (r *bodyRepository) FindOneByPath(path string) (io.ReadCloser, error) {
@@ -72,4 +94,21 @@ func (r *bodyRepository) FindOneByPath(path string) (io.ReadCloser, error) {
 	}
 
 	return r.fs.Open(r.basePath + path)
+}
+
+func (r *bodyRepository) copyFile(src, dst string) error {
+	in, err := r.fs.Open(r.basePath + src)
+	if err != nil {
+		return err
+	}
+	defer in.Close()
+
+	out, err := r.fs.Create(r.basePath + dst)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+
+	_, err = io.Copy(out, in)
+	return err
 }
