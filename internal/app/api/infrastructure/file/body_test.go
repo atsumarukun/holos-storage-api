@@ -164,6 +164,69 @@ func TestBody_Delete(t *testing.T) {
 	}
 }
 
+func TestBody_Copy(t *testing.T) {
+	tests := []struct {
+		name         string
+		inputSrc     string
+		inputDst     string
+		expectResult bool
+		expectError  error
+		setMockFS    func(fs afero.Fs)
+	}{
+		{
+			name:         "successfully copied",
+			inputSrc:     "key/sample.txt",
+			inputDst:     "key/sample copy.txt",
+			expectResult: true,
+			expectError:  nil,
+			setMockFS: func(fs afero.Fs) {
+				if err := afero.WriteFile(fs, "key/sample.txt", []byte("test"), 0o755); err != nil {
+					t.Error(err)
+				}
+			},
+		},
+		{
+			name:         "not found",
+			inputSrc:     "key/sample.txt",
+			inputDst:     "key/sample copy.txt",
+			expectResult: false,
+			expectError:  afero.ErrFileNotFound,
+			setMockFS:    func(afero.Fs) {},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			fs := afero.NewMemMapFs()
+			basePath := ""
+
+			tt.setMockFS(fs)
+
+			repo := file.NewBodyRepository(fs, basePath)
+			if err := repo.Copy(tt.inputSrc, tt.inputDst); !errors.Is(err, tt.expectError) {
+				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
+			}
+
+			exists, err := afero.Exists(fs, basePath+tt.inputDst)
+			if err != nil {
+				t.Error(err)
+			}
+			if exists != tt.expectResult {
+				t.Errorf("\nexpect: %v\ngot: %v", tt.expectResult, exists)
+			}
+
+			if !errors.Is(tt.expectError, afero.ErrFileNotFound) {
+				exists, err = afero.Exists(fs, basePath+tt.inputSrc)
+				if err != nil {
+					t.Error(err)
+				}
+				if exists != tt.expectResult {
+					t.Errorf("\nexpect: %v\ngot: %v", tt.expectResult, exists)
+				}
+			}
+		})
+	}
+}
+
 func TestBody_FindOneByPath(t *testing.T) {
 	tests := []struct {
 		name         string
