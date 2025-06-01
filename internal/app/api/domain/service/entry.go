@@ -123,7 +123,32 @@ func (s *entryService) DeleteDescendants(ctx context.Context, entry *entity.Entr
 }
 
 func (s *entryService) Copy(ctx context.Context, entry *entity.Entry) (*entity.Entry, error) {
-	return nil, errors.New("not implemented")
+	if entry == nil {
+		return nil, ErrRequiredEntry
+	}
+
+	name := filepath.Base(entry.Key)
+	ext := filepath.Ext(name)
+	base := strings.TrimSuffix(name, ext)
+	copiedKey := strings.Replace(entry.Key, name, base+" copy"+ext, 1)
+
+	copied, err := entity.NewEntry(entry.AccountID, entry.VolumeID, copiedKey, entry.Size, entry.Type)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := s.Exists(ctx, copied); err != nil {
+		if errors.Is(err, ErrEntryAlreadyExists) {
+			copied, err = s.Copy(ctx, copied)
+			if err != nil {
+				return nil, err
+			}
+		} else {
+			return nil, err
+		}
+	}
+
+	return copied, nil
 }
 
 func (s *entryService) extractDirs(key string) []string {
