@@ -7,5 +7,6 @@ type BodyRepository interface {
 	Create(string, io.Reader) error
 	Update(string, string) error
 	Delete(string) error
+	Copy(string, string) error
 	FindOneByPath(string) (io.ReadCloser, error)
 }

@@ -40,6 +40,20 @@ func (m *MockBodyRepository) EXPECT() *MockBodyRepositoryMockRecorder {
 	return m.recorder
 }
 
+// Copy mocks base method.
+func (m *MockBodyRepository) Copy(arg0, arg1 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Copy", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Copy indicates an expected call of Copy.
+func (mr *MockBodyRepositoryMockRecorder) Copy(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Copy", reflect.TypeOf((*MockBodyRepository)(nil).Copy), arg0, arg1)
+}
+
 // Create mocks base method.
 func (m *MockBodyRepository) Create(arg0 string, arg1 io.Reader) error {
 	m.ctrl.T.Helper()

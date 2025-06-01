@@ -56,6 +56,34 @@ func (r *bodyRepository) Delete(path string) error {
 	return r.fs.RemoveAll(r.basePath + path)
 }
 
+func (r *bodyRepository) Copy(src, dst string) error {
+	info, err := r.fs.Stat(r.basePath + src)
+	if err != nil {
+		return err
+	}
+
+	if info.IsDir() {
+		if err := r.fs.Mkdir(r.basePath+dst, 0o755); err != nil {
+			return err
+		}
+		entries, err := afero.ReadDir(r.fs, r.basePath+src)
+		if err != nil {
+			return err
+		}
+		for _, entry := range entries {
+			if err := r.Copy(src+"/"+entry.Name(), dst+"/"+entry.Name()); err != nil {
+				return err
+			}
+		}
+	} else {
+		if err := r.copyFile(src, dst); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (r *bodyRepository) FindOneByPath(path string) (io.ReadCloser, error) {
 	info, err := r.fs.Stat(r.basePath + path)
 	if err != nil {
@@ -67,4 +95,29 @@ func (r *bodyRepository) FindOneByPath(path string) (io.ReadCloser, error) {
 	}
 
 	return r.fs.Open(r.basePath + path)
+}
+
+func (r *bodyRepository) copyFile(src, dst string) (err error) {
+	in, err := r.fs.Open(r.basePath + src)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if closeErr := in.Close(); closeErr != nil {
+			err = closeErr
+		}
+	}()
+
+	out, err := r.fs.Create(r.basePath + dst)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if closeErr := out.Close(); closeErr != nil {
+			err = closeErr
+		}
+	}()
+
+	_, err = io.Copy(out, in)
+	return err
 }

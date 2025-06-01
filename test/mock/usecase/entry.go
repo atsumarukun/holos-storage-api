@@ -43,6 +43,21 @@ func (m *MockEntryUsecase) EXPECT() *MockEntryUsecaseMockRecorder {
 	return m.recorder
 }
 
+// Copy mocks base method.
+func (m *MockEntryUsecase) Copy(arg0 context.Context, arg1 uuid.UUID, arg2, arg3 string) (*dto.EntryDTO, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Copy", arg0, arg1, arg2, arg3)
+	ret0, _ := ret[0].(*dto.EntryDTO)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Copy indicates an expected call of Copy.
+func (mr *MockEntryUsecaseMockRecorder) Copy(arg0, arg1, arg2, arg3 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Copy", reflect.TypeOf((*MockEntryUsecase)(nil).Copy), arg0, arg1, arg2, arg3)
+}
+
 // Create mocks base method.
 func (m *MockEntryUsecase) Create(arg0 context.Context, arg1 uuid.UUID, arg2, arg3 string, arg4 uint64, arg5 io.Reader) (*dto.EntryDTO, error) {
 	m.ctrl.T.Helper()
