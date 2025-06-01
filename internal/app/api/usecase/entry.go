@@ -4,7 +4,6 @@ package usecase
 import (
 	"bytes"
 	"context"
-	"errors"
 	"io"
 	"net/http"
 
@@ -159,7 +158,39 @@ func (u *entryUsecase) Delete(ctx context.Context, accountID uuid.UUID, volumeNa
 }
 
 func (u *entryUsecase) Copy(ctx context.Context, accountID uuid.UUID, volumeName, key string) (*dto.EntryDTO, error) {
-	return nil, errors.New("not implemented")
+	var entry *entity.Entry
+
+	if err := u.transactionObj.Transaction(ctx, func(ctx context.Context) error {
+		volume, err := u.volumeRepo.FindOneByNameAndAccountID(ctx, volumeName, accountID)
+		if err != nil {
+			return err
+		}
+
+		srcEntry, err := u.entryRepo.FindOneByKeyAndVolumeIDAndAccountID(ctx, key, volume.ID, accountID)
+		if err != nil {
+			return err
+		}
+
+		entry, err = u.entryServ.Copy(ctx, srcEntry)
+		if err != nil {
+			return err
+		}
+		if err := u.entryServ.CopyDescendants(ctx, entry, key); err != nil {
+			return err
+		}
+
+		if err := u.entryRepo.Create(ctx, entry); err != nil {
+			return err
+		}
+
+		src := volume.Name + "/" + key
+		dst := volume.Name + "/" + entry.Key
+		return u.bodyRepo.Copy(src, dst)
+	}); err != nil {
+		return nil, err
+	}
+
+	return mapper.ToEntryDTO(entry), nil
 }
 
 func (u *entryUsecase) GetMeta(ctx context.Context, accountID uuid.UUID, volumeName, key string) (*dto.EntryDTO, error) {
