@@ -353,6 +353,104 @@ func TestEntry_Delete(t *testing.T) {
 	}
 }
 
+func TestEntry_Copy(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	accountID := uuid.New()
+	entryDTO := &dto.EntryDTO{
+		ID:        uuid.New(),
+		AccountID: accountID,
+		VolumeID:  uuid.New(),
+		Key:       "key/sample copy.txt",
+		Size:      4,
+		Type:      "text/plain; charset=utf-8",
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
+
+	tests := []struct {
+		name                  string
+		hasAccountIDInContext bool
+		expectCode            int
+		expectResponse        []byte
+		setMockEntryUC        func(*mockUsecase.MockEntryUsecase)
+	}{
+		{
+			name:                  "successfully copied",
+			hasAccountIDInContext: true,
+			expectCode:            http.StatusOK,
+			expectResponse:        fmt.Appendf(nil, `{"key":"%s","size":%d,"type":"%s","created_at":"%s","updated_at":"%s"}`, entryDTO.Key, entryDTO.Size, entryDTO.Type, entryDTO.CreatedAt.Format(time.RFC3339Nano), entryDTO.UpdatedAt.Format(time.RFC3339Nano)),
+			setMockEntryUC: func(entryUC *mockUsecase.MockEntryUsecase) {
+				entryUC.
+					EXPECT().
+					Copy(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+					Return(entryDTO, nil).
+					Times(1)
+			},
+		},
+		{
+			name:                  "account id not set",
+			hasAccountIDInContext: false,
+			expectCode:            http.StatusInternalServerError,
+			expectResponse:        []byte(`{"message":"internal server error"}`),
+			setMockEntryUC:        func(*mockUsecase.MockEntryUsecase) {},
+		},
+		{
+			name:                  "copy error",
+			hasAccountIDInContext: true,
+			expectCode:            http.StatusInternalServerError,
+			expectResponse:        []byte(`{"message":"internal server error"}`),
+			setMockEntryUC: func(entryUC *mockUsecase.MockEntryUsecase) {
+				entryUC.
+					EXPECT().
+					Copy(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+					Return(nil, sql.ErrConnDone).
+					Times(1)
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := t.Context()
+			w := httptest.NewRecorder()
+
+			c, _ := gin.CreateTestContext(w)
+			var err error
+			c.Request, err = http.NewRequestWithContext(ctx, "POST", "entries/volume/key/sample.txt", http.NoBody)
+			if err != nil {
+				t.Error(err)
+			}
+			c.Params = append(
+				c.Params,
+				gin.Param{Key: "volumeName", Value: "volume"},
+				gin.Param{Key: "key", Value: "key/sample.txt"},
+			)
+			if tt.hasAccountIDInContext {
+				c.Set("accountID", accountID)
+			}
+
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			entryUC := mockUsecase.NewMockEntryUsecase(ctrl)
+			tt.setMockEntryUC(entryUC)
+
+			hdl := handler.NewEntryHandler(entryUC)
+			hdl.Copy(c)
+
+			c.Writer.WriteHeaderNow()
+
+			if w.Code != tt.expectCode {
+				t.Errorf("\nexpect: %v\ngot: %v", tt.expectCode, w.Code)
+			}
+
+			if diff := cmp.Diff(tt.expectResponse, w.Body.Bytes()); diff != "" {
+				t.Error(diff)
+			}
+		})
+	}
+}
+
 func TestEntry_GetMeta(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
