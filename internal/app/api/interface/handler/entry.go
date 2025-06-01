@@ -25,6 +25,7 @@ type EntryHandler interface {
 	Create(*gin.Context)
 	Update(*gin.Context)
 	Delete(*gin.Context)
+	Copy(*gin.Context)
 	GetMeta(*gin.Context)
 	GetOne(*gin.Context)
 	Search(*gin.Context)
@@ -122,6 +123,8 @@ func (h *entryHandler) Delete(c *gin.Context) {
 
 	c.Status(http.StatusNoContent)
 }
+
+func (h *entryHandler) Copy(c *gin.Context) {}
 
 func (h *entryHandler) GetMeta(c *gin.Context) {
 	volumeName := c.Param("volumeName")
