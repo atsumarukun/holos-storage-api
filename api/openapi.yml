@@ -528,7 +528,7 @@ components:
         volume_name:
           type: "string"
           description: "ボリューム名"
-          example: "volume"
+          example: "volume_name"
           writeOnly: true
         key:
           type: "string"
