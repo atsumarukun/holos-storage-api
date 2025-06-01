@@ -1,0 +1,48 @@
+name: Deploy Swagger UI
+
+on:
+  push:
+    tags:
+      - "v*"
+    paths:
+      - api/openapi.yml
+      - .github/workflows/deploy-swagger-ui.yml
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4.2.2
+
+      - name: Install swagger cli
+        run: npm install -g swagger-cli
+
+      - name: Generate swagger ui
+        uses: Legion2/swagger-ui-action@v1.3.0
+        with:
+          output: swagger-ui
+          spec-file: ./api/openapi.yml
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload documents
+        uses: actions/upload-pages-artifact@v3.0.1
+        with:
+          path: swagger-ui
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+
+    permissions:
+      pages: write
+      id-token: write
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4.0.5
