@@ -258,6 +258,48 @@ paths:
         500:
           $ref: "#/components/responses/500"
   /entries/{volumeName}/{key}:
+    post:
+      summary: "エントリーコピー"
+      tags:
+        - "entries"
+      security:
+        - sessionAuth: []
+        - accessKeyAuth: []
+      parameters:
+        - in: "header"
+          name: "Authorization"
+          schema:
+            type: "string"
+          required: true
+          description: "セッショントークンまたはアクセスキー"
+          example: "Session 1Ty1HKTPKTt8xEi-_3HTbWf2SCHOdqOS"
+        - in: "path"
+          name: "volumeName"
+          schema:
+            type: "string"
+          required: true
+          description: "ボリューム名"
+          example: "volume_name"
+        - in: "path"
+          name: "key"
+          schema:
+            type: "string"
+          required: true
+          description: "キー"
+          example: "key/sample.txt"
+      responses:
+        200:
+          $ref: "#/components/responses/copy_entry"
+        400:
+          $ref: "#/components/responses/400"
+        401:
+          $ref: "#/components/responses/401"
+        403:
+          $ref: "#/components/responses/403"
+        409:
+          $ref: "#/components/responses/409"
+        500:
+          $ref: "#/components/responses/500"
     put:
       summary: "エントリー更新"
       tags:
@@ -589,6 +631,12 @@ components:
                 items:
                   $ref: "#/components/schemas/volume"
     create_entry:
+      description: "Success"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/entry"
+    copy_entry:
       description: "Success"
       content:
         application/json:
