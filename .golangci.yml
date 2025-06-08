@@ -1,64 +1,78 @@
-run:
-  timeout: 5m
-
-linters-settings:
-  errcheck:
-    check-type-assertions: true
-    check-blank: true
-  govet:
-    enable-all: true
-    disable:
-      - "fieldalignment"
-      - "shadow"
-  staticcheck:
-    checks: ["all"]
-  gocritic:
-    enabled-tags:
-      - performance
-      - style
-      - experimental
-  goconst:
-    min-len: 3
-    min-occurrences: 3
-  gocyclo:
-    min-complexity: 10
-  goimports:
-    local-prefixes: github.com/atsumarukun/holos-storage-api
-  dupl:
-    threshold: 100
-  gosec:
-    excludes:
-      - G104
-
+version: "2"
 linters:
-  disable-all: true
+  default: none
   enable:
-    - errcheck
-    - govet
-    - staticcheck
-    - gocritic
-    - goconst
-    - gocyclo
-    - goimports
-    - dupl
-    - gosec
-    - unused
     - copyloopvar
+    - dupl
+    - errcheck
+    - goconst
+    - gocritic
+    - gocyclo
+    - gosec
+    - govet
     - misspell
     - nakedret
     - prealloc
+    - staticcheck
     - unconvert
     - unparam
+    - unused
     - whitespace
-
-issues:
-  exclude-rules:
-    - path: _test\.go
-      linters:
-        - errcheck
-        - gosec
-        - dupl
-    - path: .*\/handler\/.*\.go
-      linters:
-        - dupl
-  exclude-use-default: false
+  settings:
+    dupl:
+      threshold: 100
+    errcheck:
+      check-type-assertions: true
+      check-blank: true
+    goconst:
+      min-len: 3
+      min-occurrences: 3
+    gocritic:
+      enabled-tags:
+        - performance
+        - style
+        - experimental
+      disabled-checks:
+        - importShadow
+    gocyclo:
+      min-complexity: 10
+    gosec:
+      excludes:
+        - G104
+    govet:
+      disable:
+        - fieldalignment
+        - shadow
+      enable-all: true
+    staticcheck:
+      checks:
+        - all
+        - -ST1000
+  exclusions:
+    generated: lax
+    rules:
+      - linters:
+          - dupl
+          - errcheck
+          - gosec
+        path: _test\.go
+      - linters:
+          - dupl
+        path: .*\/handler\/.*\.go
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
+formatters:
+  enable:
+    - goimports
+  settings:
+    goimports:
+      local-prefixes:
+        - github.com/atsumarukun/holos-storage-api
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
