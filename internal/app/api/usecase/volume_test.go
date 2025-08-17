@@ -247,6 +247,11 @@ func TestVolume_Update(t *testing.T) {
 		UpdatedAt: volume.UpdatedAt,
 	}
 
+	initVolume := func() error {
+		volume.SetIsPublic(false)
+		return volume.SetName("name")
+	}
+
 	tests := []struct {
 		name                  string
 		inputAccountID        uuid.UUID
@@ -476,6 +481,10 @@ func TestVolume_Update(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			if err := initVolume(); err != nil {
+				t.Error(err)
+			}
+
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
