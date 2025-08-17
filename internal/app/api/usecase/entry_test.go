@@ -475,6 +475,10 @@ func TestEntry_Update(t *testing.T) {
 		UpdatedAt: entry.UpdatedAt,
 	}
 
+	initEntry := func() error {
+		return entry.SetKey("key/sample.txt")
+	}
+
 	tests := []struct {
 		name                  string
 		inputAccountID        uuid.UUID
@@ -900,6 +904,10 @@ func TestEntry_Update(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			if err := initEntry(); err != nil {
+				t.Error(err)
+			}
+
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
