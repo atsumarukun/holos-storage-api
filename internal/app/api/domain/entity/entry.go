@@ -70,14 +70,9 @@ func RestoreEntry(id, accountID, volumeID uuid.UUID, key string, size uint64, en
 }
 
 func (e *Entry) SetKey(key string) error {
-	if len(key) < 1 || (len(key) == 1 && key[0] == '/') {
+	key = strings.Trim(key, "/")
+	if len(key) < 1 {
 		return ErrShortEntryKey
-	}
-	if key[0] == '/' {
-		key = key[1:]
-	}
-	if key[len(key)-1:] == "/" {
-		key = key[:len(key)-1]
 	}
 	if 512 < len(key) {
 		return ErrLongEntryKey
