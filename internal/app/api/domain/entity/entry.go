@@ -2,6 +2,7 @@ package entity
 
 import (
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -80,6 +81,12 @@ func (e *Entry) SetKey(key string) error {
 	}
 	if 512 < len(key) {
 		return ErrLongEntryKey
+	}
+
+	for k := range strings.SplitSeq(key, "/") {
+		if 255 < len(k) {
+			return ErrInvalidEntryKey
+		}
 	}
 
 	matched, err := regexp.MatchString(`^[A-Za-z0-9!@#$%^&()_\-+=\[\]{};',./~ ]*$`, key)
