@@ -238,10 +238,18 @@ func TestVolume_Update(t *testing.T) {
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	}
-	volumeDTO := &dto.VolumeDTO{
+	updatedNameVolumeDTO := &dto.VolumeDTO{
 		ID:        volume.ID,
 		AccountID: volume.AccountID,
 		Name:      "update",
+		IsPublic:  volume.IsPublic,
+		CreatedAt: volume.CreatedAt,
+		UpdatedAt: volume.UpdatedAt,
+	}
+	unupdatedNameVolumeDTO := &dto.VolumeDTO{
+		ID:        volume.ID,
+		AccountID: volume.AccountID,
+		Name:      volume.Name,
 		IsPublic:  volume.IsPublic,
 		CreatedAt: volume.CreatedAt,
 		UpdatedAt: volume.UpdatedAt,
@@ -271,7 +279,7 @@ func TestVolume_Update(t *testing.T) {
 			inputName:      "name",
 			inputNewName:   "update",
 			inputIsPublic:  false,
-			expectResult:   volumeDTO,
+			expectResult:   updatedNameVolumeDTO,
 			expectError:    nil,
 			setMockTransactionObj: func(transactionObj *mockTransaction.MockTransactionObject) {
 				transactionObj.
@@ -308,6 +316,38 @@ func TestVolume_Update(t *testing.T) {
 					Return(nil).
 					Times(1)
 			},
+		},
+		{
+			name:           "not updated volume name",
+			inputAccountID: accountID,
+			inputName:      "name",
+			inputNewName:   "name",
+			inputIsPublic:  false,
+			expectResult:   unupdatedNameVolumeDTO,
+			expectError:    nil,
+			setMockTransactionObj: func(transactionObj *mockTransaction.MockTransactionObject) {
+				transactionObj.
+					EXPECT().
+					Transaction(gomock.Any(), gomock.Any()).
+					DoAndReturn(func(ctx context.Context, fn func(context.Context) error) error {
+						return fn(ctx)
+					}).
+					Times(1)
+			},
+			setMockVolumeRepo: func(volumeRepo *mockRepository.MockVolumeRepository) {
+				volumeRepo.
+					EXPECT().
+					FindOneByNameAndAccountID(gomock.Any(), gomock.Any(), gomock.Any()).
+					Return(volume, nil).
+					Times(1)
+				volumeRepo.
+					EXPECT().
+					Update(gomock.Any(), gomock.Any()).
+					Return(nil).
+					Times(1)
+			},
+			setMockBodyRepo:   func(*mockRepository.MockBodyRepository) {},
+			setMockVolumeServ: func(*mockService.MockVolumeService) {},
 		},
 		{
 			name:           "invalid name",
