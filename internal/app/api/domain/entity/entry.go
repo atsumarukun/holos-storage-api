@@ -78,7 +78,7 @@ func (e *Entry) SetKey(key string) error {
 	if key[len(key)-1:] == "/" {
 		key = key[:len(key)-1]
 	}
-	if 255 < len(key) {
+	if 512 < len(key) {
 		return ErrLongEntryKey
 	}
 
