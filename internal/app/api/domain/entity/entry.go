@@ -79,7 +79,7 @@ func (e *Entry) SetKey(key string) error {
 	}
 
 	for k := range strings.SplitSeq(key, "/") {
-		if 255 < len(k) {
+		if len(k) < 1 || 255 < len(k) {
 			return ErrInvalidEntryKey
 		}
 	}

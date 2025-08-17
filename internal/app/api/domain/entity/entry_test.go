@@ -106,6 +106,7 @@ func TestEntry_SetKey(t *testing.T) {
 		{name: "513 characters", inputKey: strings.Repeat("a", 513), expectError: entity.ErrLongEntryKey},
 		{name: "255 characters per element", inputKey: strings.Repeat("a", 255), expectError: nil},
 		{name: "255 characters per element", inputKey: strings.Repeat("a", 256), expectError: entity.ErrInvalidEntryKey},
+		{name: "consecutive slashes", inputKey: "entry//key", expectError: entity.ErrInvalidEntryKey},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
