@@ -76,20 +76,21 @@ func (u *volumeUsecase) Update(ctx context.Context, accountID uuid.UUID, name, n
 			return err
 		}
 
-		if err := volume.SetName(newName); err != nil {
-			return err
-		}
 		volume.SetIsPublic(isPublic)
 
-		if err := u.volumeServ.Exists(ctx, volume); err != nil {
-			return err
+		if volume.Name != newName {
+			if err := volume.SetName(newName); err != nil {
+				return err
+			}
+			if err := u.volumeServ.Exists(ctx, volume); err != nil {
+				return err
+			}
+			if err := u.bodyRepo.Update(name, volume.Name); err != nil {
+				return err
+			}
 		}
 
-		if err := u.volumeRepo.Update(ctx, volume); err != nil {
-			return err
-		}
-
-		return u.bodyRepo.Update(name, volume.Name)
+		return u.volumeRepo.Update(ctx, volume)
 	}); err != nil {
 		return nil, err
 	}
