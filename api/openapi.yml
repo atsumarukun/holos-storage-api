@@ -180,7 +180,7 @@ paths:
           $ref: "#/components/responses/403"
         500:
           $ref: "#/components/responses/500"
-  /entries:
+  /entries/{volumeName}:
     post:
       summary: "エントリー作成"
       tags:
@@ -196,6 +196,13 @@ paths:
           required: true
           description: "セッショントークンまたはアクセスキー"
           example: "Session 1Ty1HKTPKTt8xEi-_3HTbWf2SCHOdqOS"
+        - in: "path"
+          name: "volumeName"
+          schema:
+            type: "string"
+          required: true
+          description: "ボリューム名"
+          example: "volume_name"
       requestBody:
         $ref: "#/components/requestBodies/create_entry"
       responses:
@@ -211,7 +218,6 @@ paths:
           $ref: "#/components/responses/409"
         500:
           $ref: "#/components/responses/500"
-  /entries/{volumeName}:
     get:
       summary: "エントリー一覧取得"
       tags:
@@ -578,7 +584,7 @@ components:
               - $ref: "#/components/schemas/entry"
               - type: "object"
                 properties:
-                  volume_id:
+                  volume_name:
                     readOnly: true
                   file:
                     type: "string"
@@ -595,8 +601,6 @@ components:
               - $ref: "#/components/schemas/entry"
               - type: "object"
                 properties:
-                  volume_id:
-                    readOnly: true
                   volume_name:
                     readOnly: true
 
