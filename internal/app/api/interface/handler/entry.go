@@ -60,6 +60,8 @@ func (h *entryHandler) Create(c *gin.Context) {
 		return
 	}
 
+	volumeName := c.Param("volumeName")
+
 	accountID, err := parameter.GetContextParameter[uuid.UUID](c, "accountID")
 	if err != nil {
 		errors.Handle(c, err)
@@ -68,7 +70,7 @@ func (h *entryHandler) Create(c *gin.Context) {
 
 	ctx := c.Request.Context()
 
-	entry, err := h.entryUC.Create(ctx, accountID, req.VolumeName, req.Key, size, file)
+	entry, err := h.entryUC.Create(ctx, accountID, volumeName, req.Key, size, file)
 	if err != nil {
 		errors.Handle(c, err)
 		return
