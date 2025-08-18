@@ -19,7 +19,7 @@
 
 | パス | メソッド | 備考 |
 | --- | --- | --- |
-| /entries | POST | エントリー作成 |
+| /entries/:volumeName | POST | エントリー作成 |
 | /entries/:volumeName | GET | エントリー一覧取得 |
 | /entries/:volumeName/:key | POST | エントリーコピー |
 | /entries/:volumeName/:key | PUT | エントリー更新 |
@@ -108,3 +108,4 @@
 | --- | --- | --- |
 | 2025/04/26 | @atsumarukun | 初版 |
 | 2025/08/18 | @atsumarukun | キーの文字制限を更新 |
+| 2025/08/18 | @atsumarukun | エントリー作成エンドポイントを変更 |
