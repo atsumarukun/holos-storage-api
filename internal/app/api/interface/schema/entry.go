@@ -3,8 +3,7 @@ package schema
 import "time"
 
 type CreateEntryRequest struct {
-	VolumeName string `form:"volume_name" binding:"required"`
-	Key        string `form:"key" binding:"required"`
+	Key string `form:"key" binding:"required"`
 }
 
 type UpdateEntryRequest struct {

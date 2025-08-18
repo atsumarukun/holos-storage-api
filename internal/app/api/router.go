@@ -16,7 +16,7 @@ func registerRouter(r *gin.Engine) {
 	volumes.GET("/:name", volumeHdl.GetOne)
 
 	entries := r.Group("entries")
-	entries.POST("", entryHdl.Create)
+	entries.POST("/:volumeName", entryHdl.Create)
 	entries.GET("/:volumeName", entryHdl.Search)
 	entries.POST("/:volumeName/*key", entryHdl.Copy)
 	entries.PUT("/:volumeName/*key", entryHdl.Update)

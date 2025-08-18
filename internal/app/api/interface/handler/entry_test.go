@@ -27,13 +27,7 @@ func buildMultipartBody(t *testing.T) (body io.Reader, contentType string) {
 	buffer := &bytes.Buffer{}
 	writer := multipart.NewWriter(buffer)
 	defer writer.Close()
-	if err := writer.WriteField("volume_name", "volume"); err != nil {
-		t.Error(err)
-	}
 	if err := writer.WriteField("key", "key/sample.txt"); err != nil {
-		t.Error(err)
-	}
-	if err := writer.WriteField("is_public", "false"); err != nil {
 		t.Error(err)
 	}
 	fw, err := writer.CreateFormFile("file", "sample.txt")
@@ -124,7 +118,7 @@ func TestEntry_Create(t *testing.T) {
 
 			c, _ := gin.CreateTestContext(w)
 			var err error
-			c.Request, err = http.NewRequestWithContext(ctx, "POST", "/entries", body)
+			c.Request, err = http.NewRequestWithContext(ctx, "POST", "/entries/volume", body)
 			if err != nil {
 				t.Error(err)
 			}
