@@ -18,7 +18,7 @@ paths:
         - "health"
       responses:
         204:
-          $ref: "#/components/responses/204"
+          $ref: "#/components/responses/no_content"
   /volumes:
     post:
       summary: "ボリューム作成"
@@ -41,15 +41,17 @@ paths:
         201:
           $ref: "#/components/responses/create_volume"
         400:
-          $ref: "#/components/responses/400"
+          $ref: "#/components/responses/bad_request"
         401:
-          $ref: "#/components/responses/401"
+          $ref: "#/components/responses/unauthenticated"
         403:
-          $ref: "#/components/responses/403"
+          $ref: "#/components/responses/unauthorized"
         409:
-          $ref: "#/components/responses/409"
+          $ref: "#/components/responses/duplicate"
+        422:
+          $ref: "#/components/responses/invalid_input"
         500:
-          $ref: "#/components/responses/500"
+          $ref: "#/components/responses/internal_server_error"
     get:
       summary: "ボリューム一覧取得"
       tags:
@@ -69,11 +71,11 @@ paths:
         200:
           $ref: "#/components/responses/get_volumes"
         401:
-          $ref: "#/components/responses/401"
+          $ref: "#/components/responses/unauthenticated"
         403:
-          $ref: "#/components/responses/403"
+          $ref: "#/components/responses/unauthorized"
         500:
-          $ref: "#/components/responses/500"
+          $ref: "#/components/responses/internal_server_error"
   /volumes/{name}:
     put:
       summary: "ボリューム更新"
@@ -103,15 +105,19 @@ paths:
         200:
           $ref: "#/components/responses/update_volume"
         400:
-          $ref: "#/components/responses/400"
+          $ref: "#/components/responses/bad_request"
         401:
-          $ref: "#/components/responses/401"
+          $ref: "#/components/responses/unauthenticated"
         403:
-          $ref: "#/components/responses/403"
+          $ref: "#/components/responses/unauthorized"
+        404:
+          $ref: "#/components/responses/not_found"
         409:
-          $ref: "#/components/responses/409"
+          $ref: "#/components/responses/duplicate"
+        422:
+          $ref: "#/components/responses/invalid_input"
         500:
-          $ref: "#/components/responses/500"
+          $ref: "#/components/responses/internal_server_error"
     delete:
       summary: "ボリューム削除"
       tags:
@@ -136,17 +142,15 @@ paths:
           example: "volume_name"
       responses:
         204:
-          $ref: "#/components/responses/204"
-        400:
-          $ref: "#/components/responses/400"
+          $ref: "#/components/responses/no_content"
         401:
-          $ref: "#/components/responses/401"
+          $ref: "#/components/responses/unauthenticated"
         403:
-          $ref: "#/components/responses/403"
+          $ref: "#/components/responses/unauthorized"
         409:
-          $ref: "#/components/responses/409"
+          $ref: "#/components/responses/constraint_violation"
         500:
-          $ref: "#/components/responses/500"
+          $ref: "#/components/responses/internal_server_error"
     get:
       summary: "ボリューム単体取得"
       tags:
@@ -172,14 +176,14 @@ paths:
       responses:
         200:
           $ref: "#/components/responses/get_volume"
-        400:
-          $ref: "#/components/responses/400"
         401:
-          $ref: "#/components/responses/401"
+          $ref: "#/components/responses/unauthenticated"
         403:
-          $ref: "#/components/responses/403"
+          $ref: "#/components/responses/unauthorized"
+        404:
+          $ref: "#/components/responses/not_found"
         500:
-          $ref: "#/components/responses/500"
+          $ref: "#/components/responses/internal_server_error"
   /entries/{volumeName}:
     post:
       summary: "エントリー作成"
@@ -209,15 +213,17 @@ paths:
         201:
           $ref: "#/components/responses/create_entry"
         400:
-          $ref: "#/components/responses/400"
+          $ref: "#/components/responses/bad_request"
         401:
-          $ref: "#/components/responses/401"
+          $ref: "#/components/responses/unauthenticated"
         403:
-          $ref: "#/components/responses/403"
+          $ref: "#/components/responses/unauthorized"
         409:
-          $ref: "#/components/responses/409"
+          $ref: "#/components/responses/duplicate"
+        422:
+          $ref: "#/components/responses/constraint_violation"
         500:
-          $ref: "#/components/responses/500"
+          $ref: "#/components/responses/internal_server_error"
     get:
       summary: "エントリー一覧取得"
       tags:
@@ -256,13 +262,13 @@ paths:
         200:
           $ref: "#/components/responses/get_entries"
         400:
-          $ref: "#/components/responses/400"
+          $ref: "#/components/responses/bad_request"
         401:
-          $ref: "#/components/responses/401"
+          $ref: "#/components/responses/unauthenticated"
         403:
-          $ref: "#/components/responses/403"
+          $ref: "#/components/responses/unauthorized"
         500:
-          $ref: "#/components/responses/500"
+          $ref: "#/components/responses/internal_server_error"
   /entries/{volumeName}/{key}:
     post:
       summary: "エントリーコピー"
@@ -294,18 +300,18 @@ paths:
           description: "キー"
           example: "key/sample.txt"
       responses:
-        200:
+        201:
           $ref: "#/components/responses/copy_entry"
-        400:
-          $ref: "#/components/responses/400"
         401:
-          $ref: "#/components/responses/401"
+          $ref: "#/components/responses/unauthenticated"
         403:
-          $ref: "#/components/responses/403"
-        409:
-          $ref: "#/components/responses/409"
+          $ref: "#/components/responses/unauthorized"
+        404:
+          $ref: "#/components/responses/not_found"
+        422:
+          $ref: "#/components/responses/invalid_input"
         500:
-          $ref: "#/components/responses/500"
+          $ref: "#/components/responses/internal_server_error"
     put:
       summary: "エントリー更新"
       tags:
@@ -341,15 +347,17 @@ paths:
         200:
           $ref: "#/components/responses/update_entry"
         400:
-          $ref: "#/components/responses/400"
+          $ref: "#/components/responses/bad_request"
         401:
-          $ref: "#/components/responses/401"
+          $ref: "#/components/responses/unauthenticated"
         403:
-          $ref: "#/components/responses/403"
+          $ref: "#/components/responses/unauthorized"
+        404:
+          $ref: "#/components/responses/not_found"
         409:
-          $ref: "#/components/responses/409"
+          $ref: "#/components/responses/duplicate"
         500:
-          $ref: "#/components/responses/500"
+          $ref: "#/components/responses/internal_server_error"
     delete:
       summary: "エントリー削除"
       tags:
@@ -381,15 +389,13 @@ paths:
           example: "key/sample.txt"
       responses:
         204:
-          $ref: "#/components/responses/204"
-        400:
-          $ref: "#/components/responses/400"
+          $ref: "#/components/responses/no_content"
         401:
-          $ref: "#/components/responses/401"
+          $ref: "#/components/responses/unauthenticated"
         403:
-          $ref: "#/components/responses/403"
+          $ref: "#/components/responses/unauthorized"
         500:
-          $ref: "#/components/responses/500"
+          $ref: "#/components/responses/internal_server_error"
     head:
       summary: "エントリー情報取得"
       tags:
@@ -438,14 +444,14 @@ paths:
               schema:
                 type: "string"
                 example: "text/plain; charset=utf-8"
-        400:
-          $ref: "#/components/responses/400"
         401:
-          $ref: "#/components/responses/401"
+          $ref: "#/components/responses/unauthenticated"
         403:
-          $ref: "#/components/responses/403"
+          $ref: "#/components/responses/unauthorized"
+        404:
+          $ref: "#/components/responses/not_found"
         500:
-          $ref: "#/components/responses/500"
+          $ref: "#/components/responses/internal_server_error"
     get:
       summary: "エントリー単体取得"
       tags:
@@ -477,14 +483,14 @@ paths:
       responses:
         200:
           $ref: "#/components/responses/get_entry"
-        400:
-          $ref: "#/components/responses/400"
         401:
-          $ref: "#/components/responses/401"
+          $ref: "#/components/responses/unauthenticated"
         403:
-          $ref: "#/components/responses/403"
+          $ref: "#/components/responses/unauthorized"
+        404:
+          $ref: "#/components/responses/not_found"
         500:
-          $ref: "#/components/responses/500"
+          $ref: "#/components/responses/internal_server_error"
 
 components:
   securitySchemes:
@@ -672,9 +678,11 @@ components:
             type: "string"
             example: "text/plain; charset=utf-8"
       content:
-        application/json:
+        application/octet-stream:
           schema:
-            $ref: "#/components/schemas/entry"
+            type: "string"
+            format: "byte"
+            description: "ファイル"
     get_entries:
       description: "Success"
       content:
@@ -686,65 +694,133 @@ components:
                 type: "array"
                 items:
                   $ref: "#/components/schemas/entry"
-    204:
+    no_content:
       description: "Success"
-    400:
+    bad_request:
       description: "Bad Request"
       content:
         text/plain:
           schema:
             type: "object"
             properties:
-              message:
-                type: "string"
-                example: "bad request"
-    401:
+              error:
+                type: "object"
+                properties:
+                  code:
+                    type: "string"
+                    example: "BAD_REQUEST"
+                  message:
+                    type: "string"
+                    example: "bad request"
+    unauthenticated:
+      description: "Unauthenticated"
+      content:
+        text/plain:
+          schema:
+            type: "object"
+            properties:
+              error:
+                type: "object"
+                properties:
+                  code:
+                    type: "string"
+                    example: "UNAUTHENTICATED"
+                  message:
+                    type: "string"
+                    example: "unauthenticated"
+    unauthorized:
       description: "Unauthorized"
       content:
         text/plain:
           schema:
             type: "object"
             properties:
-              message:
-                type: "string"
-                example: "unauthorized"
-    403:
-      description: "Forbidden"
+              error:
+                type: "object"
+                properties:
+                  code:
+                    type: "string"
+                    example: "UNAUTHORIZED"
+                  message:
+                    type: "string"
+                    example: "unauthorized"
+    not_found:
+      description: "Not Found"
       content:
         text/plain:
           schema:
             type: "object"
             properties:
-              message:
-                type: "string"
-                example: "forbidden"
-    404:
-      description: "Resource Not Found"
+              error:
+                type: "object"
+                properties:
+                  code:
+                    type: "string"
+                    example: "NOT_FOUND"
+                  message:
+                    type: "string"
+                    example: "not found"
+    duplicate:
+      description: "Duplicate"
       content:
         text/plain:
           schema:
             type: "object"
             properties:
-              message:
-                type: "string"
-                example: "resource not found"
-    409:
-      description: "Conflict"
+              error:
+                type: "object"
+                properties:
+                  code:
+                    type: "string"
+                    example: "DUPLICATE"
+                  message:
+                    type: "string"
+                    example: "duplicate"
+    constraint_violation:
+      description: "Constraint Violation"
       content:
         text/plain:
           schema:
             type: "object"
             properties:
-              message:
-                type: "string"
-                example: "conflict"
-    500:
+              error:
+                type: "object"
+                properties:
+                  code:
+                    type: "string"
+                    example: "CONSTRAINT_VIOLATION"
+                  message:
+                    type: "string"
+                    example: "constraint violation"
+    invalid_input:
+      description: "Invalid Input"
+      content:
+        text/plain:
+          schema:
+            type: "object"
+            properties:
+              error:
+                type: "object"
+                properties:
+                  code:
+                    type: "string"
+                    example: "INVALID_INPUT"
+                  message:
+                    type: "string"
+                    example: "invalid input"
+    internal_server_error:
       description: "Internal Server Error"
       content:
         text/plain:
           schema:
             type: "object"
             properties:
-              message:
-                type: "string"
-                example: "internal server error"
+              error:
+                type: "object"
+                properties:
+                  code:
+                    type: "string"
+                    example: "INTERNAL_SERVER_ERROR"
+                  message:
+                    type: "string"
+                    example: "internal server error"
