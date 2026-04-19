@@ -14,9 +14,9 @@ import (
 var (
 	ErrRequiredEntryAccountID = status.Error(code.Internal, "account id for entry is required")
 	ErrRequiredEntryVolumeID  = status.Error(code.Internal, "volume id for entry is required")
-	ErrShortEntryKey          = status.Error(code.BadRequest, "entry key is too short")
-	ErrLongEntryKey           = status.Error(code.BadRequest, "entry key is too long")
-	ErrInvalidEntryKey        = status.Error(code.BadRequest, "entry key contains invalid characters")
+	ErrShortEntryKey          = status.Error(code.UnprocessableContent, "entry key is too short")
+	ErrLongEntryKey           = status.Error(code.UnprocessableContent, "entry key is too long")
+	ErrInvalidEntryKey        = status.Error(code.UnprocessableContent, "entry key contains invalid characters")
 )
 
 type Entry struct {

@@ -12,9 +12,9 @@ import (
 
 var (
 	ErrRequiredVolumeAccountID = status.Error(code.Internal, "account id for volume is required")
-	ErrShortVolumeName         = status.Error(code.BadRequest, "volume name is too short")
-	ErrLongVolumeName          = status.Error(code.BadRequest, "volume name is too long")
-	ErrInvalidVolumeName       = status.Error(code.BadRequest, "volume name contains invalid characters")
+	ErrShortVolumeName         = status.Error(code.UnprocessableContent, "volume name is too short")
+	ErrLongVolumeName          = status.Error(code.UnprocessableContent, "volume name is too long")
+	ErrInvalidVolumeName       = status.Error(code.UnprocessableContent, "volume name contains invalid characters")
 )
 
 type Volume struct {

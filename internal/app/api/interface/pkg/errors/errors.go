@@ -16,12 +16,13 @@ type response struct {
 }
 
 var responseMap = map[code.StatusCode]response{
-	code.BadRequest:   {code: http.StatusBadRequest, message: "bad request"},
-	code.Unauthorized: {code: http.StatusUnauthorized, message: "unauthorized"},
-	code.Forbidden:    {code: http.StatusForbidden, message: "forbidden"},
-	code.NotFound:     {code: http.StatusNotFound, message: "not found"},
-	code.Conflict:     {code: http.StatusConflict, message: "conflict"},
-	code.Internal:     {code: http.StatusInternalServerError, message: "internal server error"},
+	code.BadRequest:           {code: http.StatusBadRequest, message: "bad request"},
+	code.Unauthorized:         {code: http.StatusUnauthorized, message: "unauthorized"},
+	code.Forbidden:            {code: http.StatusForbidden, message: "forbidden"},
+	code.NotFound:             {code: http.StatusNotFound, message: "not found"},
+	code.Conflict:             {code: http.StatusConflict, message: "conflict"},
+	code.UnprocessableContent: {code: http.StatusUnprocessableEntity, message: "unprocessable content"},
+	code.Internal:             {code: http.StatusInternalServerError, message: "internal server error"},
 }
 
 func Handle(c *gin.Context, err error) {
