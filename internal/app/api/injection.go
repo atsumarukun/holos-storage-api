@@ -24,7 +24,7 @@ var (
 	entryHdl  handler.EntryHandler
 )
 
-func inject(db *sqlx.DB, fs afero.Fs, config serverConfig) {
+func inject(db *sqlx.DB, fs afero.Fs, config *serverConfig) {
 	transactionObj := transaction.NewDBTransactionObject(db)
 
 	accountRepo := api.NewAccountRepository(&http.Client{}, config.auth.Endpoint)

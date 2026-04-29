@@ -8,8 +8,8 @@ type serverConfig struct {
 	fileSystem fileSystemConfig
 }
 
-func loadServerConfig() serverConfig {
-	return serverConfig{
+func loadServerConfig() *serverConfig {
+	return &serverConfig{
 		database:   loadDatabaseConfig(),
 		auth:       loadAuthConfig(),
 		fileSystem: loadFileSystemConfig(),
