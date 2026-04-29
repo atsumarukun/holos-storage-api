@@ -27,7 +27,7 @@ var (
 func inject(db *sqlx.DB, fs afero.Fs, config *serverConfig) {
 	transactionObj := transaction.NewDBTransactionObject(db)
 
-	accountRepo := api.NewAccountRepository(&http.Client{}, "http://account-api:8000/authorization")
+	accountRepo := api.NewAccountRepository(&http.Client{}, config.auth.Endpoint)
 	volumeRepo := database.NewVolumeRepository(db)
 	entryRepo := database.NewEntryRepository(db)
 	bodyRepo := file.NewBodyRepository(fs, config.fileSystem.BasePath)
