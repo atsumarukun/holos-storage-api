@@ -2,7 +2,6 @@ package database_test
 
 import (
 	"database/sql"
-	"errors"
 	"regexp"
 	"testing"
 	"time"
@@ -14,6 +13,7 @@ import (
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/domain/entity"
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/domain/repository"
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/infrastructure/database"
+	"github.com/atsumarukun/holos-storage-api/test/assert"
 	mockDatabase "github.com/atsumarukun/holos-storage-api/test/mock/database"
 )
 
@@ -47,7 +47,7 @@ func TestVolume_Create(t *testing.T) {
 		{
 			name:        "volume is nil",
 			inputVolume: nil,
-			expectError: database.ErrRequiredVolume,
+			expectError: repository.ErrNilVolume,
 			setMockDB:   func(sqlmock.Sqlmock) {},
 		},
 		{
@@ -70,9 +70,8 @@ func TestVolume_Create(t *testing.T) {
 			tt.setMockDB(mock)
 
 			repo := database.NewVolumeRepository(db)
-			if err := repo.Create(t.Context(), tt.inputVolume); !errors.Is(err, tt.expectError) {
-				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
-			}
+			err := repo.Create(t.Context(), tt.inputVolume)
+			assert.Error(t, err, tt.expectError)
 
 			if err := mock.ExpectationsWereMet(); err != nil {
 				t.Error(err)
@@ -111,7 +110,7 @@ func TestVolume_Update(t *testing.T) {
 		{
 			name:        "volume is nil",
 			inputVolume: nil,
-			expectError: database.ErrRequiredVolume,
+			expectError: repository.ErrNilVolume,
 			setMockDB:   func(sqlmock.Sqlmock) {},
 		},
 		{
@@ -134,9 +133,8 @@ func TestVolume_Update(t *testing.T) {
 			tt.setMockDB(mock)
 
 			repo := database.NewVolumeRepository(db)
-			if err := repo.Update(t.Context(), tt.inputVolume); !errors.Is(err, tt.expectError) {
-				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
-			}
+			err := repo.Update(t.Context(), tt.inputVolume)
+			assert.Error(t, err, tt.expectError)
 
 			if err := mock.ExpectationsWereMet(); err != nil {
 				t.Error(err)
@@ -175,7 +173,7 @@ func TestVolume_Delete(t *testing.T) {
 		{
 			name:        "volume is nil",
 			inputVolume: nil,
-			expectError: database.ErrRequiredVolume,
+			expectError: repository.ErrNilVolume,
 			setMockDB:   func(sqlmock.Sqlmock) {},
 		},
 		{
@@ -198,9 +196,8 @@ func TestVolume_Delete(t *testing.T) {
 			tt.setMockDB(mock)
 
 			repo := database.NewVolumeRepository(db)
-			if err := repo.Delete(t.Context(), tt.inputVolume); !errors.Is(err, tt.expectError) {
-				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
-			}
+			err := repo.Delete(t.Context(), tt.inputVolume)
+			assert.Error(t, err, tt.expectError)
 
 			if err := mock.ExpectationsWereMet(); err != nil {
 				t.Error(err)
@@ -243,7 +240,7 @@ func TestVolume_FindOneByName(t *testing.T) {
 			name:         "not found",
 			inputName:    "name",
 			expectResult: nil,
-			expectError:  repository.ErrVolumeNotFound,
+			expectError:  nil,
 			setMockDB: func(mock sqlmock.Sqlmock) {
 				mock.ExpectQuery(regexp.QuoteMeta(`SELECT id, account_id, name, is_public, created_at, updated_at FROM volumes WHERE name = ? LIMIT 1;`)).
 					WithArgs("name").
@@ -272,9 +269,7 @@ func TestVolume_FindOneByName(t *testing.T) {
 
 			repo := database.NewVolumeRepository(db)
 			result, err := repo.FindOneByName(t.Context(), tt.inputName)
-			if !errors.Is(err, tt.expectError) {
-				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
-			}
+			assert.Error(t, err, tt.expectError)
 
 			if diff := cmp.Diff(tt.expectResult, result); diff != "" {
 				t.Error(diff)
@@ -324,7 +319,7 @@ func TestVolume_FindOneByNameAndAccountID(t *testing.T) {
 			inputName:      "name",
 			inputAccountID: accountID,
 			expectResult:   nil,
-			expectError:    repository.ErrVolumeNotFound,
+			expectError:    nil,
 			setMockDB: func(mock sqlmock.Sqlmock) {
 				mock.ExpectQuery(regexp.QuoteMeta(`SELECT id, account_id, name, is_public, created_at, updated_at FROM volumes WHERE name = ? AND account_id = ? LIMIT 1;`)).
 					WithArgs("name", accountID).
@@ -354,9 +349,7 @@ func TestVolume_FindOneByNameAndAccountID(t *testing.T) {
 
 			repo := database.NewVolumeRepository(db)
 			result, err := repo.FindOneByNameAndAccountID(t.Context(), tt.inputName, tt.inputAccountID)
-			if !errors.Is(err, tt.expectError) {
-				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
-			}
+			assert.Error(t, err, tt.expectError)
 
 			if diff := cmp.Diff(tt.expectResult, result); diff != "" {
 				t.Error(diff)
@@ -407,7 +400,7 @@ func TestVolume_FindOneByIDAndAccountID(t *testing.T) {
 			inputID:        id,
 			inputAccountID: accountID,
 			expectResult:   nil,
-			expectError:    repository.ErrVolumeNotFound,
+			expectError:    nil,
 			setMockDB: func(mock sqlmock.Sqlmock) {
 				mock.ExpectQuery(regexp.QuoteMeta(`SELECT id, account_id, name, is_public, created_at, updated_at FROM volumes WHERE id = ? AND account_id = ? LIMIT 1;`)).
 					WithArgs(id, accountID).
@@ -437,9 +430,7 @@ func TestVolume_FindOneByIDAndAccountID(t *testing.T) {
 
 			repo := database.NewVolumeRepository(db)
 			result, err := repo.FindOneByIDAndAccountID(t.Context(), tt.inputID, tt.inputAccountID)
-			if !errors.Is(err, tt.expectError) {
-				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
-			}
+			assert.Error(t, err, tt.expectError)
 
 			if diff := cmp.Diff(tt.expectResult, result); diff != "" {
 				t.Error(diff)
@@ -515,9 +506,7 @@ func TestVolume_FindByAccountID(t *testing.T) {
 
 			repo := database.NewVolumeRepository(db)
 			result, err := repo.FindByAccountID(t.Context(), tt.inputAccountID)
-			if !errors.Is(err, tt.expectError) {
-				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
-			}
+			assert.Error(t, err, tt.expectError)
 
 			if diff := cmp.Diff(tt.expectResult, result); diff != "" {
 				t.Error(diff)

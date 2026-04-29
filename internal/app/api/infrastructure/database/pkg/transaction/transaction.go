@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 
+	"github.com/atsumarukun/holos-api-pkg/errors"
 	"github.com/jmoiron/sqlx"
 
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/domain/repository/pkg/transaction"
@@ -24,12 +25,15 @@ func NewDBTransactionObject(db *sqlx.DB) transaction.TransactionObject {
 func (to *transactionObject) Transaction(ctx context.Context, fn func(context.Context) error) (err error) {
 	tx, err := to.db.Beginx()
 	if err != nil {
-		return err
+		return errors.Wrap(err, errors.CodeInternalServerError, "failed to begin transaction")
 	}
 
 	defer func() {
 		if r := recover(); r != nil {
 			err = tx.Rollback()
+			if err != nil {
+				err = errors.Wrap(err, errors.CodeInternalServerError, "failed to rollback transaction")
+			}
 		}
 	}()
 
@@ -40,7 +44,7 @@ func (to *transactionObject) Transaction(ctx context.Context, fn func(context.Co
 	}
 
 	if err := tx.Commit(); err != nil {
-		return err
+		return errors.Wrap(err, errors.CodeInternalServerError, "failed to commit transaction")
 	}
 
 	return nil
@@ -51,7 +55,7 @@ type driver interface {
 	sqlx.QueryerContext
 	sqlx.Execer
 	sqlx.ExecerContext
-	NamedExecContext(ctx context.Context, query string, arg interface{}) (sql.Result, error)
+	NamedExecContext(ctx context.Context, query string, arg any) (sql.Result, error)
 }
 
 func GetDriver(ctx context.Context, db *sqlx.DB) driver {

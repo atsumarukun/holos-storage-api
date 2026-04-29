@@ -3,6 +3,7 @@ package repository
 
 import (
 	"context"
+	stderr "errors"
 
 	"github.com/google/uuid"
 
@@ -11,6 +12,7 @@ import (
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/pkg/status/code"
 )
 
+var ErrNilEntry = stderr.New("entry must not be nil")
 var ErrEntryNotFound = status.Error(code.NotFound, "entry not found")
 
 type EntryRepository interface {
