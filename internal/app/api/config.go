@@ -4,13 +4,15 @@ import "os"
 
 type serverConfig struct {
 	database   databaseConfig
+	auth       authConfig
 	fileSystem fileSystemConfig
 }
 
-func loadServerConfig() *serverConfig {
-	return &serverConfig{
-		database:   *loadDatabaseConfig(),
-		fileSystem: *loadFileSystemConfig(),
+func loadServerConfig() serverConfig {
+	return serverConfig{
+		database:   loadDatabaseConfig(),
+		auth:       loadAuthConfig(),
+		fileSystem: loadFileSystemConfig(),
 	}
 }
 
@@ -22,8 +24,8 @@ type databaseConfig struct {
 	Password string
 }
 
-func loadDatabaseConfig() *databaseConfig {
-	return &databaseConfig{
+func loadDatabaseConfig() databaseConfig {
+	return databaseConfig{
 		Host:     os.Getenv("DATABASE_HOST"),
 		Port:     os.Getenv("DATABASE_PORT"),
 		Database: os.Getenv("DATABASE_NAME"),
@@ -32,12 +34,22 @@ func loadDatabaseConfig() *databaseConfig {
 	}
 }
 
+type authConfig struct {
+	Endpoint string
+}
+
+func loadAuthConfig() authConfig {
+	return authConfig{
+		Endpoint: os.Getenv("AUTH_API_ENDPOINT"),
+	}
+}
+
 type fileSystemConfig struct {
 	BasePath string
 }
 
-func loadFileSystemConfig() *fileSystemConfig {
-	return &fileSystemConfig{
+func loadFileSystemConfig() fileSystemConfig {
+	return fileSystemConfig{
 		BasePath: os.Getenv("FILE_SYSTEM_BASE_PATH"),
 	}
 }
