@@ -1,7 +1,6 @@
 package entity_test
 
 import (
-	"errors"
 	"strings"
 	"testing"
 	"time"
@@ -9,6 +8,7 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/domain/entity"
+	"github.com/atsumarukun/holos-storage-api/test/assert"
 )
 
 func assertVolume(t *testing.T, v *entity.Volume) {
@@ -41,15 +41,13 @@ func TestNewVolume(t *testing.T) {
 		expectError    error
 	}{
 		{name: "successfully initialized", inputAccountID: uuid.New(), inputName: "name", inputIsPublic: false, expectError: nil},
-		{name: "account id is nil", inputAccountID: uuid.Nil, inputName: "name", inputIsPublic: false, expectError: entity.ErrRequiredVolumeAccountID},
-		{name: "invalid name", inputAccountID: uuid.New(), inputName: "", inputIsPublic: false, expectError: entity.ErrShortVolumeName},
+		{name: "account id is nil", inputAccountID: uuid.Nil, inputName: "name", inputIsPublic: false, expectError: entity.ErrVolumeNilAccountID},
+		{name: "invalid name", inputAccountID: uuid.New(), inputName: "", inputIsPublic: false, expectError: entity.ErrVolumeNameInvalidLength},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			volume, err := entity.NewVolume(tt.inputAccountID, tt.inputName, tt.inputIsPublic)
-			if !errors.Is(err, tt.expectError) {
-				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
-			}
+			assert.Error(t, err, tt.expectError)
 
 			if tt.expectError == nil {
 				if volume == nil {
@@ -80,26 +78,25 @@ func TestVolume_SetName(t *testing.T) {
 		{name: "mixed lower case and upper case and number", inputName: "volumeName1234", expectError: nil},
 		{name: "valid symbols", inputName: "!@#$%^&()_-+=[]{};',.~", expectError: nil},
 		{name: "include space", inputName: "volume name", expectError: nil},
-		{name: "include slash", inputName: "volume/name", expectError: entity.ErrInvalidVolumeName},
-		{name: "include backslash", inputName: "volume\\name", expectError: entity.ErrInvalidVolumeName},
-		{name: "include colon", inputName: "volume:name", expectError: entity.ErrInvalidVolumeName},
-		{name: "include asterisk", inputName: "volume*name", expectError: entity.ErrInvalidVolumeName},
-		{name: "include question mark", inputName: "volume?name", expectError: entity.ErrInvalidVolumeName},
-		{name: "include double quotation marks", inputName: "volume\"name", expectError: entity.ErrInvalidVolumeName},
-		{name: "include greater than sign", inputName: "volume>name", expectError: entity.ErrInvalidVolumeName},
-		{name: "include less than sign", inputName: "volume<name", expectError: entity.ErrInvalidVolumeName},
-		{name: "include vertical bar", inputName: "volume|name", expectError: entity.ErrInvalidVolumeName},
-		{name: "full width", inputName: "ボリューム名", expectError: entity.ErrInvalidVolumeName},
-		{name: "0 characters", inputName: strings.Repeat("a", 0), expectError: entity.ErrShortVolumeName},
+		{name: "include slash", inputName: "volume/name", expectError: entity.ErrVolumeNameInvalidChars},
+		{name: "include backslash", inputName: "volume\\name", expectError: entity.ErrVolumeNameInvalidChars},
+		{name: "include colon", inputName: "volume:name", expectError: entity.ErrVolumeNameInvalidChars},
+		{name: "include asterisk", inputName: "volume*name", expectError: entity.ErrVolumeNameInvalidChars},
+		{name: "include question mark", inputName: "volume?name", expectError: entity.ErrVolumeNameInvalidChars},
+		{name: "include double quotation marks", inputName: "volume\"name", expectError: entity.ErrVolumeNameInvalidChars},
+		{name: "include greater than sign", inputName: "volume>name", expectError: entity.ErrVolumeNameInvalidChars},
+		{name: "include less than sign", inputName: "volume<name", expectError: entity.ErrVolumeNameInvalidChars},
+		{name: "include vertical bar", inputName: "volume|name", expectError: entity.ErrVolumeNameInvalidChars},
+		{name: "full width", inputName: "ボリューム名", expectError: entity.ErrVolumeNameInvalidChars},
+		{name: "0 characters", inputName: strings.Repeat("a", 0), expectError: entity.ErrVolumeNameInvalidLength},
 		{name: "1 characters", inputName: strings.Repeat("a", 1), expectError: nil},
 		{name: "255 characters", inputName: strings.Repeat("a", 255), expectError: nil},
-		{name: "256 characters", inputName: strings.Repeat("a", 256), expectError: entity.ErrLongVolumeName},
+		{name: "256 characters", inputName: strings.Repeat("a", 256), expectError: entity.ErrVolumeNameInvalidLength},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := volume.SetName(tt.inputName); !errors.Is(err, tt.expectError) {
-				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
-			}
+			err := volume.SetName(tt.inputName)
+			assert.Error(t, err, tt.expectError)
 		})
 	}
 }

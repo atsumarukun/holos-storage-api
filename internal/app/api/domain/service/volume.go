@@ -3,8 +3,9 @@ package service
 
 import (
 	"context"
-	"errors"
+	stderr "errors"
 
+	"github.com/atsumarukun/holos-api-pkg/errors"
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/domain/entity"
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/domain/repository"
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/pkg/status"
@@ -12,9 +13,12 @@ import (
 )
 
 var (
+	ErrNilVolume              = stderr.New("volume must not be nil")
+	ErrVolumeNameAlreadyInUse = stderr.New("volume name already in use")
+	ErrVolumeHasEntries       = stderr.New("volume cannot be deleted because it contains entries")
+
 	ErrRequiredVolume      = status.Error(code.Internal, "volume is required")
 	ErrVolumeAlreadyExists = status.Error(code.Conflict, "volume name already used")
-	ErrVolumeHasEntries    = status.Error(code.Conflict, "volume has entries")
 )
 
 type VolumeService interface {
@@ -36,29 +40,32 @@ func NewVolumeService(volumeRepo repository.VolumeRepository, entryRepo reposito
 
 func (s *volumeService) Exists(ctx context.Context, volume *entity.Volume) error {
 	if volume == nil {
-		return ErrRequiredVolume
+		return errors.Wrap(ErrNilVolume, errors.CodeInternalServerError, "failed to check if volume exists")
 	}
-	_, err := s.volumeRepo.FindOneByName(ctx, volume.Name)
+
+	vol, err := s.volumeRepo.FindOneByName(ctx, volume.Name)
 	if err != nil {
-		if errors.Is(err, repository.ErrVolumeNotFound) {
-			return nil
-		}
 		return err
 	}
-	return ErrVolumeAlreadyExists
+	if vol != nil {
+		return errors.Wrap(ErrVolumeNameAlreadyInUse, errors.CodeDuplicate, "volume already exists")
+	}
+
+	return nil
 }
 
 func (s *volumeService) CanDelete(ctx context.Context, volume *entity.Volume) error {
 	if volume == nil {
-		return ErrRequiredVolume
+		return errors.Wrap(ErrNilVolume, errors.CodeInternalServerError, "failed to check if volume can be deleted")
 	}
 
 	entries, err := s.entryRepo.FindByVolumeIDAndAccountID(ctx, volume.ID, volume.AccountID, nil, nil)
 	if err != nil {
 		return err
 	}
-	if 0 < len(entries) {
-		return ErrVolumeHasEntries
+	if len(entries) > 0 {
+		return errors.Wrap(ErrVolumeHasEntries, errors.CodeConstraintViolation, "volume cannot be deleted")
 	}
+
 	return nil
 }

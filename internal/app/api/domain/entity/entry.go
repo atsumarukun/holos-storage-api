@@ -1,10 +1,12 @@
 package entity
 
 import (
+	stderr "errors"
 	"regexp"
 	"strings"
 	"time"
 
+	"github.com/atsumarukun/holos-api-pkg/errors"
 	"github.com/google/uuid"
 
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/pkg/status"
@@ -12,6 +14,12 @@ import (
 )
 
 var (
+	ErrEntryKeyInvalidLength        = stderr.New("entry key must be between 1 and 512 characters")
+	ErrEntryKeyElementInvalidLength = stderr.New("entry key element must be between 1 and 255 characters")
+	ErrEntryKeyInvalidChars         = stderr.New("entry key contains invalid characters")
+	ErrEntryNilAccountID            = stderr.New("account id must not be nil")
+	ErrEntryNilVolumeID             = stderr.New("volume id must not be nil")
+
 	ErrRequiredEntryAccountID = status.Error(code.Internal, "account id for entry is required")
 	ErrRequiredEntryVolumeID  = status.Error(code.Internal, "volume id for entry is required")
 	ErrShortEntryKey          = status.Error(code.UnprocessableContent, "entry key is too short")
@@ -70,26 +78,24 @@ func RestoreEntry(id, accountID, volumeID uuid.UUID, key string, size uint64, en
 }
 
 func (e *Entry) SetKey(key string) error {
+	const errMessage = "failed to set entry key"
+
 	key = strings.Trim(key, "/")
-	if len(key) < 1 {
-		return ErrShortEntryKey
-	}
-	if 512 < len(key) {
-		return ErrLongEntryKey
+	if len(key) < 1 || 512 < len(key) {
+		return errors.Wrap(ErrEntryKeyInvalidLength, errors.CodeInvalidInput, errMessage)
 	}
 
 	for k := range strings.SplitSeq(key, "/") {
 		if len(k) < 1 || 255 < len(k) {
-			return ErrInvalidEntryKey
+			return errors.Wrap(ErrEntryKeyElementInvalidLength, errors.CodeInvalidInput, errMessage)
 		}
 	}
 
 	matched, err := regexp.MatchString(`^[A-Za-z0-9!@#$%^&()_\-+=\[\]{};',./~ ]*$`, key)
 	if err != nil {
-		return err
-	}
-	if !matched {
-		return ErrInvalidEntryKey
+		return errors.Wrap(err, errors.CodeInternalServerError, errMessage)
+	} else if !matched {
+		return errors.Wrap(ErrEntryKeyInvalidChars, errors.CodeInvalidInput, errMessage)
 	}
 
 	e.Key = key
@@ -104,7 +110,7 @@ func (e *Entry) IsFolder() bool {
 func (e *Entry) generateID() error {
 	id, err := uuid.NewRandom()
 	if err != nil {
-		return err
+		return errors.Wrap(err, errors.CodeInternalServerError, "failed to generate entry id")
 	}
 	e.ID = id
 	return nil
@@ -112,7 +118,7 @@ func (e *Entry) generateID() error {
 
 func (e *Entry) setAccountID(accountID uuid.UUID) error {
 	if accountID == uuid.Nil {
-		return ErrRequiredEntryAccountID
+		return errors.Wrap(ErrEntryNilAccountID, errors.CodeInternalServerError, "failed to set account id on entry")
 	}
 	e.AccountID = accountID
 	return nil
@@ -120,7 +126,7 @@ func (e *Entry) setAccountID(accountID uuid.UUID) error {
 
 func (e *Entry) setVolumeID(volumeID uuid.UUID) error {
 	if volumeID == uuid.Nil {
-		return ErrRequiredEntryVolumeID
+		return errors.Wrap(ErrEntryNilVolumeID, errors.CodeInternalServerError, "failed to set volume id on entry")
 	}
 	e.VolumeID = volumeID
 	return nil

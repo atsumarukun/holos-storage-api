@@ -3,10 +3,11 @@ package service
 
 import (
 	"context"
-	"errors"
+	stderr "errors"
 	"path/filepath"
 	"strings"
 
+	"github.com/atsumarukun/holos-api-pkg/errors"
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/domain/entity"
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/domain/repository"
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/pkg/status"
@@ -14,6 +15,9 @@ import (
 )
 
 var (
+	ErrNilEntry             = stderr.New("entry must not be nil")
+	ErrEntryKeyAlreadyInUse = stderr.New("entry key already in use")
+
 	ErrRequiredEntry      = status.Error(code.Internal, "entry is required")
 	ErrEntryAlreadyExists = status.Error(code.Conflict, "entry key already used")
 )
@@ -39,22 +43,23 @@ func NewEntryService(entryRepo repository.EntryRepository) EntryService {
 
 func (s *entryService) Exists(ctx context.Context, entry *entity.Entry) error {
 	if entry == nil {
-		return ErrRequiredEntry
+		return errors.Wrap(ErrNilEntry, errors.CodeInternalServerError, "failed to check if entry exists")
 	}
 
-	_, err := s.entryRepo.FindOneByKeyAndVolumeID(ctx, entry.Key, entry.VolumeID)
+	ent, err := s.entryRepo.FindOneByKeyAndVolumeID(ctx, entry.Key, entry.VolumeID)
 	if err != nil {
-		if errors.Is(err, repository.ErrEntryNotFound) {
-			return nil
-		}
 		return err
 	}
-	return ErrEntryAlreadyExists
+	if ent != nil {
+		return errors.Wrap(ErrEntryKeyAlreadyInUse, errors.CodeDuplicate, "entry already exists")
+	}
+
+	return nil
 }
 
 func (s *entryService) CreateAncestors(ctx context.Context, entry *entity.Entry) error {
 	if entry == nil {
-		return ErrRequiredEntry
+		return errors.Wrap(ErrNilEntry, errors.CodeInternalServerError, "failed to create ancestor entries")
 	}
 
 	for _, dir := range s.extractDirs(entry.Key) {
@@ -63,7 +68,7 @@ func (s *entryService) CreateAncestors(ctx context.Context, entry *entity.Entry)
 			return err
 		}
 		if err := s.Exists(ctx, ent); err != nil {
-			if errors.Is(err, ErrEntryAlreadyExists) {
+			if stderr.Is(err, ErrEntryKeyAlreadyInUse) {
 				continue
 			} else {
 				return err
@@ -79,7 +84,7 @@ func (s *entryService) CreateAncestors(ctx context.Context, entry *entity.Entry)
 
 func (s *entryService) UpdateDescendants(ctx context.Context, entry *entity.Entry, src string) error {
 	if entry == nil {
-		return ErrRequiredEntry
+		return errors.Wrap(ErrNilEntry, errors.CodeInternalServerError, "failed to update descendant entries")
 	}
 
 	if entry.IsFolder() {
@@ -104,7 +109,7 @@ func (s *entryService) UpdateDescendants(ctx context.Context, entry *entity.Entr
 
 func (s *entryService) DeleteDescendants(ctx context.Context, entry *entity.Entry) error {
 	if entry == nil {
-		return ErrRequiredEntry
+		return errors.Wrap(ErrNilEntry, errors.CodeInternalServerError, "failed to delete descendant entries")
 	}
 
 	if entry.IsFolder() {
@@ -125,7 +130,7 @@ func (s *entryService) DeleteDescendants(ctx context.Context, entry *entity.Entr
 
 func (s *entryService) Copy(ctx context.Context, entry *entity.Entry) (*entity.Entry, error) {
 	if entry == nil {
-		return nil, ErrRequiredEntry
+		return nil, errors.Wrap(ErrNilEntry, errors.CodeInternalServerError, "failed to copy entry")
 	}
 
 	name := filepath.Base(entry.Key)
@@ -139,7 +144,7 @@ func (s *entryService) Copy(ctx context.Context, entry *entity.Entry) (*entity.E
 	}
 
 	if err := s.Exists(ctx, copied); err != nil {
-		if errors.Is(err, ErrEntryAlreadyExists) {
+		if stderr.Is(err, ErrEntryKeyAlreadyInUse) {
 			copied, err = s.Copy(ctx, copied)
 			if err != nil {
 				return nil, err
@@ -154,7 +159,7 @@ func (s *entryService) Copy(ctx context.Context, entry *entity.Entry) (*entity.E
 
 func (s *entryService) CopyDescendants(ctx context.Context, entry *entity.Entry, src string) error {
 	if entry == nil {
-		return ErrRequiredEntry
+		return errors.Wrap(ErrNilEntry, errors.CodeInternalServerError, "failed to copy descendant entries")
 	}
 
 	if entry.IsFolder() {

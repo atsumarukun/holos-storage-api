@@ -2,7 +2,6 @@ package service_test
 
 import (
 	"database/sql"
-	"errors"
 	"testing"
 	"time"
 
@@ -11,9 +10,10 @@ import (
 	"github.com/google/uuid"
 	"go.uber.org/mock/gomock"
 
+	"github.com/atsumarukun/holos-api-pkg/errors"
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/domain/entity"
-	"github.com/atsumarukun/holos-storage-api/internal/app/api/domain/repository"
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/domain/service"
+	"github.com/atsumarukun/holos-storage-api/test/assert"
 	mockRepository "github.com/atsumarukun/holos-storage-api/test/mock/domain/repository"
 )
 
@@ -43,14 +43,14 @@ func TestEntry_Exists(t *testing.T) {
 				entryRepo.
 					EXPECT().
 					FindOneByKeyAndVolumeID(gomock.Any(), gomock.Any(), gomock.Any()).
-					Return(nil, repository.ErrEntryNotFound).
+					Return(nil, nil).
 					Times(1)
 			},
 		},
 		{
 			name:        "exists",
 			inputEntry:  entry,
-			expectError: service.ErrEntryAlreadyExists,
+			expectError: service.ErrEntryKeyAlreadyInUse,
 			setMockEntryRepo: func(entryRepo *mockRepository.MockEntryRepository) {
 				entryRepo.
 					EXPECT().
@@ -62,7 +62,7 @@ func TestEntry_Exists(t *testing.T) {
 		{
 			name:             "entry is nil",
 			inputEntry:       nil,
-			expectError:      service.ErrRequiredEntry,
+			expectError:      service.ErrNilEntry,
 			setMockEntryRepo: func(*mockRepository.MockEntryRepository) {},
 		},
 		{
@@ -73,7 +73,7 @@ func TestEntry_Exists(t *testing.T) {
 				entryRepo.
 					EXPECT().
 					FindOneByKeyAndVolumeID(gomock.Any(), gomock.Any(), gomock.Any()).
-					Return(nil, sql.ErrConnDone).
+					Return(nil, errors.Wrap(sql.ErrConnDone, errors.CodeInternalServerError, "failed to find entry by key and volume_id")).
 					Times(1)
 			},
 		},
@@ -89,9 +89,8 @@ func TestEntry_Exists(t *testing.T) {
 			tt.setMockEntryRepo(entryRepo)
 
 			serv := service.NewEntryService(entryRepo)
-			if err := serv.Exists(ctx, tt.inputEntry); !errors.Is(err, tt.expectError) {
-				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
-			}
+			err := serv.Exists(ctx, tt.inputEntry)
+			assert.Error(t, err, tt.expectError)
 		})
 	}
 }
@@ -134,7 +133,7 @@ func TestEntry_CreateAncestors(t *testing.T) {
 				entryRepo.
 					EXPECT().
 					FindOneByKeyAndVolumeID(gomock.Any(), gomock.Any(), gomock.Any()).
-					Return(nil, repository.ErrEntryNotFound).
+					Return(nil, nil).
 					Times(1)
 				entryRepo.
 					EXPECT().
@@ -146,7 +145,7 @@ func TestEntry_CreateAncestors(t *testing.T) {
 		{
 			name:             "entry is nil",
 			inputEntry:       nil,
-			expectError:      service.ErrRequiredEntry,
+			expectError:      service.ErrNilEntry,
 			setMockEntryRepo: func(*mockRepository.MockEntryRepository) {},
 		},
 		{
@@ -169,7 +168,7 @@ func TestEntry_CreateAncestors(t *testing.T) {
 				entryRepo.
 					EXPECT().
 					FindOneByKeyAndVolumeID(gomock.Any(), gomock.Any(), gomock.Any()).
-					Return(nil, sql.ErrConnDone).
+					Return(nil, errors.Wrap(sql.ErrConnDone, errors.CodeInternalServerError, "failed to find entry by key and volume_id")).
 					Times(1)
 			},
 		},
@@ -181,12 +180,12 @@ func TestEntry_CreateAncestors(t *testing.T) {
 				entryRepo.
 					EXPECT().
 					FindOneByKeyAndVolumeID(gomock.Any(), gomock.Any(), gomock.Any()).
-					Return(nil, repository.ErrEntryNotFound).
+					Return(nil, nil).
 					Times(1)
 				entryRepo.
 					EXPECT().
 					Create(gomock.Any(), gomock.Any()).
-					Return(sql.ErrConnDone).
+					Return(errors.Wrap(sql.ErrConnDone, errors.CodeInternalServerError, "failed to create entry")).
 					Times(1)
 			},
 		},
@@ -202,9 +201,8 @@ func TestEntry_CreateAncestors(t *testing.T) {
 			tt.setMockEntryRepo(entryRepo)
 
 			serv := service.NewEntryService(entryRepo)
-			if err := serv.CreateAncestors(ctx, tt.inputEntry); !errors.Is(err, tt.expectError) {
-				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
-			}
+			err := serv.CreateAncestors(ctx, tt.inputEntry)
+			assert.Error(t, err, tt.expectError)
 		})
 	}
 }
@@ -279,7 +277,7 @@ func TestEntry_UpdateDescendants(t *testing.T) {
 			name:             "entry is nil",
 			inputEntry:       nil,
 			inputSrc:         "update",
-			expectError:      service.ErrRequiredEntry,
+			expectError:      service.ErrNilEntry,
 			setMockEntryRepo: func(*mockRepository.MockEntryRepository) {},
 		},
 		{
@@ -291,7 +289,7 @@ func TestEntry_UpdateDescendants(t *testing.T) {
 				entryRepo.
 					EXPECT().
 					FindByVolumeIDAndAccountID(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
-					Return(nil, sql.ErrConnDone).
+					Return(nil, errors.Wrap(sql.ErrConnDone, errors.CodeInternalServerError, "failed to find entry by volume_id and account_id")).
 					Times(1)
 			},
 		},
@@ -309,7 +307,7 @@ func TestEntry_UpdateDescendants(t *testing.T) {
 				entryRepo.
 					EXPECT().
 					Update(gomock.Any(), gomock.Any()).
-					Return(sql.ErrConnDone).
+					Return(errors.Wrap(sql.ErrConnDone, errors.CodeInternalServerError, "failed to update entry")).
 					Times(1)
 			},
 		},
@@ -325,9 +323,8 @@ func TestEntry_UpdateDescendants(t *testing.T) {
 			tt.setMockEntryRepo(entryRepo)
 
 			serv := service.NewEntryService(entryRepo)
-			if err := serv.UpdateDescendants(ctx, tt.inputEntry, tt.inputSrc); !errors.Is(err, tt.expectError) {
-				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
-			}
+			err := serv.UpdateDescendants(ctx, tt.inputEntry, tt.inputSrc)
+			assert.Error(t, err, tt.expectError)
 		})
 	}
 }
@@ -398,7 +395,7 @@ func TestEntry_DeleteDescendants(t *testing.T) {
 		{
 			name:             "entry is nil",
 			inputEntry:       nil,
-			expectError:      service.ErrRequiredEntry,
+			expectError:      service.ErrNilEntry,
 			setMockEntryRepo: func(*mockRepository.MockEntryRepository) {},
 		},
 		{
@@ -409,7 +406,7 @@ func TestEntry_DeleteDescendants(t *testing.T) {
 				entryRepo.
 					EXPECT().
 					FindByVolumeIDAndAccountID(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
-					Return(nil, sql.ErrConnDone).
+					Return(nil, errors.Wrap(sql.ErrConnDone, errors.CodeInternalServerError, "failed to find entry by volume_id and account_id")).
 					Times(1)
 			},
 		},
@@ -426,7 +423,7 @@ func TestEntry_DeleteDescendants(t *testing.T) {
 				entryRepo.
 					EXPECT().
 					Delete(gomock.Any(), gomock.Any()).
-					Return(sql.ErrConnDone).
+					Return(errors.Wrap(sql.ErrConnDone, errors.CodeInternalServerError, "failed to delete entry")).
 					Times(1)
 			},
 		},
@@ -442,9 +439,8 @@ func TestEntry_DeleteDescendants(t *testing.T) {
 			tt.setMockEntryRepo(entryRepo)
 
 			serv := service.NewEntryService(entryRepo)
-			if err := serv.DeleteDescendants(ctx, tt.inputEntry); !errors.Is(err, tt.expectError) {
-				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
-			}
+			err := serv.DeleteDescendants(ctx, tt.inputEntry)
+			assert.Error(t, err, tt.expectError)
 		})
 	}
 }
@@ -519,7 +515,7 @@ func TestEntry_Copy(t *testing.T) {
 				entryRepo.
 					EXPECT().
 					FindOneByKeyAndVolumeID(gomock.Any(), gomock.Any(), gomock.Any()).
-					Return(nil, repository.ErrEntryNotFound).
+					Return(nil, nil).
 					Times(1)
 			},
 		},
@@ -532,7 +528,7 @@ func TestEntry_Copy(t *testing.T) {
 				entryRepo.
 					EXPECT().
 					FindOneByKeyAndVolumeID(gomock.Any(), gomock.Any(), gomock.Any()).
-					Return(nil, repository.ErrEntryNotFound).
+					Return(nil, nil).
 					Times(1)
 			},
 		},
@@ -550,7 +546,7 @@ func TestEntry_Copy(t *testing.T) {
 				entryRepo.
 					EXPECT().
 					FindOneByKeyAndVolumeID(gomock.Any(), gomock.Any(), gomock.Any()).
-					Return(nil, repository.ErrEntryNotFound).
+					Return(nil, nil).
 					Times(1)
 			},
 		},
@@ -558,7 +554,7 @@ func TestEntry_Copy(t *testing.T) {
 			name:             "entry is nil",
 			inputEntry:       nil,
 			expectResult:     nil,
-			expectError:      service.ErrRequiredEntry,
+			expectError:      service.ErrNilEntry,
 			setMockEntryRepo: func(*mockRepository.MockEntryRepository) {},
 		},
 		{
@@ -570,7 +566,7 @@ func TestEntry_Copy(t *testing.T) {
 				entryRepo.
 					EXPECT().
 					FindOneByKeyAndVolumeID(gomock.Any(), gomock.Any(), gomock.Any()).
-					Return(nil, sql.ErrConnDone).
+					Return(nil, errors.Wrap(sql.ErrConnDone, errors.CodeInternalServerError, "failed to find entry by key and volume_id")).
 					Times(1)
 			},
 		},
@@ -588,9 +584,7 @@ func TestEntry_Copy(t *testing.T) {
 			serv := service.NewEntryService(entryRepo)
 
 			result, err := serv.Copy(ctx, tt.inputEntry)
-			if !errors.Is(err, tt.expectError) {
-				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
-			}
+			assert.Error(t, err, tt.expectError)
 
 			opts := cmp.Options{
 				cmpopts.IgnoreFields(entity.Entry{}, "ID", "CreatedAt", "UpdatedAt"),
@@ -672,7 +666,7 @@ func CopyDescendants(t *testing.T) {
 			name:             "entry is nil",
 			inputEntry:       nil,
 			inputSrc:         "key",
-			expectError:      service.ErrRequiredEntry,
+			expectError:      service.ErrNilEntry,
 			setMockEntryRepo: func(*mockRepository.MockEntryRepository) {},
 		},
 		{
@@ -684,7 +678,7 @@ func CopyDescendants(t *testing.T) {
 				entryRepo.
 					EXPECT().
 					FindByVolumeIDAndAccountID(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
-					Return(nil, sql.ErrConnDone).
+					Return(nil, errors.Wrap(sql.ErrConnDone, errors.CodeInternalServerError, "failed to find entry by volume_id and account_id")).
 					Times(1)
 			},
 		},
@@ -702,7 +696,7 @@ func CopyDescendants(t *testing.T) {
 				entryRepo.
 					EXPECT().
 					Create(gomock.Any(), gomock.Any()).
-					Return(sql.ErrConnDone).
+					Return(errors.Wrap(sql.ErrConnDone, errors.CodeInternalServerError, "failed to create entry")).
 					Times(1)
 			},
 		},
@@ -718,9 +712,8 @@ func CopyDescendants(t *testing.T) {
 			tt.setMockEntryRepo(entryRepo)
 
 			serv := service.NewEntryService(entryRepo)
-			if err := serv.CopyDescendants(ctx, tt.inputEntry, tt.inputSrc); !errors.Is(err, tt.expectError) {
-				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
-			}
+			err := serv.CopyDescendants(ctx, tt.inputEntry, tt.inputSrc)
+			assert.Error(t, err, tt.expectError)
 		})
 	}
 }
