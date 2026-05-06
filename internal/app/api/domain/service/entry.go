@@ -8,18 +8,14 @@ import (
 	"strings"
 
 	"github.com/atsumarukun/holos-api-pkg/errors"
+
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/domain/entity"
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/domain/repository"
-	"github.com/atsumarukun/holos-storage-api/internal/app/api/pkg/status"
-	"github.com/atsumarukun/holos-storage-api/internal/app/api/pkg/status/code"
 )
 
 var (
 	ErrNilEntry             = stderr.New("entry must not be nil")
 	ErrEntryKeyAlreadyInUse = stderr.New("entry key already in use")
-
-	ErrRequiredEntry      = status.Error(code.Internal, "entry is required")
-	ErrEntryAlreadyExists = status.Error(code.Conflict, "entry key already used")
 )
 
 type EntryService interface {

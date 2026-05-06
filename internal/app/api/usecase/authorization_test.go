@@ -2,19 +2,20 @@ package usecase_test
 
 import (
 	"database/sql"
-	"errors"
 	"net/http"
 	"testing"
 	"time"
 
+	"github.com/atsumarukun/holos-api-pkg/errors"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/uuid"
 	"go.uber.org/mock/gomock"
 
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/domain/entity"
-	"github.com/atsumarukun/holos-storage-api/internal/app/api/domain/repository"
+	"github.com/atsumarukun/holos-storage-api/internal/app/api/infrastructure/api/pkg/client"
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/usecase"
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/usecase/dto"
+	"github.com/atsumarukun/holos-storage-api/test/assert"
 	mockRepository "github.com/atsumarukun/holos-storage-api/test/mock/domain/repository"
 )
 
@@ -112,17 +113,17 @@ func TestAuthorization_Authorize(t *testing.T) {
 			},
 		},
 		{
-			name:            "unauthorized when get entry",
+			name:            "unauthenticated when get entry",
 			inputCredential: "",
 			inputVolumeName: "name",
 			inputKey:        "key/sample.txt",
 			inputMethod:     "GET",
 			expectResult:    nil,
-			expectError:     usecase.ErrForbidden,
+			expectError:     client.ErrUnauthenticated,
 			setMockAccountRepo: func(accountRepo *mockRepository.MockAccountRepository) {
 				accountRepo.EXPECT().
 					FindOneByCredential(gomock.Any(), gomock.Any()).
-					Return(nil, repository.ErrUnauthorized).
+					Return(nil, errors.Wrap(client.ErrUnauthenticated, errors.CodeUnauthenticated, "failed to find account by credential")).
 					Times(1)
 			},
 			setMockVolumeRepo: func(volumeRepo *mockRepository.MockVolumeRepository) {
@@ -140,7 +141,7 @@ func TestAuthorization_Authorize(t *testing.T) {
 			inputKey:        "key/sample.txt",
 			inputMethod:     "GET",
 			expectResult:    nil,
-			expectError:     usecase.ErrForbidden,
+			expectError:     usecase.ErrAccountIDMismatch,
 			setMockAccountRepo: func(accountRepo *mockRepository.MockAccountRepository) {
 				accountRepo.EXPECT().
 					FindOneByCredential(gomock.Any(), gomock.Any()).
@@ -166,7 +167,7 @@ func TestAuthorization_Authorize(t *testing.T) {
 			setMockAccountRepo: func(accountRepo *mockRepository.MockAccountRepository) {
 				accountRepo.EXPECT().
 					FindOneByCredential(gomock.Any(), gomock.Any()).
-					Return(nil, http.ErrServerClosed).
+					Return(nil, errors.Wrap(http.ErrServerClosed, errors.CodeInternalServerError, "failed to find account by credential")).
 					Times(1)
 			},
 			setMockVolumeRepo: func(*mockRepository.MockVolumeRepository) {},
@@ -184,7 +185,7 @@ func TestAuthorization_Authorize(t *testing.T) {
 				volumeRepo.
 					EXPECT().
 					FindOneByName(gomock.Any(), gomock.Any()).
-					Return(nil, sql.ErrConnDone).
+					Return(nil, errors.Wrap(sql.ErrConnDone, errors.CodeInternalServerError, "failed to find volume by name")).
 					Times(1)
 			},
 		},
@@ -204,9 +205,7 @@ func TestAuthorization_Authorize(t *testing.T) {
 
 			uc := usecase.NewAuthorizationUsecase(accountRepo, volumeRepo)
 			result, err := uc.Authorize(ctx, tt.inputCredential, tt.inputVolumeName, tt.inputKey, tt.inputMethod)
-			if !errors.Is(err, tt.expectError) {
-				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
-			}
+			assert.Error(t, err, tt.expectError)
 
 			if diff := cmp.Diff(tt.expectResult, result); diff != "" {
 				t.Error(diff)

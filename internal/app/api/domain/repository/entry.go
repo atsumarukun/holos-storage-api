@@ -8,12 +8,9 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/domain/entity"
-	"github.com/atsumarukun/holos-storage-api/internal/app/api/pkg/status"
-	"github.com/atsumarukun/holos-storage-api/internal/app/api/pkg/status/code"
 )
 
 var ErrNilEntry = stderr.New("entry must not be nil")
-var ErrEntryNotFound = status.Error(code.NotFound, "entry not found")
 
 type EntryRepository interface {
 	Create(context.Context, *entity.Entry) error

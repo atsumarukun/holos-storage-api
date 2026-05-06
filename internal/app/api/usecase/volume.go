@@ -3,7 +3,9 @@ package usecase
 
 import (
 	"context"
+	stderr "errors"
 
+	"github.com/atsumarukun/holos-api-pkg/errors"
 	"github.com/google/uuid"
 
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/domain/entity"
@@ -13,6 +15,8 @@ import (
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/usecase/dto"
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/usecase/mapper"
 )
+
+var ErrVolumeNotFound = stderr.New("volume not found")
 
 type VolumeUsecase interface {
 	Create(context.Context, uuid.UUID, string, bool) (*dto.VolumeDTO, error)
@@ -75,6 +79,9 @@ func (u *volumeUsecase) Update(ctx context.Context, accountID uuid.UUID, name, n
 		if err != nil {
 			return err
 		}
+		if volume == nil {
+			return errors.Wrap(ErrVolumeNotFound, errors.CodeNotFound, "failed to update volume")
+		}
 
 		volume.SetIsPublic(isPublic)
 		if volume.Name == newName {
@@ -105,6 +112,9 @@ func (u *volumeUsecase) Delete(ctx context.Context, accountID uuid.UUID, name st
 		if err != nil {
 			return err
 		}
+		if volume == nil {
+			return errors.Wrap(ErrVolumeNotFound, errors.CodeNotFound, "failed to delete volume")
+		}
 
 		if err := u.volumeServ.CanDelete(ctx, volume); err != nil {
 			return err
@@ -122,6 +132,9 @@ func (u *volumeUsecase) GetOne(ctx context.Context, accountID uuid.UUID, name st
 	volume, err := u.volumeRepo.FindOneByNameAndAccountID(ctx, name, accountID)
 	if err != nil {
 		return nil, err
+	}
+	if volume == nil {
+		return nil, errors.Wrap(ErrVolumeNotFound, errors.CodeNotFound, "failed to get volume")
 	}
 	return mapper.ToVolumeDTO(volume), nil
 }

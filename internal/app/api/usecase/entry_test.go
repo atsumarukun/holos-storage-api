@@ -4,11 +4,11 @@ import (
 	"bytes"
 	"context"
 	"database/sql"
-	"errors"
 	"io"
 	"testing"
 	"time"
 
+	"github.com/atsumarukun/holos-api-pkg/errors"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/google/uuid"
@@ -19,6 +19,7 @@ import (
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/domain/service"
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/usecase"
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/usecase/dto"
+	"github.com/atsumarukun/holos-storage-api/test/assert"
 	mockRepository "github.com/atsumarukun/holos-storage-api/test/mock/domain/repository"
 	mockTransaction "github.com/atsumarukun/holos-storage-api/test/mock/domain/repository/pkg/transaction"
 	mockService "github.com/atsumarukun/holos-storage-api/test/mock/domain/service"
@@ -198,7 +199,7 @@ func TestEntry_Create(t *testing.T) {
 				volumeRepo.
 					EXPECT().
 					FindOneByNameAndAccountID(gomock.Any(), gomock.Any(), gomock.Any()).
-					Return(nil, sql.ErrConnDone).
+					Return(nil, errors.Wrap(sql.ErrConnDone, errors.CodeInternalServerError, "failed to find volume by name and account_id")).
 					Times(1)
 			},
 			setMockEntryServ: func(*mockService.MockEntryService) {},
@@ -211,7 +212,7 @@ func TestEntry_Create(t *testing.T) {
 			inputSize:       4,
 			inputBody:       bytes.NewBufferString("test"),
 			expectResult:    nil,
-			expectError:     entity.ErrShortEntryKey,
+			expectError:     entity.ErrEntryKeyInvalidLength,
 			setMockTransactionObj: func(transactionObj *mockTransaction.MockTransactionObject) {
 				transactionObj.
 					EXPECT().
@@ -240,7 +241,7 @@ func TestEntry_Create(t *testing.T) {
 			inputSize:       4,
 			inputBody:       bytes.NewBufferString("test"),
 			expectResult:    nil,
-			expectError:     service.ErrEntryAlreadyExists,
+			expectError:     service.ErrEntryKeyAlreadyInUse,
 			setMockTransactionObj: func(transactionObj *mockTransaction.MockTransactionObject) {
 				transactionObj.
 					EXPECT().
@@ -263,7 +264,7 @@ func TestEntry_Create(t *testing.T) {
 				entryServ.
 					EXPECT().
 					Exists(gomock.Any(), gomock.Any()).
-					Return(service.ErrEntryAlreadyExists).
+					Return(errors.Wrap(service.ErrEntryKeyAlreadyInUse, errors.CodeDuplicate, "entry already exists")).
 					Times(1)
 			},
 		},
@@ -303,7 +304,7 @@ func TestEntry_Create(t *testing.T) {
 				entryServ.
 					EXPECT().
 					CreateAncestors(gomock.Any(), gomock.Any()).
-					Return(sql.ErrConnDone).
+					Return(errors.Wrap(sql.ErrConnDone, errors.CodeInternalServerError, "failed to create entry")).
 					Times(1)
 			},
 		},
@@ -329,7 +330,7 @@ func TestEntry_Create(t *testing.T) {
 				entryRepo.
 					EXPECT().
 					Create(gomock.Any(), gomock.Any()).
-					Return(sql.ErrConnDone).
+					Return(errors.Wrap(sql.ErrConnDone, errors.CodeInternalServerError, "failed to create entry")).
 					Times(1)
 			},
 			setMockBodyRepo: func(*mockRepository.MockBodyRepository) {},
@@ -382,7 +383,7 @@ func TestEntry_Create(t *testing.T) {
 				bodyRepo.
 					EXPECT().
 					Create(gomock.Any(), gomock.Any()).
-					Return(io.ErrNoProgress).
+					Return(errors.Wrap(io.ErrNoProgress, errors.CodeInternalServerError, "failed to create body")).
 					Times(1)
 			},
 			setMockVolumeRepo: func(volumeRepo *mockRepository.MockVolumeRepository) {
@@ -430,9 +431,7 @@ func TestEntry_Create(t *testing.T) {
 
 			uc := usecase.NewEntryUsecase(transactionObj, entryRepo, bodyRepo, volumeRepo, entryServ)
 			result, err := uc.Create(ctx, tt.inputAccountID, tt.inputVolumeName, tt.inputKey, tt.inputSize, tt.inputBody)
-			if !errors.Is(err, tt.expectError) {
-				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
-			}
+			assert.Error(t, err, tt.expectError)
 
 			opts := cmp.Options{
 				cmpopts.IgnoreFields(dto.EntryDTO{}, "ID", "CreatedAt", "UpdatedAt"),
@@ -577,7 +576,7 @@ func TestEntry_Update(t *testing.T) {
 				volumeRepo.
 					EXPECT().
 					FindOneByNameAndAccountID(gomock.Any(), gomock.Any(), gomock.Any()).
-					Return(nil, sql.ErrConnDone).
+					Return(nil, errors.Wrap(sql.ErrConnDone, errors.CodeInternalServerError, "failed to find volume by name and account_id")).
 					Times(1)
 			},
 			setMockEntryServ: func(*mockService.MockEntryService) {},
@@ -603,7 +602,7 @@ func TestEntry_Update(t *testing.T) {
 				entryRepo.
 					EXPECT().
 					FindOneByKeyAndVolumeIDAndAccountID(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
-					Return(nil, sql.ErrConnDone).
+					Return(nil, errors.Wrap(sql.ErrConnDone, errors.CodeInternalServerError, "failed to find entry by key and volume_id and account_id")).
 					Times(1)
 			},
 			setMockBodyRepo: func(*mockRepository.MockBodyRepository) {},
@@ -623,7 +622,7 @@ func TestEntry_Update(t *testing.T) {
 			inputKey:        "key/sample.txt",
 			inputNewKey:     "",
 			expectResult:    nil,
-			expectError:     entity.ErrShortEntryKey,
+			expectError:     entity.ErrEntryKeyInvalidLength,
 			setMockTransactionObj: func(transactionObj *mockTransaction.MockTransactionObject) {
 				transactionObj.
 					EXPECT().
@@ -657,7 +656,7 @@ func TestEntry_Update(t *testing.T) {
 			inputKey:        "key/sample.txt",
 			inputNewKey:     "update/sample.txt",
 			expectResult:    nil,
-			expectError:     service.ErrEntryAlreadyExists,
+			expectError:     service.ErrEntryKeyAlreadyInUse,
 			setMockTransactionObj: func(transactionObj *mockTransaction.MockTransactionObject) {
 				transactionObj.
 					EXPECT().
@@ -686,7 +685,7 @@ func TestEntry_Update(t *testing.T) {
 				entryServ.
 					EXPECT().
 					Exists(gomock.Any(), gomock.Any()).
-					Return(service.ErrEntryAlreadyExists).
+					Return(errors.Wrap(service.ErrEntryKeyAlreadyInUse, errors.CodeDuplicate, "entry already exists")).
 					Times(1)
 			},
 		},
@@ -731,7 +730,7 @@ func TestEntry_Update(t *testing.T) {
 				entryServ.
 					EXPECT().
 					CreateAncestors(gomock.Any(), gomock.Any()).
-					Return(sql.ErrConnDone).
+					Return(errors.Wrap(sql.ErrConnDone, errors.CodeInternalServerError, "failed to create entry")).
 					Times(1)
 			},
 		},
@@ -781,7 +780,7 @@ func TestEntry_Update(t *testing.T) {
 				entryServ.
 					EXPECT().
 					UpdateDescendants(gomock.Any(), gomock.Any(), gomock.Any()).
-					Return(sql.ErrConnDone).
+					Return(errors.Wrap(sql.ErrConnDone, errors.CodeInternalServerError, "failed to update entry")).
 					Times(1)
 			},
 		},
@@ -811,7 +810,7 @@ func TestEntry_Update(t *testing.T) {
 				entryRepo.
 					EXPECT().
 					Update(gomock.Any(), gomock.Any()).
-					Return(sql.ErrConnDone).
+					Return(errors.Wrap(sql.ErrConnDone, errors.CodeInternalServerError, "failed to update entry")).
 					Times(1)
 			},
 			setMockBodyRepo: func(*mockRepository.MockBodyRepository) {},
@@ -873,7 +872,7 @@ func TestEntry_Update(t *testing.T) {
 				bodyRepo.
 					EXPECT().
 					Update(gomock.Any(), gomock.Any()).
-					Return(afero.ErrFileClosed).
+					Return(errors.Wrap(afero.ErrFileClosed, errors.CodeInternalServerError, "failed to update body")).
 					Times(1)
 			},
 			setMockVolumeRepo: func(volumeRepo *mockRepository.MockVolumeRepository) {
@@ -930,9 +929,7 @@ func TestEntry_Update(t *testing.T) {
 
 			uc := usecase.NewEntryUsecase(transactionObj, entryRepo, bodyRepo, volumeRepo, entryServ)
 			result, err := uc.Update(ctx, tt.inputAccountID, tt.inputVolumeName, tt.inputKey, tt.inputNewKey)
-			if !errors.Is(err, tt.expectError) {
-				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
-			}
+			assert.Error(t, err, tt.expectError)
 
 			opts := cmp.Options{
 				cmpopts.IgnoreFields(dto.EntryDTO{}, "UpdatedAt"),
@@ -1047,7 +1044,7 @@ func TestEntry_Delete(t *testing.T) {
 				volumeRepo.
 					EXPECT().
 					FindOneByNameAndAccountID(gomock.Any(), gomock.Any(), gomock.Any()).
-					Return(nil, sql.ErrConnDone).
+					Return(nil, errors.Wrap(sql.ErrConnDone, errors.CodeInternalServerError, "failed to find volume by name and account_id")).
 					Times(1)
 			},
 			setMockEntryServ: func(*mockService.MockEntryService) {},
@@ -1071,7 +1068,7 @@ func TestEntry_Delete(t *testing.T) {
 				entryRepo.
 					EXPECT().
 					FindOneByKeyAndVolumeIDAndAccountID(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
-					Return(nil, sql.ErrConnDone).
+					Return(nil, errors.Wrap(sql.ErrConnDone, errors.CodeInternalServerError, "failed to find entry by key and volume_id and account_id")).
 					Times(1)
 			},
 			setMockBodyRepo: func(*mockRepository.MockBodyRepository) {},
@@ -1118,7 +1115,7 @@ func TestEntry_Delete(t *testing.T) {
 				entryServ.
 					EXPECT().
 					DeleteDescendants(gomock.Any(), gomock.Any()).
-					Return(sql.ErrConnDone).
+					Return(errors.Wrap(sql.ErrConnDone, errors.CodeInternalServerError, "failed to delete entry")).
 					Times(1)
 			},
 		},
@@ -1146,7 +1143,7 @@ func TestEntry_Delete(t *testing.T) {
 				entryRepo.
 					EXPECT().
 					Delete(gomock.Any(), gomock.Any()).
-					Return(sql.ErrConnDone).
+					Return(errors.Wrap(sql.ErrConnDone, errors.CodeInternalServerError, "failed to delete entry")).
 					Times(1)
 			},
 			setMockBodyRepo: func(*mockRepository.MockBodyRepository) {},
@@ -1196,7 +1193,7 @@ func TestEntry_Delete(t *testing.T) {
 				bodyRepo.
 					EXPECT().
 					Delete(gomock.Any()).
-					Return(afero.ErrFileClosed).
+					Return(errors.Wrap(afero.ErrFileClosed, errors.CodeInternalServerError, "failed to delete body")).
 					Times(1)
 			},
 			setMockVolumeRepo: func(volumeRepo *mockRepository.MockVolumeRepository) {
@@ -1238,9 +1235,8 @@ func TestEntry_Delete(t *testing.T) {
 			tt.setMockEntryServ(entryServ)
 
 			uc := usecase.NewEntryUsecase(transactionObj, entryRepo, bodyRepo, volumeRepo, entryServ)
-			if err := uc.Delete(ctx, tt.inputAccountID, tt.inputVolumeName, tt.inputKey); !errors.Is(err, tt.expectError) {
-				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
-			}
+			err := uc.Delete(ctx, tt.inputAccountID, tt.inputVolumeName, tt.inputKey)
+			assert.Error(t, err, tt.expectError)
 		})
 	}
 }
@@ -1376,7 +1372,7 @@ func TestEntry_Copy(t *testing.T) {
 				volumeRepo.
 					EXPECT().
 					FindOneByNameAndAccountID(gomock.Any(), gomock.Any(), gomock.Any()).
-					Return(nil, sql.ErrConnDone).
+					Return(nil, errors.Wrap(sql.ErrConnDone, errors.CodeInternalServerError, "failed to find volume by name and account_id")).
 					Times(1)
 			},
 			setMockEntryServ: func(*mockService.MockEntryService) {},
@@ -1401,7 +1397,7 @@ func TestEntry_Copy(t *testing.T) {
 				entryRepo.
 					EXPECT().
 					FindOneByKeyAndVolumeIDAndAccountID(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
-					Return(nil, sql.ErrConnDone).
+					Return(nil, errors.Wrap(sql.ErrConnDone, errors.CodeInternalServerError, "failed to find entry by key and volume_id and account_id")).
 					Times(1)
 			},
 			setMockBodyRepo: func(*mockRepository.MockBodyRepository) {},
@@ -1449,7 +1445,7 @@ func TestEntry_Copy(t *testing.T) {
 				entryServ.
 					EXPECT().
 					Copy(gomock.Any(), gomock.Any()).
-					Return(nil, sql.ErrConnDone).
+					Return(nil, errors.Wrap(sql.ErrConnDone, errors.CodeInternalServerError, "failed to find entry by key and volume_id")).
 					Times(1)
 			},
 		},
@@ -1493,7 +1489,7 @@ func TestEntry_Copy(t *testing.T) {
 				entryServ.
 					EXPECT().
 					CopyDescendants(gomock.Any(), gomock.Any(), gomock.Any()).
-					Return(sql.ErrConnDone).
+					Return(errors.Wrap(sql.ErrConnDone, errors.CodeInternalServerError, "failed to find entry by volume_id and account_id")).
 					Times(1)
 			},
 		},
@@ -1522,7 +1518,7 @@ func TestEntry_Copy(t *testing.T) {
 				entryRepo.
 					EXPECT().
 					Create(gomock.Any(), gomock.Any()).
-					Return(sql.ErrConnDone).
+					Return(errors.Wrap(sql.ErrConnDone, errors.CodeInternalServerError, "failed to create entry")).
 					Times(1)
 			},
 			setMockBodyRepo: func(*mockRepository.MockBodyRepository) {},
@@ -1578,7 +1574,7 @@ func TestEntry_Copy(t *testing.T) {
 				bodyRepo.
 					EXPECT().
 					Copy(gomock.Any(), gomock.Any()).
-					Return(afero.ErrFileClosed).
+					Return(errors.Wrap(afero.ErrFileClosed, errors.CodeInternalServerError, "failed to copy body")).
 					Times(1)
 			},
 			setMockVolumeRepo: func(volumeRepo *mockRepository.MockVolumeRepository) {
@@ -1626,9 +1622,7 @@ func TestEntry_Copy(t *testing.T) {
 
 			uc := usecase.NewEntryUsecase(transactionObj, entryRepo, bodyRepo, volumeRepo, entryServ)
 			result, err := uc.Copy(ctx, tt.inputAccountID, tt.inputVolumeName, tt.inputKey)
-			if !errors.Is(err, tt.expectError) {
-				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
-			}
+			assert.Error(t, err, tt.expectError)
 
 			opts := cmp.Options{
 				cmpopts.IgnoreFields(dto.EntryDTO{}, "ID", "CreatedAt", "UpdatedAt"),
@@ -1734,7 +1728,7 @@ func TestEntry_GetMeta(t *testing.T) {
 				volumeRepo.
 					EXPECT().
 					FindOneByNameAndAccountID(gomock.Any(), gomock.Any(), gomock.Any()).
-					Return(nil, sql.ErrConnDone).
+					Return(nil, errors.Wrap(sql.ErrConnDone, errors.CodeInternalServerError, "failed to find volume by name and account_id")).
 					Times(1)
 			},
 		},
@@ -1758,7 +1752,7 @@ func TestEntry_GetMeta(t *testing.T) {
 				entryRepo.
 					EXPECT().
 					FindOneByKeyAndVolumeIDAndAccountID(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
-					Return(nil, sql.ErrConnDone).
+					Return(nil, errors.Wrap(sql.ErrConnDone, errors.CodeInternalServerError, "failed to find entry by key and volume_id and account_id")).
 					Times(1)
 			},
 			setMockVolumeRepo: func(volumeRepo *mockRepository.MockVolumeRepository) {
@@ -1788,9 +1782,7 @@ func TestEntry_GetMeta(t *testing.T) {
 
 			uc := usecase.NewEntryUsecase(transactionObj, entryRepo, nil, volumeRepo, nil)
 			result, err := uc.GetMeta(ctx, tt.inputAccountID, tt.inputVolumeName, tt.inputKey)
-			if !errors.Is(err, tt.expectError) {
-				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
-			}
+			assert.Error(t, err, tt.expectError)
 
 			if diff := cmp.Diff(tt.expectResult, result); diff != "" {
 				t.Error(diff)
@@ -1905,7 +1897,7 @@ func TestEntry_GetOne(t *testing.T) {
 				volumeRepo.
 					EXPECT().
 					FindOneByNameAndAccountID(gomock.Any(), gomock.Any(), gomock.Any()).
-					Return(nil, sql.ErrConnDone).
+					Return(nil, errors.Wrap(sql.ErrConnDone, errors.CodeInternalServerError, "failed to find volume by name and account_id")).
 					Times(1)
 			},
 		},
@@ -1930,7 +1922,7 @@ func TestEntry_GetOne(t *testing.T) {
 				entryRepo.
 					EXPECT().
 					FindOneByKeyAndVolumeIDAndAccountID(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
-					Return(nil, sql.ErrConnDone).
+					Return(nil, errors.Wrap(sql.ErrConnDone, errors.CodeInternalServerError, "failed to find entry by key and volume_id and account_id")).
 					Times(1)
 			},
 			setMockBodyRepo: func(*mockRepository.MockBodyRepository) {},
@@ -1970,7 +1962,7 @@ func TestEntry_GetOne(t *testing.T) {
 				bodyRepo.
 					EXPECT().
 					FindOneByPath(gomock.Any()).
-					Return(nil, afero.ErrFileNotFound).
+					Return(nil, errors.Wrap(afero.ErrFileNotFound, errors.CodeInternalServerError, "failed to find body by path")).
 					Times(1)
 			},
 			setMockVolumeRepo: func(volumeRepo *mockRepository.MockVolumeRepository) {
@@ -2003,9 +1995,7 @@ func TestEntry_GetOne(t *testing.T) {
 
 			uc := usecase.NewEntryUsecase(transactionObj, entryRepo, bodyRepo, volumeRepo, nil)
 			entry, body, err := uc.GetOne(ctx, tt.inputAccountID, tt.inputVolumeName, tt.inputKey)
-			if !errors.Is(err, tt.expectError) {
-				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
-			}
+			assert.Error(t, err, tt.expectError)
 
 			if diff := cmp.Diff(tt.expectEntry, entry); diff != "" {
 				t.Error(diff)
@@ -2147,7 +2137,7 @@ func TestEntry_Search(t *testing.T) {
 				volumeRepo.
 					EXPECT().
 					FindOneByNameAndAccountID(gomock.Any(), gomock.Any(), gomock.Any()).
-					Return(nil, sql.ErrConnDone).
+					Return(nil, errors.Wrap(sql.ErrConnDone, errors.CodeInternalServerError, "failed to find volume by name and account_id")).
 					Times(1)
 			},
 		},
@@ -2172,7 +2162,7 @@ func TestEntry_Search(t *testing.T) {
 				entryRepo.
 					EXPECT().
 					FindByVolumeIDAndAccountID(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
-					Return(nil, sql.ErrConnDone).
+					Return(nil, errors.Wrap(sql.ErrConnDone, errors.CodeInternalServerError, "failed to find entry by volume_id and account_id")).
 					Times(1)
 			},
 			setMockVolumeRepo: func(volumeRepo *mockRepository.MockVolumeRepository) {
@@ -2202,9 +2192,7 @@ func TestEntry_Search(t *testing.T) {
 
 			uc := usecase.NewEntryUsecase(transactionObj, entryRepo, nil, volumeRepo, nil)
 			result, err := uc.Search(ctx, tt.inputAccountID, tt.inputVolumeName, tt.inputPrefix, tt.inputDepth)
-			if !errors.Is(err, tt.expectError) {
-				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
-			}
+			assert.Error(t, err, tt.expectError)
 
 			if diff := cmp.Diff(tt.expectResult, result); diff != "" {
 				t.Error(diff)

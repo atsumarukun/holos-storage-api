@@ -6,19 +6,15 @@ import (
 	stderr "errors"
 
 	"github.com/atsumarukun/holos-api-pkg/errors"
+
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/domain/entity"
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/domain/repository"
-	"github.com/atsumarukun/holos-storage-api/internal/app/api/pkg/status"
-	"github.com/atsumarukun/holos-storage-api/internal/app/api/pkg/status/code"
 )
 
 var (
 	ErrNilVolume              = stderr.New("volume must not be nil")
 	ErrVolumeNameAlreadyInUse = stderr.New("volume name already in use")
 	ErrVolumeHasEntries       = stderr.New("volume cannot be deleted because it contains entries")
-
-	ErrRequiredVolume      = status.Error(code.Internal, "volume is required")
-	ErrVolumeAlreadyExists = status.Error(code.Conflict, "volume name already used")
 )
 
 type VolumeService interface {
