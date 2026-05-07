@@ -3,7 +3,7 @@ package middleware
 import (
 	"github.com/gin-gonic/gin"
 
-	"github.com/atsumarukun/holos-storage-api/internal/app/api/interface/pkg/errors"
+	hdlerr "github.com/atsumarukun/holos-storage-api/internal/app/api/interface/pkg/errors"
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/usecase"
 )
 
@@ -31,7 +31,7 @@ func (m *authorizationMiddleware) Authorize(c *gin.Context) {
 
 	account, err := m.authorizationUC.Authorize(ctx, credential, volumeName, key, method)
 	if err != nil {
-		errors.Handle(c, err)
+		hdlerr.Handle(c, err)
 		c.Abort()
 		return
 	}

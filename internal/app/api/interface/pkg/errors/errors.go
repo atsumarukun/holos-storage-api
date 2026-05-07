@@ -1,48 +1,41 @@
 package errors
 
 import (
-	"log"
+	stderr "errors"
+	"log/slog"
 	"net/http"
+	"strings"
 
+	"github.com/atsumarukun/holos-api-pkg/errors"
 	"github.com/gin-gonic/gin"
-
-	"github.com/atsumarukun/holos-storage-api/internal/app/api/pkg/status"
-	"github.com/atsumarukun/holos-storage-api/internal/app/api/pkg/status/code"
 )
 
-type response struct {
-	code    int
-	message string
-}
-
-var responseMap = map[code.StatusCode]response{
-	code.BadRequest:           {code: http.StatusBadRequest, message: "bad request"},
-	code.Unauthorized:         {code: http.StatusUnauthorized, message: "unauthorized"},
-	code.Forbidden:            {code: http.StatusForbidden, message: "forbidden"},
-	code.NotFound:             {code: http.StatusNotFound, message: "not found"},
-	code.Conflict:             {code: http.StatusConflict, message: "conflict"},
-	code.UnprocessableContent: {code: http.StatusUnprocessableEntity, message: "unprocessable content"},
-	code.Internal:             {code: http.StatusInternalServerError, message: "internal server error"},
+type ErrorResponse struct {
+	Code    errors.ErrorCode `json:"code"`
+	Message string           `json:"message"`
 }
 
 func Handle(c *gin.Context, err error) {
-	log.Println(err)
-
-	if v, ok := err.(*status.Status); ok {
-		resp := responseMap[v.Code()]
-		if v.Code() == code.BadRequest || v.Code() == code.NotFound || v.Code() == code.Conflict {
-			c.JSON(resp.code, map[string]string{"message": v.Message()})
-			return
-		}
-		c.JSON(resp.code, map[string]string{"message": resp.message})
+	if err == nil {
 		return
 	}
-	c.JSON(http.StatusInternalServerError, map[string]string{"message": "internal server error"})
-}
 
-func GetStatusCode(err error) int {
-	if v, ok := err.(*status.Status); ok {
-		return responseMap[v.Code()].code
+	slog.ErrorContext(c.Request.Context(), err.Error())
+
+	status := http.StatusInternalServerError
+	res := ErrorResponse{errors.CodeUnknown, "internal server error"}
+
+	if v, ok := err.(interface{ Code() errors.ErrorCode }); ok {
+		status = StatusCode[v.Code()]
+		switch v.Code() {
+		case errors.CodeUnknown:
+			res = ErrorResponse{v.Code(), "internal server error"}
+		case errors.CodeDuplicate, errors.CodeConstraintViolation, errors.CodeInvalidInput:
+			res = ErrorResponse{v.Code(), stderr.Unwrap(err).Error()}
+		default:
+			res = ErrorResponse{v.Code(), strings.ToLower(strings.ReplaceAll(v.Code().String(), "_", " "))}
+		}
 	}
-	return http.StatusInternalServerError
+
+	c.JSON(status, map[string]ErrorResponse{"error": res})
 }

@@ -9,6 +9,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/atsumarukun/holos-api-pkg/errors"
 	"github.com/gin-gonic/gin"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/uuid"
@@ -59,15 +60,15 @@ func TestVolume_Create(t *testing.T) {
 			requestBody:           nil,
 			hasAccountIDInContext: true,
 			expectCode:            http.StatusBadRequest,
-			expectResponse:        []byte(`{"message":"failed to parse json"}`),
+			expectResponse:        []byte(`{"error":{"code":"BAD_REQUEST","message":"bad request"}}`),
 			setMockVolumeUC:       func(*mockUsecase.MockVolumeUsecase) {},
 		},
 		{
 			name:                  "account id not set",
 			requestBody:           []byte(`{"name":"name","is_public":false}`),
 			hasAccountIDInContext: false,
-			expectCode:            http.StatusInternalServerError,
-			expectResponse:        []byte(`{"message":"internal server error"}`),
+			expectCode:            http.StatusUnauthorized,
+			expectResponse:        []byte(`{"error":{"code":"UNAUTHENTICATED","message":"unauthenticated"}}`),
 			setMockVolumeUC:       func(*mockUsecase.MockVolumeUsecase) {},
 		},
 		{
@@ -75,12 +76,12 @@ func TestVolume_Create(t *testing.T) {
 			requestBody:           []byte(`{"name":"name","is_public":false}`),
 			hasAccountIDInContext: true,
 			expectCode:            http.StatusInternalServerError,
-			expectResponse:        []byte(`{"message":"internal server error"}`),
+			expectResponse:        []byte(`{"error":{"code":"INTERNAL_SERVER_ERROR","message":"internal server error"}}`),
 			setMockVolumeUC: func(volumeUC *mockUsecase.MockVolumeUsecase) {
 				volumeUC.
 					EXPECT().
 					Create(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
-					Return(nil, sql.ErrConnDone).
+					Return(nil, errors.Wrap(sql.ErrConnDone, errors.CodeInternalServerError, "failed to find volume by name")).
 					Times(1)
 			},
 		},
@@ -162,15 +163,15 @@ func TestVolume_Update(t *testing.T) {
 			requestBody:           nil,
 			hasAccountIDInContext: true,
 			expectCode:            http.StatusBadRequest,
-			expectResponse:        []byte(`{"message":"failed to parse json"}`),
+			expectResponse:        []byte(`{"error":{"code":"BAD_REQUEST","message":"bad request"}}`),
 			setMockVolumeUC:       func(*mockUsecase.MockVolumeUsecase) {},
 		},
 		{
 			name:                  "account id not set",
 			requestBody:           []byte(`{"name": "name", "is_public": false}`),
 			hasAccountIDInContext: false,
-			expectCode:            http.StatusInternalServerError,
-			expectResponse:        []byte(`{"message":"internal server error"}`),
+			expectCode:            http.StatusUnauthorized,
+			expectResponse:        []byte(`{"error":{"code":"UNAUTHENTICATED","message":"unauthenticated"}}`),
 			setMockVolumeUC:       func(*mockUsecase.MockVolumeUsecase) {},
 		},
 		{
@@ -178,12 +179,12 @@ func TestVolume_Update(t *testing.T) {
 			requestBody:           []byte(`{"name": "name", "is_public": false}`),
 			hasAccountIDInContext: true,
 			expectCode:            http.StatusInternalServerError,
-			expectResponse:        []byte(`{"message":"internal server error"}`),
+			expectResponse:        []byte(`{"error":{"code":"INTERNAL_SERVER_ERROR","message":"internal server error"}}`),
 			setMockVolumeUC: func(volumeUC *mockUsecase.MockVolumeUsecase) {
 				volumeUC.
 					EXPECT().
 					Update(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
-					Return(nil, sql.ErrConnDone).
+					Return(nil, errors.Wrap(sql.ErrConnDone, errors.CodeInternalServerError, "failed to find volume by name and account_id")).
 					Times(1)
 			},
 		},
@@ -254,20 +255,20 @@ func TestVolume_Delete(t *testing.T) {
 		{
 			name:                  "account id not set",
 			hasAccountIDInContext: false,
-			expectCode:            http.StatusInternalServerError,
-			expectResponse:        []byte(`{"message":"internal server error"}`),
+			expectCode:            http.StatusUnauthorized,
+			expectResponse:        []byte(`{"error":{"code":"UNAUTHENTICATED","message":"unauthenticated"}}`),
 			setMockVolumeUC:       func(*mockUsecase.MockVolumeUsecase) {},
 		},
 		{
 			name:                  "delete error",
 			hasAccountIDInContext: true,
 			expectCode:            http.StatusInternalServerError,
-			expectResponse:        []byte(`{"message":"internal server error"}`),
+			expectResponse:        []byte(`{"error":{"code":"INTERNAL_SERVER_ERROR","message":"internal server error"}}`),
 			setMockVolumeUC: func(volumeUC *mockUsecase.MockVolumeUsecase) {
 				volumeUC.
 					EXPECT().
 					Delete(gomock.Any(), gomock.Any(), gomock.Any()).
-					Return(sql.ErrConnDone).
+					Return(errors.Wrap(sql.ErrConnDone, errors.CodeInternalServerError, "failed to find volume by name and account_id")).
 					Times(1)
 			},
 		},
@@ -346,20 +347,20 @@ func TestVolume_GetOne(t *testing.T) {
 		{
 			name:                  "account id not set",
 			hasAccountIDInContext: false,
-			expectCode:            http.StatusInternalServerError,
-			expectResponse:        []byte(`{"message":"internal server error"}`),
+			expectCode:            http.StatusUnauthorized,
+			expectResponse:        []byte(`{"error":{"code":"UNAUTHENTICATED","message":"unauthenticated"}}`),
 			setMockVolumeUC:       func(*mockUsecase.MockVolumeUsecase) {},
 		},
 		{
 			name:                  "get error",
 			hasAccountIDInContext: true,
 			expectCode:            http.StatusInternalServerError,
-			expectResponse:        []byte(`{"message":"internal server error"}`),
+			expectResponse:        []byte(`{"error":{"code":"INTERNAL_SERVER_ERROR","message":"internal server error"}}`),
 			setMockVolumeUC: func(volumeUC *mockUsecase.MockVolumeUsecase) {
 				volumeUC.
 					EXPECT().
 					GetOne(gomock.Any(), gomock.Any(), gomock.Any()).
-					Return(nil, sql.ErrConnDone).
+					Return(nil, errors.Wrap(sql.ErrConnDone, errors.CodeInternalServerError, "failed to find volume by name and account_id")).
 					Times(1)
 			},
 		},
@@ -451,20 +452,20 @@ func TestVolume_GetAll(t *testing.T) {
 		{
 			name:                  "account id not set",
 			hasAccountIDInContext: false,
-			expectCode:            http.StatusInternalServerError,
-			expectResponse:        []byte(`{"message":"internal server error"}`),
+			expectCode:            http.StatusUnauthorized,
+			expectResponse:        []byte(`{"error":{"code":"UNAUTHENTICATED","message":"unauthenticated"}}`),
 			setMockVolumeUC:       func(*mockUsecase.MockVolumeUsecase) {},
 		},
 		{
 			name:                  "get error",
 			hasAccountIDInContext: true,
 			expectCode:            http.StatusInternalServerError,
-			expectResponse:        []byte(`{"message":"internal server error"}`),
+			expectResponse:        []byte(`{"error":{"code":"INTERNAL_SERVER_ERROR","message":"internal server error"}}`),
 			setMockVolumeUC: func(volumeUC *mockUsecase.MockVolumeUsecase) {
 				volumeUC.
 					EXPECT().
 					GetAll(gomock.Any(), gomock.Any()).
-					Return(nil, sql.ErrConnDone).
+					Return(nil, errors.Wrap(sql.ErrConnDone, errors.CodeInternalServerError, "failed to find volume by account_id")).
 					Times(1)
 			},
 		},

@@ -1,13 +1,15 @@
 package parameter
 
 import (
-	"fmt"
+	stderr "errors"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+)
 
-	"github.com/atsumarukun/holos-storage-api/internal/app/api/pkg/status"
-	"github.com/atsumarukun/holos-storage-api/internal/app/api/pkg/status/code"
+var (
+	ErrParameterMissing     = stderr.New("parameter is missing")
+	ErrInvalidParameterType = stderr.New("invalid parameter type")
 )
 
 func GetContextParameter[T any](c *gin.Context, name string) (T, error) {
@@ -15,12 +17,12 @@ func GetContextParameter[T any](c *gin.Context, name string) (T, error) {
 
 	param, exists := c.Get(name)
 	if !exists {
-		return zero, status.Error(code.Internal, fmt.Sprintf("context does not have %s", name))
+		return zero, ErrParameterMissing
 	}
 
 	v, ok := param.(T)
 	if !ok {
-		return zero, status.Error(code.Internal, "invalid context parameter type")
+		return zero, ErrInvalidParameterType
 	}
 
 	return v, nil
@@ -34,14 +36,14 @@ func GetPathParameter[T any](c *gin.Context, name string) (T, error) {
 	case uuid.UUID:
 		v, err := uuid.Parse(param)
 		if err != nil {
-			return zero, status.Error(code.BadRequest, err.Error())
+			return zero, err
 		}
 		result, ok := any(v).(T)
 		if !ok {
-			return zero, status.Error(code.BadRequest, "failed to parse to uuid")
+			return zero, ErrInvalidParameterType
 		}
 		return result, nil
 	default:
-		return zero, status.Error(code.Internal, "invalid path parameter type")
+		return zero, ErrInvalidParameterType
 	}
 }

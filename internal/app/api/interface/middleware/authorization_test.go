@@ -5,12 +5,13 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/atsumarukun/holos-api-pkg/errors"
 	"github.com/gin-gonic/gin"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/uuid"
 	"go.uber.org/mock/gomock"
 
-	"github.com/atsumarukun/holos-storage-api/internal/app/api/domain/repository"
+	"github.com/atsumarukun/holos-storage-api/internal/app/api/infrastructure/api/pkg/client"
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/interface/middleware"
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/usecase/dto"
 	mockUsecase "github.com/atsumarukun/holos-storage-api/test/mock/usecase"
@@ -46,11 +47,11 @@ func TestAuthorization_Authorize(t *testing.T) {
 			name:                "session token not set",
 			authorizationHeader: "",
 			expectResult:        uuid.Nil,
-			expectError:         []byte(`{"message":"unauthorized"}`),
+			expectError:         []byte(`{"error":{"code":"UNAUTHENTICATED","message":"unauthenticated"}}`),
 			setMockAuthorizationUC: func(authorizationUC *mockUsecase.MockAuthorizationUsecase) {
 				authorizationUC.EXPECT().
 					Authorize(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
-					Return(nil, repository.ErrUnauthorized).
+					Return(nil, errors.Wrap(client.ErrUnauthenticated, errors.CodeUnauthenticated, "failed to find account by credential")).
 					Times(1)
 			},
 		},
@@ -58,11 +59,11 @@ func TestAuthorization_Authorize(t *testing.T) {
 			name:                "authorize error",
 			authorizationHeader: "Session 1Ty1HKTPKTt8xEi-_3HTbWf2SCHOdqOS",
 			expectResult:        uuid.Nil,
-			expectError:         []byte(`{"message":"internal server error"}`),
+			expectError:         []byte(`{"error":{"code":"UNAUTHORIZED","message":"unauthorized"}}`),
 			setMockAuthorizationUC: func(authorizationUC *mockUsecase.MockAuthorizationUsecase) {
 				authorizationUC.EXPECT().
 					Authorize(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
-					Return(nil, http.ErrServerClosed).
+					Return(nil, errors.Wrap(client.ErrUnauthorized, errors.CodeUnauthorized, "failed to find account by credential")).
 					Times(1)
 			},
 		},
