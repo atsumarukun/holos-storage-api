@@ -2,16 +2,16 @@ package service_test
 
 import (
 	"database/sql"
-	"errors"
 	"testing"
 	"time"
 
+	"github.com/atsumarukun/holos-api-pkg/errors"
 	"github.com/google/uuid"
 	"go.uber.org/mock/gomock"
 
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/domain/entity"
-	"github.com/atsumarukun/holos-storage-api/internal/app/api/domain/repository"
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/domain/service"
+	"github.com/atsumarukun/holos-storage-api/test/assert"
 	mockRepository "github.com/atsumarukun/holos-storage-api/test/mock/domain/repository"
 )
 
@@ -39,14 +39,14 @@ func TestVolume_Exists(t *testing.T) {
 				volumeRepo.
 					EXPECT().
 					FindOneByName(gomock.Any(), gomock.Any()).
-					Return(nil, repository.ErrVolumeNotFound).
+					Return(nil, nil).
 					Times(1)
 			},
 		},
 		{
 			name:        "exists",
 			inputVolume: volume,
-			expectError: service.ErrVolumeAlreadyExists,
+			expectError: service.ErrVolumeNameAlreadyInUse,
 			setMockVolumeRepo: func(volumeRepo *mockRepository.MockVolumeRepository) {
 				volumeRepo.
 					EXPECT().
@@ -58,7 +58,7 @@ func TestVolume_Exists(t *testing.T) {
 		{
 			name:              "volume is nil",
 			inputVolume:       nil,
-			expectError:       service.ErrRequiredVolume,
+			expectError:       service.ErrNilVolume,
 			setMockVolumeRepo: func(*mockRepository.MockVolumeRepository) {},
 		},
 		{
@@ -69,7 +69,7 @@ func TestVolume_Exists(t *testing.T) {
 				volumeRepo.
 					EXPECT().
 					FindOneByName(gomock.Any(), gomock.Any()).
-					Return(nil, sql.ErrConnDone).
+					Return(nil, errors.Wrap(sql.ErrConnDone, errors.CodeInternalServerError, "failed to find volume by name")).
 					Times(1)
 			},
 		},
@@ -85,9 +85,8 @@ func TestVolume_Exists(t *testing.T) {
 			tt.setMockVolumeRepo(volumeRepo)
 
 			serv := service.NewVolumeService(volumeRepo, nil)
-			if err := serv.Exists(ctx, tt.inputVolume); !errors.Is(err, tt.expectError) {
-				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
-			}
+			err := serv.Exists(ctx, tt.inputVolume)
+			assert.Error(t, err, tt.expectError)
 		})
 	}
 }
@@ -145,7 +144,7 @@ func TestVolume_CanDelete(t *testing.T) {
 		{
 			name:             "volume is nil",
 			inputVolume:      nil,
-			expectError:      service.ErrRequiredVolume,
+			expectError:      service.ErrNilVolume,
 			setMockEntryRepo: func(*mockRepository.MockEntryRepository) {},
 		},
 		{
@@ -156,7 +155,7 @@ func TestVolume_CanDelete(t *testing.T) {
 				entryRepo.
 					EXPECT().
 					FindByVolumeIDAndAccountID(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
-					Return(nil, sql.ErrConnDone).
+					Return(nil, errors.Wrap(sql.ErrConnDone, errors.CodeInternalServerError, "failed to find entry by volume_id and account_id")).
 					Times(1)
 			},
 		},
@@ -172,9 +171,8 @@ func TestVolume_CanDelete(t *testing.T) {
 			tt.setMockEntryRepo(entryRepo)
 
 			serv := service.NewVolumeService(nil, entryRepo)
-			if err := serv.CanDelete(ctx, tt.inputVolume); !errors.Is(err, tt.expectError) {
-				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
-			}
+			err := serv.CanDelete(ctx, tt.inputVolume)
+			assert.Error(t, err, tt.expectError)
 		})
 	}
 }

@@ -221,7 +221,7 @@ paths:
         409:
           $ref: "#/components/responses/duplicate"
         422:
-          $ref: "#/components/responses/constraint_violation"
+          $ref: "#/components/responses/invalid_input"
         500:
           $ref: "#/components/responses/internal_server_error"
     get:
@@ -308,8 +308,6 @@ paths:
           $ref: "#/components/responses/unauthorized"
         404:
           $ref: "#/components/responses/not_found"
-        422:
-          $ref: "#/components/responses/invalid_input"
         500:
           $ref: "#/components/responses/internal_server_error"
     put:
@@ -356,6 +354,8 @@ paths:
           $ref: "#/components/responses/not_found"
         409:
           $ref: "#/components/responses/duplicate"
+        422:
+          $ref: "#/components/responses/invalid_input"
         500:
           $ref: "#/components/responses/internal_server_error"
     delete:
@@ -445,13 +445,13 @@ paths:
                 type: "string"
                 example: "text/plain; charset=utf-8"
         401:
-          $ref: "#/components/responses/unauthenticated"
+          description: "Unauthenticated"
         403:
-          $ref: "#/components/responses/unauthorized"
+          description: "Unauthorized"
         404:
-          $ref: "#/components/responses/not_found"
+          description: "Not Found"
         500:
-          $ref: "#/components/responses/internal_server_error"
+          description: "Internal Server Error"
     get:
       summary: "エントリー単体取得"
       tags:

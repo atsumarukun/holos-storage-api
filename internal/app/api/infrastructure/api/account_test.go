@@ -11,8 +11,8 @@ import (
 
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/domain/entity"
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/infrastructure/api"
-	"github.com/atsumarukun/holos-storage-api/internal/app/api/pkg/status"
-	"github.com/atsumarukun/holos-storage-api/internal/app/api/pkg/status/code"
+	"github.com/atsumarukun/holos-storage-api/internal/app/api/infrastructure/api/pkg/client"
+	"github.com/atsumarukun/holos-storage-api/test/assert"
 )
 
 func TestAccount_FindOneByCredential(t *testing.T) {
@@ -28,7 +28,7 @@ func TestAccount_FindOneByCredential(t *testing.T) {
 		mockHandlerFunc http.HandlerFunc
 	}{
 		{
-			name:            "successfully authorized",
+			name:            "successfully found",
 			inputCredential: "Session: YNDNun_KFu1uFmS691yJ6eqJ9eczRVKn",
 			expectResult:    account,
 			expectError:     nil,
@@ -41,14 +41,14 @@ func TestAccount_FindOneByCredential(t *testing.T) {
 			},
 		},
 		{
-			name:            "unauthorized",
+			name:            "unauthenticated",
 			inputCredential: "Session: YNDNun_KFu1uFmS691yJ6eqJ9eczRVKn",
 			expectResult:    nil,
-			expectError:     status.Error(code.Unauthorized, "unauthorized"),
+			expectError:     client.ErrUnauthenticated,
 			mockHandlerFunc: func(w http.ResponseWriter, _ *http.Request) {
 				w.Header().Set("Content-Type", "application/json")
 				w.WriteHeader(http.StatusUnauthorized)
-				body, err := json.Marshal(&map[string]string{"message": "unauthorized"})
+				body, err := json.Marshal(&map[string]map[string]string{"error": {"code": "UNAUTHENTICATED", "message": "unauthenticated"}})
 				if err != nil {
 					t.Error(err)
 				}
@@ -56,14 +56,29 @@ func TestAccount_FindOneByCredential(t *testing.T) {
 			},
 		},
 		{
-			name:            "authorize error",
+			name:            "unauthorized",
 			inputCredential: "Session: YNDNun_KFu1uFmS691yJ6eqJ9eczRVKn",
 			expectResult:    nil,
-			expectError:     status.Error(code.Internal, "internal server error"),
+			expectError:     client.ErrUnauthorized,
+			mockHandlerFunc: func(w http.ResponseWriter, _ *http.Request) {
+				w.Header().Set("Content-Type", "application/json")
+				w.WriteHeader(http.StatusUnauthorized)
+				body, err := json.Marshal(&map[string]map[string]string{"error": {"code": "UNAUTHORIZED", "message": "unauthorized"}})
+				if err != nil {
+					t.Error(err)
+				}
+				w.Write(body)
+			},
+		},
+		{
+			name:            "internal server error",
+			inputCredential: "Session: YNDNun_KFu1uFmS691yJ6eqJ9eczRVKn",
+			expectResult:    nil,
+			expectError:     client.ErrInternalServerError,
 			mockHandlerFunc: func(w http.ResponseWriter, _ *http.Request) {
 				w.Header().Set("Content-Type", "application/json")
 				w.WriteHeader(http.StatusInternalServerError)
-				body, err := json.Marshal(&map[string]string{"message": "internal server error"})
+				body, err := json.Marshal(&map[string]map[string]string{"error": {"code": "INTERNAL_SERVER_ERROR", "message": "internal server error"}})
 				if err != nil {
 					t.Error(err)
 				}
@@ -78,9 +93,8 @@ func TestAccount_FindOneByCredential(t *testing.T) {
 
 			repo := api.NewAccountRepository(srv.Client(), srv.URL)
 			result, err := repo.FindOneByCredential(t.Context(), tt.inputCredential)
-			if !status.Is(err, tt.expectError) {
-				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
-			}
+
+			assert.Error(t, err, tt.expectError)
 
 			if diff := cmp.Diff(tt.expectResult, result); diff != "" {
 				t.Error(diff)

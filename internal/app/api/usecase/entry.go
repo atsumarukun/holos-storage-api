@@ -4,9 +4,11 @@ package usecase
 import (
 	"bytes"
 	"context"
+	stderr "errors"
 	"io"
 	"net/http"
 
+	"github.com/atsumarukun/holos-api-pkg/errors"
 	"github.com/google/uuid"
 
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/domain/entity"
@@ -16,6 +18,8 @@ import (
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/usecase/dto"
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/usecase/mapper"
 )
+
+var ErrEntryNotFound = stderr.New("entry not found")
 
 type EntryUsecase interface {
 	Create(context.Context, uuid.UUID, string, string, uint64, io.Reader) (*dto.EntryDTO, error)
@@ -52,12 +56,16 @@ func NewEntryUsecase(
 }
 
 func (u *entryUsecase) Create(ctx context.Context, accountID uuid.UUID, volumeName, key string, size uint64, body io.Reader) (*dto.EntryDTO, error) {
-	var entry *entity.Entry
+	const errMessage = "failed to update entry"
 
+	var entry *entity.Entry
 	if err := u.transactionObj.Transaction(ctx, func(ctx context.Context) error {
 		volume, err := u.volumeRepo.FindOneByNameAndAccountID(ctx, volumeName, accountID)
 		if err != nil {
 			return err
+		}
+		if volume == nil {
+			return errors.Wrap(ErrVolumeNotFound, errors.CodeNotFound, errMessage)
 		}
 
 		entryType, bodyReader, err := u.getBodyInfo(body)
@@ -91,39 +99,22 @@ func (u *entryUsecase) Create(ctx context.Context, accountID uuid.UUID, volumeNa
 }
 
 func (u *entryUsecase) Update(ctx context.Context, accountID uuid.UUID, volumeName, key, newKey string) (*dto.EntryDTO, error) {
+	const errMessage = "failed to update entry"
+
 	var entry *entity.Entry
-
 	if err := u.transactionObj.Transaction(ctx, func(ctx context.Context) error {
-		volume, err := u.volumeRepo.FindOneByNameAndAccountID(ctx, volumeName, accountID)
+		var err error
+		entry, err = u.getAndValidate(ctx, accountID, volumeName, key, errMessage)
 		if err != nil {
 			return err
 		}
 
-		entry, err = u.entryRepo.FindOneByKeyAndVolumeIDAndAccountID(ctx, key, volume.ID, accountID)
-		if err != nil {
+		if err := u.update(ctx, entry, key, newKey); err != nil {
 			return err
 		}
 
-		if err := entry.SetKey(newKey); err != nil {
-			return err
-		}
-
-		if err := u.entryServ.Exists(ctx, entry); err != nil {
-			return err
-		}
-		if err := u.entryServ.CreateAncestors(ctx, entry); err != nil {
-			return err
-		}
-		if err := u.entryServ.UpdateDescendants(ctx, entry, key); err != nil {
-			return err
-		}
-
-		if err := u.entryRepo.Update(ctx, entry); err != nil {
-			return err
-		}
-
-		src := volume.Name + "/" + key
-		dst := volume.Name + "/" + entry.Key
+		src := volumeName + "/" + key
+		dst := volumeName + "/" + entry.Key
 		return u.bodyRepo.Update(src, dst)
 	}); err != nil {
 		return nil, err
@@ -133,13 +124,10 @@ func (u *entryUsecase) Update(ctx context.Context, accountID uuid.UUID, volumeNa
 }
 
 func (u *entryUsecase) Delete(ctx context.Context, accountID uuid.UUID, volumeName, key string) error {
-	return u.transactionObj.Transaction(ctx, func(ctx context.Context) error {
-		volume, err := u.volumeRepo.FindOneByNameAndAccountID(ctx, volumeName, accountID)
-		if err != nil {
-			return err
-		}
+	const errMessage = "failed to delete entry"
 
-		entry, err := u.entryRepo.FindOneByKeyAndVolumeIDAndAccountID(ctx, key, volume.ID, accountID)
+	return u.transactionObj.Transaction(ctx, func(ctx context.Context) error {
+		entry, err := u.getAndValidate(ctx, accountID, volumeName, key, errMessage)
 		if err != nil {
 			return err
 		}
@@ -152,21 +140,17 @@ func (u *entryUsecase) Delete(ctx context.Context, accountID uuid.UUID, volumeNa
 			return err
 		}
 
-		path := volume.Name + "/" + entry.Key
+		path := volumeName + "/" + entry.Key
 		return u.bodyRepo.Delete(path)
 	})
 }
 
 func (u *entryUsecase) Copy(ctx context.Context, accountID uuid.UUID, volumeName, key string) (*dto.EntryDTO, error) {
+	const errMessage = "failed to copy entry"
+
 	var entry *entity.Entry
-
 	if err := u.transactionObj.Transaction(ctx, func(ctx context.Context) error {
-		volume, err := u.volumeRepo.FindOneByNameAndAccountID(ctx, volumeName, accountID)
-		if err != nil {
-			return err
-		}
-
-		srcEntry, err := u.entryRepo.FindOneByKeyAndVolumeIDAndAccountID(ctx, key, volume.ID, accountID)
+		srcEntry, err := u.getAndValidate(ctx, accountID, volumeName, key, errMessage)
 		if err != nil {
 			return err
 		}
@@ -183,8 +167,8 @@ func (u *entryUsecase) Copy(ctx context.Context, accountID uuid.UUID, volumeName
 			return err
 		}
 
-		src := volume.Name + "/" + key
-		dst := volume.Name + "/" + entry.Key
+		src := volumeName + "/" + key
+		dst := volumeName + "/" + entry.Key
 		return u.bodyRepo.Copy(src, dst)
 	}); err != nil {
 		return nil, err
@@ -194,20 +178,13 @@ func (u *entryUsecase) Copy(ctx context.Context, accountID uuid.UUID, volumeName
 }
 
 func (u *entryUsecase) GetMeta(ctx context.Context, accountID uuid.UUID, volumeName, key string) (*dto.EntryDTO, error) {
+	const errMessage = "failed to get entry meta"
+
 	var entry *entity.Entry
-
 	if err := u.transactionObj.Transaction(ctx, func(ctx context.Context) error {
-		volume, err := u.volumeRepo.FindOneByNameAndAccountID(ctx, volumeName, accountID)
-		if err != nil {
-			return err
-		}
-
-		entry, err = u.entryRepo.FindOneByKeyAndVolumeIDAndAccountID(ctx, key, volume.ID, accountID)
-		if err != nil {
-			return err
-		}
-
-		return nil
+		var err error
+		entry, err = u.getAndValidate(ctx, accountID, volumeName, key, errMessage)
+		return err
 	}); err != nil {
 		return nil, err
 	}
@@ -216,21 +193,18 @@ func (u *entryUsecase) GetMeta(ctx context.Context, accountID uuid.UUID, volumeN
 }
 
 func (u *entryUsecase) GetOne(ctx context.Context, accountID uuid.UUID, volumeName, key string) (*dto.EntryDTO, io.ReadCloser, error) {
+	const errMessage = "failed to get entry"
+
 	var entry *entity.Entry
 	var body io.ReadCloser
-
 	if err := u.transactionObj.Transaction(ctx, func(ctx context.Context) error {
-		volume, err := u.volumeRepo.FindOneByNameAndAccountID(ctx, volumeName, accountID)
+		var err error
+		entry, err = u.getAndValidate(ctx, accountID, volumeName, key, errMessage)
 		if err != nil {
 			return err
 		}
 
-		entry, err = u.entryRepo.FindOneByKeyAndVolumeIDAndAccountID(ctx, key, volume.ID, accountID)
-		if err != nil {
-			return err
-		}
-
-		path := volume.Name + "/" + entry.Key
+		path := volumeName + "/" + entry.Key
 		body, err = u.bodyRepo.FindOneByPath(path)
 		return err
 	}); err != nil {
@@ -241,12 +215,16 @@ func (u *entryUsecase) GetOne(ctx context.Context, accountID uuid.UUID, volumeNa
 }
 
 func (u *entryUsecase) Search(ctx context.Context, accountID uuid.UUID, volumeName string, prefix *string, depth *uint64) ([]*dto.EntryDTO, error) {
-	var entries []*entity.Entry
+	const errMessage = "failed to search entry"
 
+	var entries []*entity.Entry
 	if err := u.transactionObj.Transaction(ctx, func(ctx context.Context) error {
 		volume, err := u.volumeRepo.FindOneByNameAndAccountID(ctx, volumeName, accountID)
 		if err != nil {
 			return err
+		}
+		if volume == nil {
+			return errors.Wrap(ErrVolumeNotFound, errors.CodeNotFound, errMessage)
 		}
 
 		entries, err = u.entryRepo.FindByVolumeIDAndAccountID(ctx, volume.ID, accountID, prefix, depth)
@@ -258,6 +236,44 @@ func (u *entryUsecase) Search(ctx context.Context, accountID uuid.UUID, volumeNa
 	return mapper.ToEntryDTOs(entries), nil
 }
 
+func (u *entryUsecase) getAndValidate(ctx context.Context, accountID uuid.UUID, volumeName, key, errMessage string) (*entity.Entry, error) {
+	volume, err := u.volumeRepo.FindOneByNameAndAccountID(ctx, volumeName, accountID)
+	if err != nil {
+		return nil, err
+	}
+	if volume == nil {
+		return nil, errors.Wrap(ErrVolumeNotFound, errors.CodeNotFound, errMessage)
+	}
+
+	entry, err := u.entryRepo.FindOneByKeyAndVolumeIDAndAccountID(ctx, key, volume.ID, accountID)
+	if err != nil {
+		return nil, err
+	}
+	if entry == nil {
+		return nil, errors.Wrap(ErrEntryNotFound, errors.CodeNotFound, errMessage)
+	}
+
+	return entry, nil
+}
+
+func (u *entryUsecase) update(ctx context.Context, entry *entity.Entry, key, newKey string) error {
+	if err := entry.SetKey(newKey); err != nil {
+		return err
+	}
+
+	if err := u.entryServ.Exists(ctx, entry); err != nil {
+		return err
+	}
+	if err := u.entryServ.CreateAncestors(ctx, entry); err != nil {
+		return err
+	}
+	if err := u.entryServ.UpdateDescendants(ctx, entry, key); err != nil {
+		return err
+	}
+
+	return u.entryRepo.Update(ctx, entry)
+}
+
 func (u *entryUsecase) getBodyInfo(body io.Reader) (string, io.Reader, error) {
 	if body == nil {
 		return "folder", nil, nil
@@ -266,7 +282,7 @@ func (u *entryUsecase) getBodyInfo(body io.Reader) (string, io.Reader, error) {
 	buf := make([]byte, 512)
 	n, err := body.Read(buf)
 	if err != nil && err != io.EOF {
-		return "", nil, err
+		return "", nil, errors.Wrap(err, errors.CodeInternalServerError, "failed to get body info")
 	}
 
 	entryType := http.DetectContentType(buf[:n])

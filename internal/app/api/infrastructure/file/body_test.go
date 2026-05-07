@@ -2,7 +2,6 @@ package file_test
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
 	"io"
 	"testing"
@@ -11,6 +10,7 @@ import (
 	"github.com/spf13/afero"
 
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/infrastructure/file"
+	"github.com/atsumarukun/holos-storage-api/test/assert"
 )
 
 const basePath = "storage/"
@@ -54,9 +54,8 @@ func TestBody_Create(t *testing.T) {
 			fs := afero.NewMemMapFs()
 
 			repo := file.NewBodyRepository(fs, basePath)
-			if err := repo.Create(tt.inputPath, tt.inputReader); !errors.Is(err, tt.expectError) {
-				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
-			}
+			err := repo.Create(tt.inputPath, tt.inputReader)
+			assert.Error(t, err, tt.expectError)
 
 			if err := checkExists(fs, tt.expectPaths, true); err != nil {
 				t.Error(err)
@@ -131,9 +130,8 @@ func TestBody_Update(t *testing.T) {
 			tt.setMockFS(fs)
 
 			repo := file.NewBodyRepository(fs, basePath)
-			if err := repo.Update(tt.inputSrc, tt.inputDst); !errors.Is(err, tt.expectError) {
-				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
-			}
+			err := repo.Update(tt.inputSrc, tt.inputDst)
+			assert.Error(t, err, tt.expectError)
 
 			if err := checkExists(fs, tt.expectPaths, true); err != nil {
 				t.Error(err)
@@ -194,9 +192,8 @@ func TestBody_Delete(t *testing.T) {
 			tt.setMockFS(fs)
 
 			repo := file.NewBodyRepository(fs, basePath)
-			if err := repo.Delete(tt.inputPath); !errors.Is(err, tt.expectError) {
-				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
-			}
+			err := repo.Delete(tt.inputPath)
+			assert.Error(t, err, tt.expectError)
 
 			if err := checkExists(fs, tt.expectPaths, true); err != nil {
 				t.Error(err)
@@ -261,9 +258,8 @@ func TestBody_Copy(t *testing.T) {
 			tt.setMockFS(fs)
 
 			repo := file.NewBodyRepository(fs, basePath)
-			if err := repo.Copy(tt.inputSrc, tt.inputDst); !errors.Is(err, tt.expectError) {
-				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
-			}
+			err := repo.Copy(tt.inputSrc, tt.inputDst)
+			assert.Error(t, err, tt.expectError)
 
 			if err := checkExists(fs, tt.expectPaths, true); err != nil {
 				t.Error(err)
@@ -321,9 +317,7 @@ func TestBody_FindOneByPath(t *testing.T) {
 
 			repo := file.NewBodyRepository(fs, basePath)
 			body, err := repo.FindOneByPath(tt.inputPath)
-			if !errors.Is(err, tt.expectError) {
-				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
-			}
+			assert.Error(t, err, tt.expectError)
 
 			if tt.expectResult != nil {
 				result, err := io.ReadAll(body)

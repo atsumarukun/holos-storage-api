@@ -3,15 +3,14 @@ package handler
 import (
 	"net/http"
 
+	"github.com/atsumarukun/holos-api-pkg/errors"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/interface/builder"
-	"github.com/atsumarukun/holos-storage-api/internal/app/api/interface/pkg/errors"
+	hdlerr "github.com/atsumarukun/holos-storage-api/internal/app/api/interface/pkg/errors"
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/interface/pkg/parameter"
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/interface/schema"
-	"github.com/atsumarukun/holos-storage-api/internal/app/api/pkg/status"
-	"github.com/atsumarukun/holos-storage-api/internal/app/api/pkg/status/code"
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/usecase"
 )
 
@@ -34,15 +33,17 @@ func NewVolumeHandler(volumeUC usecase.VolumeUsecase) VolumeHandler {
 }
 
 func (h *volumeHandler) Create(c *gin.Context) {
+	const errMessage = "failed to create volume"
+
 	var req schema.CreateVolumeRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		errors.Handle(c, status.Error(code.BadRequest, "failed to parse json"))
+		hdlerr.Handle(c, errors.Wrap(err, errors.CodeBadRequest, errMessage))
 		return
 	}
 
 	accountID, err := parameter.GetContextParameter[uuid.UUID](c, "accountID")
 	if err != nil {
-		errors.Handle(c, err)
+		hdlerr.Handle(c, errors.Wrap(err, errors.CodeUnauthenticated, errMessage))
 		return
 	}
 
@@ -50,7 +51,7 @@ func (h *volumeHandler) Create(c *gin.Context) {
 
 	volume, err := h.volumeUC.Create(ctx, accountID, req.Name, req.IsPublic)
 	if err != nil {
-		errors.Handle(c, err)
+		hdlerr.Handle(c, err)
 		return
 	}
 
@@ -58,9 +59,11 @@ func (h *volumeHandler) Create(c *gin.Context) {
 }
 
 func (h *volumeHandler) Update(c *gin.Context) {
+	const errMessage = "failed to update volume"
+
 	var req schema.UpdateVolumeRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		errors.Handle(c, status.Error(code.BadRequest, "failed to parse json"))
+		hdlerr.Handle(c, errors.Wrap(err, errors.CodeBadRequest, errMessage))
 		return
 	}
 
@@ -68,7 +71,7 @@ func (h *volumeHandler) Update(c *gin.Context) {
 
 	accountID, err := parameter.GetContextParameter[uuid.UUID](c, "accountID")
 	if err != nil {
-		errors.Handle(c, err)
+		hdlerr.Handle(c, errors.Wrap(err, errors.CodeUnauthenticated, errMessage))
 		return
 	}
 
@@ -76,7 +79,7 @@ func (h *volumeHandler) Update(c *gin.Context) {
 
 	volume, err := h.volumeUC.Update(ctx, accountID, name, req.Name, req.IsPublic)
 	if err != nil {
-		errors.Handle(c, err)
+		hdlerr.Handle(c, err)
 		return
 	}
 
@@ -88,14 +91,14 @@ func (h *volumeHandler) Delete(c *gin.Context) {
 
 	accountID, err := parameter.GetContextParameter[uuid.UUID](c, "accountID")
 	if err != nil {
-		errors.Handle(c, err)
+		hdlerr.Handle(c, errors.Wrap(err, errors.CodeUnauthenticated, "failed to delete volume"))
 		return
 	}
 
 	ctx := c.Request.Context()
 
 	if err := h.volumeUC.Delete(ctx, accountID, name); err != nil {
-		errors.Handle(c, err)
+		hdlerr.Handle(c, err)
 		return
 	}
 
@@ -107,7 +110,7 @@ func (h *volumeHandler) GetOne(c *gin.Context) {
 
 	accountID, err := parameter.GetContextParameter[uuid.UUID](c, "accountID")
 	if err != nil {
-		errors.Handle(c, err)
+		hdlerr.Handle(c, errors.Wrap(err, errors.CodeUnauthenticated, "failed to get volume"))
 		return
 	}
 
@@ -115,7 +118,7 @@ func (h *volumeHandler) GetOne(c *gin.Context) {
 
 	volume, err := h.volumeUC.GetOne(ctx, accountID, name)
 	if err != nil {
-		errors.Handle(c, err)
+		hdlerr.Handle(c, err)
 		return
 	}
 
@@ -125,7 +128,7 @@ func (h *volumeHandler) GetOne(c *gin.Context) {
 func (h *volumeHandler) GetAll(c *gin.Context) {
 	accountID, err := parameter.GetContextParameter[uuid.UUID](c, "accountID")
 	if err != nil {
-		errors.Handle(c, err)
+		hdlerr.Handle(c, errors.Wrap(err, errors.CodeUnauthenticated, "failed to get volumes"))
 		return
 	}
 
@@ -133,7 +136,7 @@ func (h *volumeHandler) GetAll(c *gin.Context) {
 
 	volumes, err := h.volumeUC.GetAll(ctx, accountID)
 	if err != nil {
-		errors.Handle(c, err)
+		hdlerr.Handle(c, err)
 		return
 	}
 

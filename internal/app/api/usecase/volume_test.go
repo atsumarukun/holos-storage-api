@@ -3,11 +3,11 @@ package usecase_test
 import (
 	"context"
 	"database/sql"
-	"errors"
 	"io"
 	"testing"
 	"time"
 
+	"github.com/atsumarukun/holos-api-pkg/errors"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/google/uuid"
@@ -18,6 +18,7 @@ import (
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/domain/service"
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/usecase"
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/usecase/dto"
+	"github.com/atsumarukun/holos-storage-api/test/assert"
 	mockRepository "github.com/atsumarukun/holos-storage-api/test/mock/domain/repository"
 	mockTransaction "github.com/atsumarukun/holos-storage-api/test/mock/domain/repository/pkg/transaction"
 	mockService "github.com/atsumarukun/holos-storage-api/test/mock/domain/service"
@@ -90,7 +91,7 @@ func TestVolume_Create(t *testing.T) {
 			inputName:             "",
 			inputIsPublic:         false,
 			expectResult:          nil,
-			expectError:           entity.ErrShortVolumeName,
+			expectError:           entity.ErrVolumeNameInvalidLength,
 			setMockTransactionObj: func(*mockTransaction.MockTransactionObject) {},
 			setMockVolumeRepo:     func(*mockRepository.MockVolumeRepository) {},
 			setMockBodyRepo:       func(*mockRepository.MockBodyRepository) {},
@@ -102,7 +103,7 @@ func TestVolume_Create(t *testing.T) {
 			inputName:      "name",
 			inputIsPublic:  false,
 			expectResult:   nil,
-			expectError:    service.ErrVolumeAlreadyExists,
+			expectError:    service.ErrVolumeNameAlreadyInUse,
 			setMockTransactionObj: func(transactionObj *mockTransaction.MockTransactionObject) {
 				transactionObj.
 					EXPECT().
@@ -118,7 +119,7 @@ func TestVolume_Create(t *testing.T) {
 				volumeServ.
 					EXPECT().
 					Exists(gomock.Any(), gomock.Any()).
-					Return(service.ErrVolumeAlreadyExists).
+					Return(errors.Wrap(service.ErrVolumeNameAlreadyInUse, errors.CodeDuplicate, "volume already exists")).
 					Times(1)
 			},
 		},
@@ -142,7 +143,7 @@ func TestVolume_Create(t *testing.T) {
 				volumeRepo.
 					EXPECT().
 					Create(gomock.Any(), gomock.Any()).
-					Return(sql.ErrConnDone).
+					Return(errors.Wrap(sql.ErrConnDone, errors.CodeInternalServerError, "failed to create volume")).
 					Times(1)
 			},
 			setMockBodyRepo: func(*mockRepository.MockBodyRepository) {},
@@ -181,7 +182,7 @@ func TestVolume_Create(t *testing.T) {
 				bodyRepo.
 					EXPECT().
 					Create(gomock.Any(), gomock.Any()).
-					Return(io.ErrNoProgress).
+					Return(errors.Wrap(io.ErrNoProgress, errors.CodeInternalServerError, "failed to create body")).
 					Times(1)
 			},
 			setMockVolumeServ: func(volumeServ *mockService.MockVolumeService) {
@@ -214,9 +215,7 @@ func TestVolume_Create(t *testing.T) {
 
 			uc := usecase.NewVolumeUsecase(transactionObj, volumeRepo, bodyRepo, volumeServ)
 			result, err := uc.Create(ctx, tt.inputAccountID, tt.inputName, tt.inputIsPublic)
-			if !errors.Is(err, tt.expectError) {
-				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
-			}
+			assert.Error(t, err, tt.expectError)
 
 			opts := cmp.Options{
 				cmpopts.IgnoreFields(dto.VolumeDTO{}, "ID", "CreatedAt", "UpdatedAt"),
@@ -356,7 +355,7 @@ func TestVolume_Update(t *testing.T) {
 			inputNewName:   "",
 			inputIsPublic:  false,
 			expectResult:   nil,
-			expectError:    entity.ErrShortVolumeName,
+			expectError:    entity.ErrVolumeNameInvalidLength,
 			setMockTransactionObj: func(transactionObj *mockTransaction.MockTransactionObject) {
 				transactionObj.
 					EXPECT().
@@ -383,7 +382,7 @@ func TestVolume_Update(t *testing.T) {
 			inputNewName:   "update",
 			inputIsPublic:  false,
 			expectResult:   nil,
-			expectError:    service.ErrVolumeAlreadyExists,
+			expectError:    service.ErrVolumeNameAlreadyInUse,
 			setMockTransactionObj: func(transactionObj *mockTransaction.MockTransactionObject) {
 				transactionObj.
 					EXPECT().
@@ -405,7 +404,7 @@ func TestVolume_Update(t *testing.T) {
 				volumeServ.
 					EXPECT().
 					Exists(gomock.Any(), gomock.Any()).
-					Return(service.ErrVolumeAlreadyExists).
+					Return(errors.Wrap(service.ErrVolumeNameAlreadyInUse, errors.CodeDuplicate, "volume already exists")).
 					Times(1)
 			},
 		},
@@ -430,7 +429,7 @@ func TestVolume_Update(t *testing.T) {
 				volumeRepo.
 					EXPECT().
 					FindOneByNameAndAccountID(gomock.Any(), gomock.Any(), gomock.Any()).
-					Return(nil, sql.ErrConnDone).
+					Return(nil, errors.Wrap(sql.ErrConnDone, errors.CodeInternalServerError, "failed to find volume by name and account_id")).
 					Times(1)
 			},
 			setMockBodyRepo:   func(*mockRepository.MockBodyRepository) {},
@@ -462,7 +461,7 @@ func TestVolume_Update(t *testing.T) {
 				volumeRepo.
 					EXPECT().
 					Update(gomock.Any(), gomock.Any()).
-					Return(sql.ErrConnDone).
+					Return(errors.Wrap(sql.ErrConnDone, errors.CodeInternalServerError, "failed to update volume")).
 					Times(1)
 			},
 			setMockBodyRepo: func(*mockRepository.MockBodyRepository) {},
@@ -507,7 +506,7 @@ func TestVolume_Update(t *testing.T) {
 				bodyRepo.
 					EXPECT().
 					Update(gomock.Any(), gomock.Any()).
-					Return(afero.ErrFileClosed).
+					Return(errors.Wrap(afero.ErrFileClosed, errors.CodeInternalServerError, "failed to update body")).
 					Times(1)
 			},
 			setMockVolumeServ: func(volumeServ *mockService.MockVolumeService) {
@@ -544,9 +543,7 @@ func TestVolume_Update(t *testing.T) {
 
 			uc := usecase.NewVolumeUsecase(transactionObj, volumeRepo, bodyRepo, volumeServ)
 			result, err := uc.Update(ctx, tt.inputAccountID, tt.inputName, tt.inputNewName, tt.inputIsPublic)
-			if !errors.Is(err, tt.expectError) {
-				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
-			}
+			assert.Error(t, err, tt.expectError)
 
 			opts := cmp.Options{
 				cmpopts.IgnoreFields(dto.VolumeDTO{}, "UpdatedAt"),
@@ -638,7 +635,7 @@ func TestVolume_Delete(t *testing.T) {
 				volumeRepo.
 					EXPECT().
 					FindOneByNameAndAccountID(gomock.Any(), gomock.Any(), gomock.Any()).
-					Return(nil, sql.ErrConnDone).
+					Return(nil, errors.Wrap(sql.ErrConnDone, errors.CodeInternalServerError, "failed to find volume by name and account_id")).
 					Times(1)
 			},
 			setMockBodyRepo:   func(*mockRepository.MockBodyRepository) {},
@@ -670,7 +667,7 @@ func TestVolume_Delete(t *testing.T) {
 				volumeServ.
 					EXPECT().
 					CanDelete(gomock.Any(), gomock.Any()).
-					Return(service.ErrVolumeHasEntries).
+					Return(errors.Wrap(service.ErrVolumeHasEntries, errors.CodeConstraintViolation, "volume cannot be deleted")).
 					Times(1)
 			},
 		},
@@ -697,7 +694,7 @@ func TestVolume_Delete(t *testing.T) {
 				volumeRepo.
 					EXPECT().
 					Delete(gomock.Any(), gomock.Any()).
-					Return(sql.ErrConnDone).
+					Return(errors.Wrap(sql.ErrConnDone, errors.CodeInternalServerError, "failed to delete volume")).
 					Times(1)
 			},
 			setMockBodyRepo: func(*mockRepository.MockBodyRepository) {},
@@ -739,7 +736,7 @@ func TestVolume_Delete(t *testing.T) {
 				bodyRepo.
 					EXPECT().
 					Delete(gomock.Any()).
-					Return(afero.ErrFileClosed).
+					Return(errors.Wrap(afero.ErrFileClosed, errors.CodeInternalServerError, "failed to delete body")).
 					Times(1)
 			},
 			setMockVolumeServ: func(volumeServ *mockService.MockVolumeService) {
@@ -771,9 +768,8 @@ func TestVolume_Delete(t *testing.T) {
 			tt.setMockVolumeServ(volumeServ)
 
 			uc := usecase.NewVolumeUsecase(transactionObj, volumeRepo, bodyRepo, volumeServ)
-			if err := uc.Delete(ctx, tt.inputAccountID, tt.inputName); !errors.Is(err, tt.expectError) {
-				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
-			}
+			err := uc.Delete(ctx, tt.inputAccountID, tt.inputName)
+			assert.Error(t, err, tt.expectError)
 		})
 	}
 }
@@ -829,7 +825,7 @@ func TestVolume_GetOne(t *testing.T) {
 				volumeRepo.
 					EXPECT().
 					FindOneByNameAndAccountID(gomock.Any(), gomock.Any(), gomock.Any()).
-					Return(nil, sql.ErrConnDone).
+					Return(nil, errors.Wrap(sql.ErrConnDone, errors.CodeInternalServerError, "failed to find volume by name and account_id")).
 					Times(1)
 			},
 		},
@@ -846,9 +842,7 @@ func TestVolume_GetOne(t *testing.T) {
 
 			uc := usecase.NewVolumeUsecase(nil, volumeRepo, nil, nil)
 			result, err := uc.GetOne(ctx, tt.inputAccountID, tt.inputName)
-			if !errors.Is(err, tt.expectError) {
-				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
-			}
+			assert.Error(t, err, tt.expectError)
 
 			if diff := cmp.Diff(tt.expectResult, result); diff != "" {
 				t.Error(diff)
@@ -918,7 +912,7 @@ func TestVolume_GetAll(t *testing.T) {
 				volumeRepo.
 					EXPECT().
 					FindByAccountID(gomock.Any(), gomock.Any()).
-					Return(nil, sql.ErrConnDone).
+					Return(nil, errors.Wrap(sql.ErrConnDone, errors.CodeInternalServerError, "failed to find volume by account_id")).
 					Times(1)
 			},
 		},
@@ -935,9 +929,7 @@ func TestVolume_GetAll(t *testing.T) {
 
 			uc := usecase.NewVolumeUsecase(nil, volumeRepo, nil, nil)
 			result, err := uc.GetAll(ctx, tt.inputAccountID)
-			if !errors.Is(err, tt.expectError) {
-				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
-			}
+			assert.Error(t, err, tt.expectError)
 
 			if diff := cmp.Diff(tt.expectResult, result); diff != "" {
 				t.Error(diff)

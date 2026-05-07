@@ -13,6 +13,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/atsumarukun/holos-api-pkg/errors"
 	"github.com/gin-gonic/gin"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/uuid"
@@ -83,15 +84,15 @@ func TestEntry_Create(t *testing.T) {
 			buildRequestBody:      func(*testing.T) (io.Reader, string) { return http.NoBody, "" },
 			hasAccountIDInContext: true,
 			expectCode:            http.StatusBadRequest,
-			expectResponse:        []byte(`{"message":"failed to parse multipart/form-data"}`),
+			expectResponse:        []byte(`{"error":{"code":"BAD_REQUEST","message":"bad request"}}`),
 			setMockEntryUC:        func(*mockUsecase.MockEntryUsecase) {},
 		},
 		{
 			name:                  "account id not set",
 			buildRequestBody:      buildMultipartBody,
 			hasAccountIDInContext: false,
-			expectCode:            http.StatusInternalServerError,
-			expectResponse:        []byte(`{"message":"internal server error"}`),
+			expectCode:            http.StatusUnauthorized,
+			expectResponse:        []byte(`{"error":{"code":"UNAUTHENTICATED","message":"unauthenticated"}}`),
 			setMockEntryUC:        func(*mockUsecase.MockEntryUsecase) {},
 		},
 		{
@@ -99,12 +100,12 @@ func TestEntry_Create(t *testing.T) {
 			buildRequestBody:      buildMultipartBody,
 			hasAccountIDInContext: true,
 			expectCode:            http.StatusInternalServerError,
-			expectResponse:        []byte(`{"message":"internal server error"}`),
+			expectResponse:        []byte(`{"error":{"code":"INTERNAL_SERVER_ERROR","message":"internal server error"}}`),
 			setMockEntryUC: func(entryUC *mockUsecase.MockEntryUsecase) {
 				entryUC.
 					EXPECT().
 					Create(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
-					Return(nil, sql.ErrConnDone).
+					Return(nil, errors.Wrap(sql.ErrConnDone, errors.CodeInternalServerError, "failed to find entry by key and volume_id")).
 					Times(1)
 			},
 		},
@@ -191,15 +192,15 @@ func TestEntry_Update(t *testing.T) {
 			requestBody:           nil,
 			hasAccountIDInContext: true,
 			expectCode:            http.StatusBadRequest,
-			expectResponse:        []byte(`{"message":"failed to parse json"}`),
+			expectResponse:        []byte(`{"error":{"code":"BAD_REQUEST","message":"bad request"}}`),
 			setMockEntryUC:        func(*mockUsecase.MockEntryUsecase) {},
 		},
 		{
 			name:                  "account id not set",
 			requestBody:           []byte(`{"key": "update/sample.txt"}`),
 			hasAccountIDInContext: false,
-			expectCode:            http.StatusInternalServerError,
-			expectResponse:        []byte(`{"message":"internal server error"}`),
+			expectCode:            http.StatusUnauthorized,
+			expectResponse:        []byte(`{"error":{"code":"UNAUTHENTICATED","message":"unauthenticated"}}`),
 			setMockEntryUC:        func(*mockUsecase.MockEntryUsecase) {},
 		},
 		{
@@ -207,12 +208,12 @@ func TestEntry_Update(t *testing.T) {
 			requestBody:           []byte(`{"key": "update/sample.txt"}`),
 			hasAccountIDInContext: true,
 			expectCode:            http.StatusInternalServerError,
-			expectResponse:        []byte(`{"message":"internal server error"}`),
+			expectResponse:        []byte(`{"error":{"code":"INTERNAL_SERVER_ERROR","message":"internal server error"}}`),
 			setMockEntryUC: func(entryUC *mockUsecase.MockEntryUsecase) {
 				entryUC.
 					EXPECT().
 					Update(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
-					Return(nil, sql.ErrConnDone).
+					Return(nil, errors.Wrap(sql.ErrConnDone, errors.CodeInternalServerError, "failed to find entry by key and volume_id and account_id")).
 					Times(1)
 			},
 		},
@@ -287,20 +288,20 @@ func TestEntry_Delete(t *testing.T) {
 		{
 			name:                  "account id not set",
 			hasAccountIDInContext: false,
-			expectCode:            http.StatusInternalServerError,
-			expectResponse:        []byte(`{"message":"internal server error"}`),
+			expectCode:            http.StatusUnauthorized,
+			expectResponse:        []byte(`{"error":{"code":"UNAUTHENTICATED","message":"unauthenticated"}}`),
 			setMockEntryUC:        func(*mockUsecase.MockEntryUsecase) {},
 		},
 		{
 			name:                  "delete error",
 			hasAccountIDInContext: true,
 			expectCode:            http.StatusInternalServerError,
-			expectResponse:        []byte(`{"message":"internal server error"}`),
+			expectResponse:        []byte(`{"error":{"code":"INTERNAL_SERVER_ERROR","message":"internal server error"}}`),
 			setMockEntryUC: func(entryUC *mockUsecase.MockEntryUsecase) {
 				entryUC.
 					EXPECT().
 					Delete(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
-					Return(sql.ErrConnDone).
+					Return(errors.Wrap(sql.ErrConnDone, errors.CodeInternalServerError, "failed to find entry by key and volume_id and account_id")).
 					Times(1)
 			},
 		},
@@ -385,20 +386,20 @@ func TestEntry_Copy(t *testing.T) {
 		{
 			name:                  "account id not set",
 			hasAccountIDInContext: false,
-			expectCode:            http.StatusInternalServerError,
-			expectResponse:        []byte(`{"message":"internal server error"}`),
+			expectCode:            http.StatusUnauthorized,
+			expectResponse:        []byte(`{"error":{"code":"UNAUTHENTICATED","message":"unauthenticated"}}`),
 			setMockEntryUC:        func(*mockUsecase.MockEntryUsecase) {},
 		},
 		{
 			name:                  "copy error",
 			hasAccountIDInContext: true,
 			expectCode:            http.StatusInternalServerError,
-			expectResponse:        []byte(`{"message":"internal server error"}`),
+			expectResponse:        []byte(`{"error":{"code":"INTERNAL_SERVER_ERROR","message":"internal server error"}}`),
 			setMockEntryUC: func(entryUC *mockUsecase.MockEntryUsecase) {
 				entryUC.
 					EXPECT().
 					Copy(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
-					Return(nil, sql.ErrConnDone).
+					Return(nil, errors.Wrap(sql.ErrConnDone, errors.CodeInternalServerError, "failed to find entry by key and volume_id and account_id")).
 					Times(1)
 			},
 		},
@@ -476,6 +477,7 @@ func TestEntry_GetMeta(t *testing.T) {
 		hasAccountIDInContext bool
 		expectCode            int
 		expectHeader          http.Header
+		expectResponse        []byte
 		setMockEntryUC        func(*mockUsecase.MockEntryUsecase)
 	}{
 		{
@@ -483,6 +485,7 @@ func TestEntry_GetMeta(t *testing.T) {
 			hasAccountIDInContext: true,
 			expectCode:            http.StatusOK,
 			expectHeader:          http.Header{"Content-Length": {strconv.FormatUint(fileEntryDTO.Size, 10)}, "Content-Type": {fileEntryDTO.Type}, "Holos-Entry-Type": {fileEntryDTO.Type}, "Last-Modified": {fileEntryDTO.UpdatedAt.Format(http.TimeFormat)}},
+			expectResponse:        nil,
 			setMockEntryUC: func(entryUC *mockUsecase.MockEntryUsecase) {
 				entryUC.
 					EXPECT().
@@ -496,6 +499,7 @@ func TestEntry_GetMeta(t *testing.T) {
 			hasAccountIDInContext: true,
 			expectCode:            http.StatusOK,
 			expectHeader:          http.Header{"Content-Length": {strconv.FormatUint(folderEntryDTO.Size, 10)}, "Content-Type": {"application/octet-stream"}, "Holos-Entry-Type": {folderEntryDTO.Type}, "Last-Modified": {folderEntryDTO.UpdatedAt.Format(http.TimeFormat)}},
+			expectResponse:        nil,
 			setMockEntryUC: func(entryUC *mockUsecase.MockEntryUsecase) {
 				entryUC.
 					EXPECT().
@@ -507,20 +511,22 @@ func TestEntry_GetMeta(t *testing.T) {
 		{
 			name:                  "account id not set",
 			hasAccountIDInContext: false,
-			expectCode:            http.StatusInternalServerError,
-			expectHeader:          http.Header{},
+			expectCode:            http.StatusUnauthorized,
+			expectResponse:        []byte(`{"error":{"code":"UNAUTHENTICATED","message":"unauthenticated"}}`),
+			expectHeader:          http.Header{"Content-Type": {"application/json; charset=utf-8"}},
 			setMockEntryUC:        func(*mockUsecase.MockEntryUsecase) {},
 		},
 		{
 			name:                  "get error",
 			hasAccountIDInContext: true,
 			expectCode:            http.StatusInternalServerError,
-			expectHeader:          http.Header{},
+			expectHeader:          http.Header{"Content-Type": {"application/json; charset=utf-8"}},
+			expectResponse:        []byte(`{"error":{"code":"INTERNAL_SERVER_ERROR","message":"internal server error"}}`),
 			setMockEntryUC: func(entryUC *mockUsecase.MockEntryUsecase) {
 				entryUC.
 					EXPECT().
 					GetMeta(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
-					Return(nil, sql.ErrConnDone).
+					Return(nil, errors.Wrap(sql.ErrConnDone, errors.CodeInternalServerError, "failed to find entry by key and volume_id and account_id")).
 					Times(1)
 			},
 		},
@@ -561,6 +567,10 @@ func TestEntry_GetMeta(t *testing.T) {
 			}
 
 			if diff := cmp.Diff(tt.expectHeader, w.Header()); diff != "" {
+				t.Error(diff)
+			}
+
+			if diff := cmp.Diff(tt.expectResponse, w.Body.Bytes()); diff != "" {
 				t.Error(diff)
 			}
 		})
@@ -632,9 +642,9 @@ func TestEntry_GetOne(t *testing.T) {
 		{
 			name:                  "account id not set",
 			hasAccountIDInContext: false,
-			expectCode:            http.StatusInternalServerError,
+			expectCode:            http.StatusUnauthorized,
 			expectHeader:          http.Header{"Content-Type": {"application/json; charset=utf-8"}},
-			expectResponse:        []byte(`{"message":"internal server error"}`),
+			expectResponse:        []byte(`{"error":{"code":"UNAUTHENTICATED","message":"unauthenticated"}}`),
 			setMockEntryUC:        func(*mockUsecase.MockEntryUsecase) {},
 		},
 		{
@@ -642,12 +652,12 @@ func TestEntry_GetOne(t *testing.T) {
 			hasAccountIDInContext: true,
 			expectCode:            http.StatusInternalServerError,
 			expectHeader:          http.Header{"Content-Type": {"application/json; charset=utf-8"}},
-			expectResponse:        []byte(`{"message":"internal server error"}`),
+			expectResponse:        []byte(`{"error":{"code":"INTERNAL_SERVER_ERROR","message":"internal server error"}}`),
 			setMockEntryUC: func(entryUC *mockUsecase.MockEntryUsecase) {
 				entryUC.
 					EXPECT().
 					GetOne(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
-					Return(nil, nil, sql.ErrConnDone).
+					Return(nil, nil, errors.Wrap(sql.ErrConnDone, errors.CodeInternalServerError, "failed to find entry by key and volume_id and account_id")).
 					Times(1)
 			},
 		},
@@ -749,20 +759,20 @@ func TestEntry_Search(t *testing.T) {
 		{
 			name:                  "account id not set",
 			hasAccountIDInContext: false,
-			expectCode:            http.StatusInternalServerError,
-			expectResponse:        []byte(`{"message":"internal server error"}`),
+			expectCode:            http.StatusUnauthorized,
+			expectResponse:        []byte(`{"error":{"code":"UNAUTHENTICATED","message":"unauthenticated"}}`),
 			setMockEntryUC:        func(*mockUsecase.MockEntryUsecase) {},
 		},
 		{
 			name:                  "search error",
 			hasAccountIDInContext: true,
 			expectCode:            http.StatusInternalServerError,
-			expectResponse:        []byte(`{"message":"internal server error"}`),
+			expectResponse:        []byte(`{"error":{"code":"INTERNAL_SERVER_ERROR","message":"internal server error"}}`),
 			setMockEntryUC: func(entryUC *mockUsecase.MockEntryUsecase) {
 				entryUC.
 					EXPECT().
 					Search(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
-					Return(nil, sql.ErrConnDone).
+					Return(nil, errors.Wrap(sql.ErrConnDone, errors.CodeInternalServerError, "failed to find entry by volume_id and account_id")).
 					Times(1)
 			},
 		},

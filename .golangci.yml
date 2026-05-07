@@ -56,9 +56,6 @@ linters:
           - errcheck
           - gosec
         path: _test\.go
-      - linters:
-          - dupl
-        path: .*\/handler\/.*\.go
     paths:
       - third_party$
       - builtin$

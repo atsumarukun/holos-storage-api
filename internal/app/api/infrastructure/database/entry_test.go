@@ -2,7 +2,6 @@ package database_test
 
 import (
 	"database/sql"
-	"errors"
 	"regexp"
 	"testing"
 	"time"
@@ -15,6 +14,7 @@ import (
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/domain/repository"
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/infrastructure/database"
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/pkg/types"
+	"github.com/atsumarukun/holos-storage-api/test/assert"
 	mockDatabase "github.com/atsumarukun/holos-storage-api/test/mock/database"
 )
 
@@ -50,7 +50,7 @@ func TestEntry_Create(t *testing.T) {
 		{
 			name:        "entry is nil",
 			inputEntry:  nil,
-			expectError: database.ErrRequiredEntry,
+			expectError: repository.ErrNilEntry,
 			setMockDB:   func(sqlmock.Sqlmock) {},
 		},
 		{
@@ -73,9 +73,8 @@ func TestEntry_Create(t *testing.T) {
 			tt.setMockDB(mock)
 
 			repo := database.NewEntryRepository(db)
-			if err := repo.Create(t.Context(), tt.inputEntry); !errors.Is(err, tt.expectError) {
-				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
-			}
+			err := repo.Create(t.Context(), tt.inputEntry)
+			assert.Error(t, err, tt.expectError)
 
 			if err := mock.ExpectationsWereMet(); err != nil {
 				t.Error(err)
@@ -116,7 +115,7 @@ func TestEntry_Update(t *testing.T) {
 		{
 			name:        "entry is nil",
 			inputEntry:  nil,
-			expectError: database.ErrRequiredEntry,
+			expectError: repository.ErrNilEntry,
 			setMockDB:   func(sqlmock.Sqlmock) {},
 		},
 		{
@@ -139,9 +138,8 @@ func TestEntry_Update(t *testing.T) {
 			tt.setMockDB(mock)
 
 			repo := database.NewEntryRepository(db)
-			if err := repo.Update(t.Context(), tt.inputEntry); !errors.Is(err, tt.expectError) {
-				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
-			}
+			err := repo.Update(t.Context(), tt.inputEntry)
+			assert.Error(t, err, tt.expectError)
 
 			if err := mock.ExpectationsWereMet(); err != nil {
 				t.Error(err)
@@ -182,7 +180,7 @@ func TestEntry_Delete(t *testing.T) {
 		{
 			name:        "entry is nil",
 			inputEntry:  nil,
-			expectError: database.ErrRequiredEntry,
+			expectError: repository.ErrNilEntry,
 			setMockDB:   func(sqlmock.Sqlmock) {},
 		},
 		{
@@ -205,9 +203,8 @@ func TestEntry_Delete(t *testing.T) {
 			tt.setMockDB(mock)
 
 			repo := database.NewEntryRepository(db)
-			if err := repo.Delete(t.Context(), tt.inputEntry); !errors.Is(err, tt.expectError) {
-				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
-			}
+			err := repo.Delete(t.Context(), tt.inputEntry)
+			assert.Error(t, err, tt.expectError)
 
 			if err := mock.ExpectationsWereMet(); err != nil {
 				t.Error(err)
@@ -256,7 +253,7 @@ func TestEntry_FindOneByKeyAndVolumeID(t *testing.T) {
 			inputKey:      "key/sample.txt",
 			inputVolumeID: volumeID,
 			expectResult:  nil,
-			expectError:   repository.ErrEntryNotFound,
+			expectError:   nil,
 			setMockDB: func(mock sqlmock.Sqlmock) {
 				mock.ExpectQuery(regexp.QuoteMeta("SELECT id, account_id, volume_id, `key`, size, type, created_at, updated_at FROM entries WHERE `key` = ? AND volume_id = ? LIMIT 1;")).
 					WithArgs("key/sample.txt", volumeID).
@@ -286,9 +283,7 @@ func TestEntry_FindOneByKeyAndVolumeID(t *testing.T) {
 
 			repo := database.NewEntryRepository(db)
 			result, err := repo.FindOneByKeyAndVolumeID(t.Context(), tt.inputKey, tt.inputVolumeID)
-			if !errors.Is(err, tt.expectError) {
-				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
-			}
+			assert.Error(t, err, tt.expectError)
 
 			if diff := cmp.Diff(tt.expectResult, result); diff != "" {
 				t.Error(diff)
@@ -344,7 +339,7 @@ func TestEntry_FindOneByKeyAndVolumeIDAndAccountID(t *testing.T) {
 			inputVolumeID:  volumeID,
 			inputAccountID: accountID,
 			expectResult:   nil,
-			expectError:    repository.ErrEntryNotFound,
+			expectError:    nil,
 			setMockDB: func(mock sqlmock.Sqlmock) {
 				mock.ExpectQuery(regexp.QuoteMeta("SELECT id, account_id, volume_id, `key`, size, type, created_at, updated_at FROM entries WHERE `key` = ? AND volume_id = ? AND account_id = ? LIMIT 1;")).
 					WithArgs("key/sample.txt", volumeID, accountID).
@@ -375,9 +370,7 @@ func TestEntry_FindOneByKeyAndVolumeIDAndAccountID(t *testing.T) {
 
 			repo := database.NewEntryRepository(db)
 			result, err := repo.FindOneByKeyAndVolumeIDAndAccountID(t.Context(), tt.inputKey, tt.inputVolumeID, tt.inputAccountID)
-			if !errors.Is(err, tt.expectError) {
-				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
-			}
+			assert.Error(t, err, tt.expectError)
 
 			if diff := cmp.Diff(tt.expectResult, result); diff != "" {
 				t.Error(diff)
@@ -511,9 +504,7 @@ func TestEntry_FindByVolumeIDAndAccountID(t *testing.T) {
 
 			repo := database.NewEntryRepository(db)
 			result, err := repo.FindByVolumeIDAndAccountID(t.Context(), tt.inputVolumeID, tt.inputAccountID, tt.inputPrefix, tt.inputDepth)
-			if !errors.Is(err, tt.expectError) {
-				t.Errorf("\nexpect: %v\ngot: %v", tt.expectError, err)
-			}
+			assert.Error(t, err, tt.expectError)
 
 			if diff := cmp.Diff(tt.expectResult, result); diff != "" {
 				t.Error(diff)

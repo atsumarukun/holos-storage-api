@@ -3,15 +3,14 @@ package repository
 
 import (
 	"context"
+	stderr "errors"
 
 	"github.com/google/uuid"
 
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/domain/entity"
-	"github.com/atsumarukun/holos-storage-api/internal/app/api/pkg/status"
-	"github.com/atsumarukun/holos-storage-api/internal/app/api/pkg/status/code"
 )
 
-var ErrVolumeNotFound = status.Error(code.NotFound, "volume not found")
+var ErrNilVolume = stderr.New("volume must not be nil")
 
 type VolumeRepository interface {
 	Create(context.Context, *entity.Volume) error

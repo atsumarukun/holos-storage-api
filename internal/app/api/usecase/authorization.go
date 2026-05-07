@@ -3,17 +3,17 @@ package usecase
 
 import (
 	"context"
-	"errors"
+	stderr "errors"
+
+	"github.com/atsumarukun/holos-api-pkg/errors"
 
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/domain/entity"
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/domain/repository"
-	"github.com/atsumarukun/holos-storage-api/internal/app/api/pkg/status"
-	"github.com/atsumarukun/holos-storage-api/internal/app/api/pkg/status/code"
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/usecase/dto"
 	"github.com/atsumarukun/holos-storage-api/internal/app/api/usecase/mapper"
 )
 
-var ErrForbidden = status.Error(code.Forbidden, "forbidden")
+var ErrAccountIDMismatch = stderr.New("account id does not match the owner of the volume")
 
 type AuthorizationUsecase interface {
 	Authorize(context.Context, string, string, string, string) (*dto.AccountDTO, error)
@@ -52,13 +52,10 @@ func (u *authorizationUsecase) authorizeForGetEntry(ctx context.Context, credent
 
 	account, err := u.accountRepo.FindOneByCredential(ctx, credential)
 	if err != nil {
-		if credential == "" && errors.Is(err, repository.ErrUnauthorized) {
-			return nil, ErrForbidden
-		}
 		return nil, err
 	}
 	if account.ID != volume.AccountID {
-		return nil, ErrForbidden
+		return nil, errors.Wrap(ErrAccountIDMismatch, errors.CodeUnauthorized, "unauthorized")
 	}
 
 	return mapper.ToAccountDTO(account), nil
