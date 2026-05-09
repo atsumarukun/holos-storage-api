@@ -2,6 +2,7 @@ package errors
 
 import (
 	stderr "errors"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"strings"
@@ -20,7 +21,7 @@ func Handle(c *gin.Context, err error) {
 		return
 	}
 
-	slog.ErrorContext(c.Request.Context(), err.Error())
+	slog.ErrorContext(c.Request.Context(), fmt.Sprintf("%+v", err))
 
 	status := http.StatusInternalServerError
 	res := ErrorResponse{errors.CodeUnknown, "internal server error"}
