@@ -83,7 +83,7 @@ func (u *volumeUsecase) Update(ctx context.Context, accountID uuid.UUID, name, n
 	var volume *entity.Volume
 	if err := u.transactionObj.Transaction(ctx, func(ctx context.Context) error {
 		var err error
-		volume, err := u.getOne(ctx, accountID, name, errMessage)
+		volume, err = u.getOne(ctx, accountID, name, errMessage)
 		if err != nil {
 			return err
 		}
