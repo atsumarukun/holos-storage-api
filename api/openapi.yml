@@ -147,6 +147,8 @@ paths:
           $ref: "#/components/responses/unauthenticated"
         403:
           $ref: "#/components/responses/unauthorized"
+        404:
+          $ref: "#/components/responses/not_found"
         409:
           $ref: "#/components/responses/constraint_violation"
         500:
@@ -394,6 +396,8 @@ paths:
           $ref: "#/components/responses/unauthenticated"
         403:
           $ref: "#/components/responses/unauthorized"
+        404:
+          $ref: "#/components/responses/not_found"
         500:
           $ref: "#/components/responses/internal_server_error"
     head:

@@ -2,6 +2,7 @@ package errors
 
 import (
 	stderr "errors"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"strings"
@@ -20,7 +21,7 @@ func Handle(c *gin.Context, err error) {
 		return
 	}
 
-	slog.ErrorContext(c.Request.Context(), err.Error())
+	slog.ErrorContext(c.Request.Context(), fmt.Sprintf("%+v", err))
 
 	status := http.StatusInternalServerError
 	res := ErrorResponse{errors.CodeUnknown, "internal server error"}
@@ -30,7 +31,7 @@ func Handle(c *gin.Context, err error) {
 		switch v.Code() {
 		case errors.CodeUnknown:
 			res = ErrorResponse{v.Code(), "internal server error"}
-		case errors.CodeDuplicate, errors.CodeConstraintViolation, errors.CodeInvalidInput:
+		case errors.CodeNotFound, errors.CodeDuplicate, errors.CodeConstraintViolation, errors.CodeInvalidInput:
 			res = ErrorResponse{v.Code(), stderr.Unwrap(err).Error()}
 		default:
 			res = ErrorResponse{v.Code(), strings.ToLower(strings.ReplaceAll(v.Code().String(), "_", " "))}
