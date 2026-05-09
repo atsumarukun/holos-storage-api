@@ -78,16 +78,14 @@ func (u *volumeUsecase) Create(ctx context.Context, accountID uuid.UUID, name st
 }
 
 func (u *volumeUsecase) Update(ctx context.Context, accountID uuid.UUID, name, newName string, isPublic bool) (*dto.VolumeDTO, error) {
-	var volume *entity.Volume
+	const errMessage = "failed to update volume"
 
+	var volume *entity.Volume
 	if err := u.transactionObj.Transaction(ctx, func(ctx context.Context) error {
 		var err error
-		volume, err = u.volumeRepo.FindOneByNameAndAccountID(ctx, name, accountID)
+		volume, err := u.getOne(ctx, accountID, name, errMessage)
 		if err != nil {
 			return err
-		}
-		if volume == nil {
-			return errors.Wrap(ErrVolumeNotFound, errors.CodeNotFound, "failed to update volume")
 		}
 
 		srcPath, err := u.bodyServ.BuildPath(volume, nil)
@@ -123,13 +121,12 @@ func (u *volumeUsecase) Update(ctx context.Context, accountID uuid.UUID, name, n
 }
 
 func (u *volumeUsecase) Delete(ctx context.Context, accountID uuid.UUID, name string) error {
+	const errMessage = "failed to delete volume"
+
 	return u.transactionObj.Transaction(ctx, func(ctx context.Context) error {
-		volume, err := u.volumeRepo.FindOneByNameAndAccountID(ctx, name, accountID)
+		volume, err := u.getOne(ctx, accountID, name, errMessage)
 		if err != nil {
 			return err
-		}
-		if volume == nil {
-			return errors.Wrap(ErrVolumeNotFound, errors.CodeNotFound, "failed to delete volume")
 		}
 
 		if err := u.volumeServ.CanDelete(ctx, volume); err != nil {
@@ -148,13 +145,13 @@ func (u *volumeUsecase) Delete(ctx context.Context, accountID uuid.UUID, name st
 }
 
 func (u *volumeUsecase) GetOne(ctx context.Context, accountID uuid.UUID, name string) (*dto.VolumeDTO, error) {
-	volume, err := u.volumeRepo.FindOneByNameAndAccountID(ctx, name, accountID)
+	const errMessage = "failed to get volume"
+
+	volume, err := u.getOne(ctx, accountID, name, errMessage)
 	if err != nil {
 		return nil, err
 	}
-	if volume == nil {
-		return nil, errors.Wrap(ErrVolumeNotFound, errors.CodeNotFound, "failed to get volume")
-	}
+
 	return mapper.ToVolumeDTO(volume), nil
 }
 
@@ -163,5 +160,17 @@ func (u *volumeUsecase) GetAll(ctx context.Context, accountID uuid.UUID) ([]*dto
 	if err != nil {
 		return nil, err
 	}
+
 	return mapper.ToVolumeDTOs(volumes), nil
+}
+
+func (u *volumeUsecase) getOne(ctx context.Context, accountID uuid.UUID, name, errMessage string) (*entity.Volume, error) {
+	volume, err := u.volumeRepo.FindOneByNameAndAccountID(ctx, name, accountID)
+	if err != nil {
+		return nil, err
+	}
+	if volume == nil {
+		return nil, errors.Wrap(ErrVolumeNotFound, errors.CodeNotFound, errMessage)
+	}
+	return volume, nil
 }

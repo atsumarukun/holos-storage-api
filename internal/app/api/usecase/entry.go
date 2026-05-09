@@ -59,7 +59,7 @@ func NewEntryUsecase(
 }
 
 func (u *entryUsecase) Create(ctx context.Context, accountID uuid.UUID, volumeName, key string, size uint64, body io.Reader) (*dto.EntryDTO, error) {
-	const errMessage = "failed to update entry"
+	const errMessage = "failed to create entry"
 
 	var entry *entity.Entry
 	if err := u.transactionObj.Transaction(ctx, func(ctx context.Context) error {
@@ -109,20 +109,12 @@ func (u *entryUsecase) Update(ctx context.Context, accountID uuid.UUID, volumeNa
 
 	var entry *entity.Entry
 	if err := u.transactionObj.Transaction(ctx, func(ctx context.Context) error {
-		volume, err := u.volumeRepo.FindOneByNameAndAccountID(ctx, volumeName, accountID)
-		if err != nil {
-			return err
-		}
-		if volume == nil {
-			return errors.Wrap(ErrVolumeNotFound, errors.CodeNotFound, errMessage)
-		}
+		var volume *entity.Volume
+		var err error
 
-		entry, err = u.entryRepo.FindOneByKeyAndVolumeIDAndAccountID(ctx, key, volume.ID, accountID)
+		volume, entry, err = u.getVolumeAndEntry(ctx, accountID, volumeName, key, errMessage)
 		if err != nil {
 			return err
-		}
-		if entry == nil {
-			return errors.Wrap(ErrEntryNotFound, errors.CodeNotFound, errMessage)
 		}
 
 		srcPath, err := u.bodyServ.BuildPath(volume, entry)
@@ -150,20 +142,9 @@ func (u *entryUsecase) Delete(ctx context.Context, accountID uuid.UUID, volumeNa
 	const errMessage = "failed to delete entry"
 
 	return u.transactionObj.Transaction(ctx, func(ctx context.Context) error {
-		volume, err := u.volumeRepo.FindOneByNameAndAccountID(ctx, volumeName, accountID)
+		volume, entry, err := u.getVolumeAndEntry(ctx, accountID, volumeName, key, errMessage)
 		if err != nil {
 			return err
-		}
-		if volume == nil {
-			return errors.Wrap(ErrVolumeNotFound, errors.CodeNotFound, errMessage)
-		}
-
-		entry, err := u.entryRepo.FindOneByKeyAndVolumeIDAndAccountID(ctx, key, volume.ID, accountID)
-		if err != nil {
-			return err
-		}
-		if entry == nil {
-			return nil
 		}
 
 		if err := u.entryServ.DeleteDescendants(ctx, entry); err != nil {
@@ -186,20 +167,9 @@ func (u *entryUsecase) Copy(ctx context.Context, accountID uuid.UUID, volumeName
 
 	var entry *entity.Entry
 	if err := u.transactionObj.Transaction(ctx, func(ctx context.Context) error {
-		volume, err := u.volumeRepo.FindOneByNameAndAccountID(ctx, volumeName, accountID)
+		volume, srcEntry, err := u.getVolumeAndEntry(ctx, accountID, volumeName, key, errMessage)
 		if err != nil {
 			return err
-		}
-		if volume == nil {
-			return errors.Wrap(ErrVolumeNotFound, errors.CodeNotFound, errMessage)
-		}
-
-		srcEntry, err := u.entryRepo.FindOneByKeyAndVolumeIDAndAccountID(ctx, key, volume.ID, accountID)
-		if err != nil {
-			return err
-		}
-		if srcEntry == nil {
-			return errors.Wrap(ErrEntryNotFound, errors.CodeNotFound, errMessage)
 		}
 
 		srcPath, err := u.bodyServ.BuildPath(volume, srcEntry)
@@ -230,20 +200,11 @@ func (u *entryUsecase) GetMeta(ctx context.Context, accountID uuid.UUID, volumeN
 
 	var entry *entity.Entry
 	if err := u.transactionObj.Transaction(ctx, func(ctx context.Context) error {
-		volume, err := u.volumeRepo.FindOneByNameAndAccountID(ctx, volumeName, accountID)
-		if err != nil {
-			return err
-		}
-		if volume == nil {
-			return errors.Wrap(ErrVolumeNotFound, errors.CodeNotFound, errMessage)
-		}
+		var err error
 
-		entry, err = u.entryRepo.FindOneByKeyAndVolumeIDAndAccountID(ctx, key, volume.ID, accountID)
+		_, entry, err = u.getVolumeAndEntry(ctx, accountID, volumeName, key, errMessage)
 		if err != nil {
 			return err
-		}
-		if entry == nil {
-			return errors.Wrap(ErrEntryNotFound, errors.CodeNotFound, errMessage)
 		}
 
 		return nil
@@ -260,20 +221,12 @@ func (u *entryUsecase) GetOne(ctx context.Context, accountID uuid.UUID, volumeNa
 	var entry *entity.Entry
 	var body io.ReadCloser
 	if err := u.transactionObj.Transaction(ctx, func(ctx context.Context) error {
-		volume, err := u.volumeRepo.FindOneByNameAndAccountID(ctx, volumeName, accountID)
-		if err != nil {
-			return err
-		}
-		if volume == nil {
-			return errors.Wrap(ErrVolumeNotFound, errors.CodeNotFound, errMessage)
-		}
+		var volume *entity.Volume
+		var err error
 
-		entry, err = u.entryRepo.FindOneByKeyAndVolumeIDAndAccountID(ctx, key, volume.ID, accountID)
+		volume, entry, err = u.getVolumeAndEntry(ctx, accountID, volumeName, key, errMessage)
 		if err != nil {
 			return err
-		}
-		if entry == nil {
-			return errors.Wrap(ErrEntryNotFound, errors.CodeNotFound, errMessage)
 		}
 
 		path, err := u.bodyServ.BuildPath(volume, entry)
@@ -326,6 +279,26 @@ func (u *entryUsecase) getBodyInfo(body io.Reader) (string, io.Reader, error) {
 	bodyReader := io.MultiReader(bytes.NewReader(buf[:n]), body)
 
 	return entryType, bodyReader, nil
+}
+
+func (u *entryUsecase) getVolumeAndEntry(ctx context.Context, accountID uuid.UUID, volumeName, key, errMessage string) (*entity.Volume, *entity.Entry, error) {
+	volume, err := u.volumeRepo.FindOneByNameAndAccountID(ctx, volumeName, accountID)
+	if err != nil {
+		return nil, nil, err
+	}
+	if volume == nil {
+		return nil, nil, errors.Wrap(ErrVolumeNotFound, errors.CodeNotFound, errMessage)
+	}
+
+	entry, err := u.entryRepo.FindOneByKeyAndVolumeIDAndAccountID(ctx, key, volume.ID, accountID)
+	if err != nil {
+		return nil, nil, err
+	}
+	if entry == nil {
+		return nil, nil, errors.Wrap(ErrEntryNotFound, errors.CodeNotFound, errMessage)
+	}
+
+	return volume, entry, nil
 }
 
 func (u *entryUsecase) update(ctx context.Context, entry *entity.Entry, key, newKey string) error {
