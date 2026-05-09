@@ -31,6 +31,7 @@ type volumeUsecase struct {
 	volumeRepo     repository.VolumeRepository
 	bodyRepo       repository.BodyRepository
 	volumeServ     service.VolumeService
+	bodyServ       service.BodyService
 }
 
 func NewVolumeUsecase(
@@ -38,12 +39,14 @@ func NewVolumeUsecase(
 	volumeRepo repository.VolumeRepository,
 	bodyRepo repository.BodyRepository,
 	volumeServ service.VolumeService,
+	bodyServ service.BodyService,
 ) VolumeUsecase {
 	return &volumeUsecase{
 		transactionObj: transactionObj,
 		volumeRepo:     volumeRepo,
 		bodyRepo:       bodyRepo,
 		volumeServ:     volumeServ,
+		bodyServ:       bodyServ,
 	}
 }
 
@@ -62,7 +65,11 @@ func (u *volumeUsecase) Create(ctx context.Context, accountID uuid.UUID, name st
 			return err
 		}
 
-		return u.bodyRepo.Create(volume.Name, nil)
+		path, err := u.bodyServ.BuildPath(volume, nil)
+		if err != nil {
+			return err
+		}
+		return u.bodyRepo.Create(path, nil)
 	}); err != nil {
 		return nil, err
 	}
@@ -83,6 +90,11 @@ func (u *volumeUsecase) Update(ctx context.Context, accountID uuid.UUID, name, n
 			return errors.Wrap(ErrVolumeNotFound, errors.CodeNotFound, "failed to update volume")
 		}
 
+		srcPath, err := u.bodyServ.BuildPath(volume, nil)
+		if err != nil {
+			return err
+		}
+
 		volume.SetIsPublic(isPublic)
 		if volume.Name == newName {
 			return u.volumeRepo.Update(ctx, volume)
@@ -98,7 +110,11 @@ func (u *volumeUsecase) Update(ctx context.Context, accountID uuid.UUID, name, n
 			return err
 		}
 
-		return u.bodyRepo.Update(name, volume.Name)
+		dstPath, err := u.bodyServ.BuildPath(volume, nil)
+		if err != nil {
+			return err
+		}
+		return u.bodyRepo.Update(srcPath, dstPath)
 	}); err != nil {
 		return nil, err
 	}
@@ -112,18 +128,22 @@ func (u *volumeUsecase) Delete(ctx context.Context, accountID uuid.UUID, name st
 		if err != nil {
 			return err
 		}
-
-		if volume != nil {
-			if err := u.volumeServ.CanDelete(ctx, volume); err != nil {
-				return err
-			}
-
-			if err := u.volumeRepo.Delete(ctx, volume); err != nil {
-				return err
-			}
+		if volume == nil {
+			return errors.Wrap(ErrVolumeNotFound, errors.CodeNotFound, "failed to delete volume")
 		}
 
-		return u.bodyRepo.Delete(name)
+		if err := u.volumeServ.CanDelete(ctx, volume); err != nil {
+			return err
+		}
+		if err := u.volumeRepo.Delete(ctx, volume); err != nil {
+			return err
+		}
+
+		path, err := u.bodyServ.BuildPath(volume, nil)
+		if err != nil {
+			return err
+		}
+		return u.bodyRepo.Delete(path)
 	})
 }
 

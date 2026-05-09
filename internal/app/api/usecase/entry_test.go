@@ -70,6 +70,7 @@ func TestEntry_Create(t *testing.T) {
 		setMockBodyRepo       func(*mockRepository.MockBodyRepository)
 		setMockVolumeRepo     func(*mockRepository.MockVolumeRepository)
 		setMockEntryServ      func(*mockService.MockEntryService)
+		setMockBodyServ       func(*mockService.MockBodyService)
 	}{
 		{
 			name:            "create file entry",
@@ -120,6 +121,13 @@ func TestEntry_Create(t *testing.T) {
 					EXPECT().
 					CreateAncestors(gomock.Any(), gomock.Any()).
 					Return(nil).
+					Times(1)
+			},
+			setMockBodyServ: func(bodyServ *mockService.MockBodyService) {
+				bodyServ.
+					EXPECT().
+					BuildPath(gomock.Any(), gomock.Any()).
+					Return("name/key/sample.txt", nil).
 					Times(1)
 			},
 		},
@@ -174,6 +182,13 @@ func TestEntry_Create(t *testing.T) {
 					Return(nil).
 					Times(1)
 			},
+			setMockBodyServ: func(bodyServ *mockService.MockBodyService) {
+				bodyServ.
+					EXPECT().
+					BuildPath(gomock.Any(), gomock.Any()).
+					Return("name/key/sample.txt", nil).
+					Times(1)
+			},
 		},
 		{
 			name:            "find volume error",
@@ -203,6 +218,7 @@ func TestEntry_Create(t *testing.T) {
 					Times(1)
 			},
 			setMockEntryServ: func(*mockService.MockEntryService) {},
+			setMockBodyServ:  func(*mockService.MockBodyService) {},
 		},
 		{
 			name:            "invalid key",
@@ -232,6 +248,7 @@ func TestEntry_Create(t *testing.T) {
 					Times(1)
 			},
 			setMockEntryServ: func(*mockService.MockEntryService) {},
+			setMockBodyServ:  func(*mockService.MockBodyService) {},
 		},
 		{
 			name:            "entry already exists",
@@ -267,6 +284,7 @@ func TestEntry_Create(t *testing.T) {
 					Return(errors.Wrap(service.ErrEntryKeyAlreadyInUse, errors.CodeDuplicate, "entry already exists")).
 					Times(1)
 			},
+			setMockBodyServ: func(*mockService.MockBodyService) {},
 		},
 		{
 			name:            "create ancestors error",
@@ -307,6 +325,7 @@ func TestEntry_Create(t *testing.T) {
 					Return(errors.Wrap(sql.ErrConnDone, errors.CodeInternalServerError, "failed to create entry")).
 					Times(1)
 			},
+			setMockBodyServ: func(*mockService.MockBodyService) {},
 		},
 		{
 			name:            "create entry error",
@@ -353,6 +372,7 @@ func TestEntry_Create(t *testing.T) {
 					Return(nil).
 					Times(1)
 			},
+			setMockBodyServ: func(*mockService.MockBodyService) {},
 		},
 		{
 			name:            "create body error",
@@ -405,6 +425,13 @@ func TestEntry_Create(t *testing.T) {
 					Return(nil).
 					Times(1)
 			},
+			setMockBodyServ: func(bodyServ *mockService.MockBodyService) {
+				bodyServ.
+					EXPECT().
+					BuildPath(gomock.Any(), gomock.Any()).
+					Return("name/key/sample.txt", nil).
+					Times(1)
+			},
 		},
 	}
 	for _, tt := range tests {
@@ -429,7 +456,10 @@ func TestEntry_Create(t *testing.T) {
 			entryServ := mockService.NewMockEntryService(ctrl)
 			tt.setMockEntryServ(entryServ)
 
-			uc := usecase.NewEntryUsecase(transactionObj, entryRepo, bodyRepo, volumeRepo, entryServ)
+			bodyServ := mockService.NewMockBodyService(ctrl)
+			tt.setMockBodyServ(bodyServ)
+
+			uc := usecase.NewEntryUsecase(transactionObj, entryRepo, bodyRepo, volumeRepo, entryServ, bodyServ)
 			result, err := uc.Create(ctx, tt.inputAccountID, tt.inputVolumeName, tt.inputKey, tt.inputSize, tt.inputBody)
 			assert.Error(t, err, tt.expectError)
 
@@ -491,6 +521,7 @@ func TestEntry_Update(t *testing.T) {
 		setMockBodyRepo       func(*mockRepository.MockBodyRepository)
 		setMockVolumeRepo     func(*mockRepository.MockVolumeRepository)
 		setMockEntryServ      func(*mockService.MockEntryService)
+		setMockBodyServ       func(*mockService.MockBodyService)
 	}{
 		{
 			name:            "successfully updated",
@@ -552,6 +583,18 @@ func TestEntry_Update(t *testing.T) {
 					Return(nil).
 					Times(1)
 			},
+			setMockBodyServ: func(bodyServ *mockService.MockBodyService) {
+				bodyServ.
+					EXPECT().
+					BuildPath(gomock.Any(), gomock.Any()).
+					Return("name/key/sample.txt", nil).
+					Times(1)
+				bodyServ.
+					EXPECT().
+					BuildPath(gomock.Any(), gomock.Any()).
+					Return("name/update/sample.txt", nil).
+					Times(1)
+			},
 		},
 		{
 			name:            "find volume error",
@@ -580,6 +623,7 @@ func TestEntry_Update(t *testing.T) {
 					Times(1)
 			},
 			setMockEntryServ: func(*mockService.MockEntryService) {},
+			setMockBodyServ:  func(*mockService.MockBodyService) {},
 		},
 		{
 			name:            "find entry error",
@@ -614,6 +658,7 @@ func TestEntry_Update(t *testing.T) {
 					Times(1)
 			},
 			setMockEntryServ: func(*mockService.MockEntryService) {},
+			setMockBodyServ:  func(*mockService.MockBodyService) {},
 		},
 		{
 			name:            "invalid update key",
@@ -648,6 +693,13 @@ func TestEntry_Update(t *testing.T) {
 					Times(1)
 			},
 			setMockEntryServ: func(*mockService.MockEntryService) {},
+			setMockBodyServ: func(bodyServ *mockService.MockBodyService) {
+				bodyServ.
+					EXPECT().
+					BuildPath(gomock.Any(), gomock.Any()).
+					Return("name/key/sample.txt", nil).
+					Times(1)
+			},
 		},
 		{
 			name:            "entry already exists",
@@ -686,6 +738,13 @@ func TestEntry_Update(t *testing.T) {
 					EXPECT().
 					Exists(gomock.Any(), gomock.Any()).
 					Return(errors.Wrap(service.ErrEntryKeyAlreadyInUse, errors.CodeDuplicate, "entry already exists")).
+					Times(1)
+			},
+			setMockBodyServ: func(bodyServ *mockService.MockBodyService) {
+				bodyServ.
+					EXPECT().
+					BuildPath(gomock.Any(), gomock.Any()).
+					Return("name/key/sample.txt", nil).
 					Times(1)
 			},
 		},
@@ -731,6 +790,13 @@ func TestEntry_Update(t *testing.T) {
 					EXPECT().
 					CreateAncestors(gomock.Any(), gomock.Any()).
 					Return(errors.Wrap(sql.ErrConnDone, errors.CodeInternalServerError, "failed to create entry")).
+					Times(1)
+			},
+			setMockBodyServ: func(bodyServ *mockService.MockBodyService) {
+				bodyServ.
+					EXPECT().
+					BuildPath(gomock.Any(), gomock.Any()).
+					Return("name/key/sample.txt", nil).
 					Times(1)
 			},
 		},
@@ -781,6 +847,13 @@ func TestEntry_Update(t *testing.T) {
 					EXPECT().
 					UpdateDescendants(gomock.Any(), gomock.Any(), gomock.Any()).
 					Return(errors.Wrap(sql.ErrConnDone, errors.CodeInternalServerError, "failed to update entry")).
+					Times(1)
+			},
+			setMockBodyServ: func(bodyServ *mockService.MockBodyService) {
+				bodyServ.
+					EXPECT().
+					BuildPath(gomock.Any(), gomock.Any()).
+					Return("name/key/sample.txt", nil).
 					Times(1)
 			},
 		},
@@ -836,6 +909,13 @@ func TestEntry_Update(t *testing.T) {
 					EXPECT().
 					UpdateDescendants(gomock.Any(), gomock.Any(), gomock.Any()).
 					Return(nil).
+					Times(1)
+			},
+			setMockBodyServ: func(bodyServ *mockService.MockBodyService) {
+				bodyServ.
+					EXPECT().
+					BuildPath(gomock.Any(), gomock.Any()).
+					Return("name/key/sample.txt", nil).
 					Times(1)
 			},
 		},
@@ -899,6 +979,18 @@ func TestEntry_Update(t *testing.T) {
 					Return(nil).
 					Times(1)
 			},
+			setMockBodyServ: func(bodyServ *mockService.MockBodyService) {
+				bodyServ.
+					EXPECT().
+					BuildPath(gomock.Any(), gomock.Any()).
+					Return("name/key/sample.txt", nil).
+					Times(1)
+				bodyServ.
+					EXPECT().
+					BuildPath(gomock.Any(), gomock.Any()).
+					Return("name/update/sample.txt", nil).
+					Times(1)
+			},
 		},
 	}
 	for _, tt := range tests {
@@ -927,7 +1019,10 @@ func TestEntry_Update(t *testing.T) {
 			entryServ := mockService.NewMockEntryService(ctrl)
 			tt.setMockEntryServ(entryServ)
 
-			uc := usecase.NewEntryUsecase(transactionObj, entryRepo, bodyRepo, volumeRepo, entryServ)
+			bodyServ := mockService.NewMockBodyService(ctrl)
+			tt.setMockBodyServ(bodyServ)
+
+			uc := usecase.NewEntryUsecase(transactionObj, entryRepo, bodyRepo, volumeRepo, entryServ, bodyServ)
 			result, err := uc.Update(ctx, tt.inputAccountID, tt.inputVolumeName, tt.inputKey, tt.inputNewKey)
 			assert.Error(t, err, tt.expectError)
 
@@ -973,6 +1068,7 @@ func TestEntry_Delete(t *testing.T) {
 		setMockBodyRepo       func(*mockRepository.MockBodyRepository)
 		setMockVolumeRepo     func(*mockRepository.MockVolumeRepository)
 		setMockEntryServ      func(*mockService.MockEntryService)
+		setMockBodyServ       func(*mockService.MockBodyService)
 	}{
 		{
 			name:            "successfully deleted",
@@ -1022,6 +1118,13 @@ func TestEntry_Delete(t *testing.T) {
 					Return(nil).
 					Times(1)
 			},
+			setMockBodyServ: func(bodyServ *mockService.MockBodyService) {
+				bodyServ.
+					EXPECT().
+					BuildPath(gomock.Any(), gomock.Any()).
+					Return("name/key/sample.txt", nil).
+					Times(1)
+			},
 		},
 		{
 			name:            "find volume error",
@@ -1048,6 +1151,7 @@ func TestEntry_Delete(t *testing.T) {
 					Times(1)
 			},
 			setMockEntryServ: func(*mockService.MockEntryService) {},
+			setMockBodyServ:  func(*mockService.MockBodyService) {},
 		},
 		{
 			name:            "find entry error",
@@ -1080,6 +1184,7 @@ func TestEntry_Delete(t *testing.T) {
 					Times(1)
 			},
 			setMockEntryServ: func(*mockService.MockEntryService) {},
+			setMockBodyServ:  func(*mockService.MockBodyService) {},
 		},
 		{
 			name:            "delete descendants error",
@@ -1118,6 +1223,7 @@ func TestEntry_Delete(t *testing.T) {
 					Return(errors.Wrap(sql.ErrConnDone, errors.CodeInternalServerError, "failed to delete entry")).
 					Times(1)
 			},
+			setMockBodyServ: func(*mockService.MockBodyService) {},
 		},
 		{
 			name:            "delete entry error",
@@ -1161,6 +1267,7 @@ func TestEntry_Delete(t *testing.T) {
 					Return(nil).
 					Times(1)
 			},
+			setMockBodyServ: func(*mockService.MockBodyService) {},
 		},
 		{
 			name:            "delete body error",
@@ -1210,6 +1317,13 @@ func TestEntry_Delete(t *testing.T) {
 					Return(nil).
 					Times(1)
 			},
+			setMockBodyServ: func(bodyServ *mockService.MockBodyService) {
+				bodyServ.
+					EXPECT().
+					BuildPath(gomock.Any(), gomock.Any()).
+					Return("name/key/sample.txt", nil).
+					Times(1)
+			},
 		},
 	}
 	for _, tt := range tests {
@@ -1234,7 +1348,10 @@ func TestEntry_Delete(t *testing.T) {
 			entryServ := mockService.NewMockEntryService(ctrl)
 			tt.setMockEntryServ(entryServ)
 
-			uc := usecase.NewEntryUsecase(transactionObj, entryRepo, bodyRepo, volumeRepo, entryServ)
+			bodyServ := mockService.NewMockBodyService(ctrl)
+			tt.setMockBodyServ(bodyServ)
+
+			uc := usecase.NewEntryUsecase(transactionObj, entryRepo, bodyRepo, volumeRepo, entryServ, bodyServ)
 			err := uc.Delete(ctx, tt.inputAccountID, tt.inputVolumeName, tt.inputKey)
 			assert.Error(t, err, tt.expectError)
 		})
@@ -1294,6 +1411,7 @@ func TestEntry_Copy(t *testing.T) {
 		setMockBodyRepo       func(*mockRepository.MockBodyRepository)
 		setMockVolumeRepo     func(*mockRepository.MockVolumeRepository)
 		setMockEntryServ      func(*mockService.MockEntryService)
+		setMockBodyServ       func(*mockService.MockBodyService)
 	}{
 		{
 			name:            "successfully copied",
@@ -1349,6 +1467,18 @@ func TestEntry_Copy(t *testing.T) {
 					Return(nil).
 					Times(1)
 			},
+			setMockBodyServ: func(bodyServ *mockService.MockBodyService) {
+				bodyServ.
+					EXPECT().
+					BuildPath(gomock.Any(), gomock.Any()).
+					Return("name/key/sample.txt", nil).
+					Times(1)
+				bodyServ.
+					EXPECT().
+					BuildPath(gomock.Any(), gomock.Any()).
+					Return("name/key/sample copy.txt", nil).
+					Times(1)
+			},
 		},
 		{
 			name:            "find volume error",
@@ -1376,6 +1506,7 @@ func TestEntry_Copy(t *testing.T) {
 					Times(1)
 			},
 			setMockEntryServ: func(*mockService.MockEntryService) {},
+			setMockBodyServ:  func(*mockService.MockBodyService) {},
 		},
 		{
 			name:            "find entry error",
@@ -1409,6 +1540,7 @@ func TestEntry_Copy(t *testing.T) {
 					Times(1)
 			},
 			setMockEntryServ: func(*mockService.MockEntryService) {},
+			setMockBodyServ:  func(*mockService.MockBodyService) {},
 		},
 		{
 			name:            "copy entry error",
@@ -1446,6 +1578,13 @@ func TestEntry_Copy(t *testing.T) {
 					EXPECT().
 					Copy(gomock.Any(), gomock.Any()).
 					Return(nil, errors.Wrap(sql.ErrConnDone, errors.CodeInternalServerError, "failed to find entry by key and volume_id")).
+					Times(1)
+			},
+			setMockBodyServ: func(bodyServ *mockService.MockBodyService) {
+				bodyServ.
+					EXPECT().
+					BuildPath(gomock.Any(), gomock.Any()).
+					Return("name/key/sample.txt", nil).
 					Times(1)
 			},
 		},
@@ -1490,6 +1629,13 @@ func TestEntry_Copy(t *testing.T) {
 					EXPECT().
 					CopyDescendants(gomock.Any(), gomock.Any(), gomock.Any()).
 					Return(errors.Wrap(sql.ErrConnDone, errors.CodeInternalServerError, "failed to find entry by volume_id and account_id")).
+					Times(1)
+			},
+			setMockBodyServ: func(bodyServ *mockService.MockBodyService) {
+				bodyServ.
+					EXPECT().
+					BuildPath(gomock.Any(), gomock.Any()).
+					Return("name/key/sample.txt", nil).
 					Times(1)
 			},
 		},
@@ -1539,6 +1685,13 @@ func TestEntry_Copy(t *testing.T) {
 					EXPECT().
 					CopyDescendants(gomock.Any(), gomock.Any(), gomock.Any()).
 					Return(nil).
+					Times(1)
+			},
+			setMockBodyServ: func(bodyServ *mockService.MockBodyService) {
+				bodyServ.
+					EXPECT().
+					BuildPath(gomock.Any(), gomock.Any()).
+					Return("name/key/sample.txt", nil).
 					Times(1)
 			},
 		},
@@ -1596,6 +1749,18 @@ func TestEntry_Copy(t *testing.T) {
 					Return(nil).
 					Times(1)
 			},
+			setMockBodyServ: func(bodyServ *mockService.MockBodyService) {
+				bodyServ.
+					EXPECT().
+					BuildPath(gomock.Any(), gomock.Any()).
+					Return("name/key/sample.txt", nil).
+					Times(1)
+				bodyServ.
+					EXPECT().
+					BuildPath(gomock.Any(), gomock.Any()).
+					Return("name/key/sample copy.txt", nil).
+					Times(1)
+			},
 		},
 	}
 	for _, tt := range tests {
@@ -1620,7 +1785,10 @@ func TestEntry_Copy(t *testing.T) {
 			entryServ := mockService.NewMockEntryService(ctrl)
 			tt.setMockEntryServ(entryServ)
 
-			uc := usecase.NewEntryUsecase(transactionObj, entryRepo, bodyRepo, volumeRepo, entryServ)
+			bodyServ := mockService.NewMockBodyService(ctrl)
+			tt.setMockBodyServ(bodyServ)
+
+			uc := usecase.NewEntryUsecase(transactionObj, entryRepo, bodyRepo, volumeRepo, entryServ, bodyServ)
 			result, err := uc.Copy(ctx, tt.inputAccountID, tt.inputVolumeName, tt.inputKey)
 			assert.Error(t, err, tt.expectError)
 
@@ -1780,7 +1948,7 @@ func TestEntry_GetMeta(t *testing.T) {
 			volumeRepo := mockRepository.NewMockVolumeRepository(ctrl)
 			tt.setMockVolumeRepo(volumeRepo)
 
-			uc := usecase.NewEntryUsecase(transactionObj, entryRepo, nil, volumeRepo, nil)
+			uc := usecase.NewEntryUsecase(transactionObj, entryRepo, nil, volumeRepo, nil, nil)
 			result, err := uc.GetMeta(ctx, tt.inputAccountID, tt.inputVolumeName, tt.inputKey)
 			assert.Error(t, err, tt.expectError)
 
@@ -1834,6 +2002,7 @@ func TestEntry_GetOne(t *testing.T) {
 		setMockEntryRepo      func(*mockRepository.MockEntryRepository)
 		setMockBodyRepo       func(*mockRepository.MockBodyRepository)
 		setMockVolumeRepo     func(*mockRepository.MockVolumeRepository)
+		setMockBodyServ       func(*mockService.MockBodyService)
 	}{
 		{
 			name:            "successfully got one",
@@ -1873,6 +2042,13 @@ func TestEntry_GetOne(t *testing.T) {
 					Return(volume, nil).
 					Times(1)
 			},
+			setMockBodyServ: func(bodyServ *mockService.MockBodyService) {
+				bodyServ.
+					EXPECT().
+					BuildPath(gomock.Any(), gomock.Any()).
+					Return("name/key/sample.txt", nil).
+					Times(1)
+			},
 		},
 		{
 			name:            "find volume error",
@@ -1900,6 +2076,7 @@ func TestEntry_GetOne(t *testing.T) {
 					Return(nil, errors.Wrap(sql.ErrConnDone, errors.CodeInternalServerError, "failed to find volume by name and account_id")).
 					Times(1)
 			},
+			setMockBodyServ: func(*mockService.MockBodyService) {},
 		},
 		{
 			name:            "find entry error",
@@ -1933,6 +2110,7 @@ func TestEntry_GetOne(t *testing.T) {
 					Return(volume, nil).
 					Times(1)
 			},
+			setMockBodyServ: func(*mockService.MockBodyService) {},
 		},
 		{
 			name:            "find body error",
@@ -1972,6 +2150,13 @@ func TestEntry_GetOne(t *testing.T) {
 					Return(volume, nil).
 					Times(1)
 			},
+			setMockBodyServ: func(bodyServ *mockService.MockBodyService) {
+				bodyServ.
+					EXPECT().
+					BuildPath(gomock.Any(), gomock.Any()).
+					Return("name/key/sample.txt", nil).
+					Times(1)
+			},
 		},
 	}
 	for _, tt := range tests {
@@ -1993,7 +2178,10 @@ func TestEntry_GetOne(t *testing.T) {
 			volumeRepo := mockRepository.NewMockVolumeRepository(ctrl)
 			tt.setMockVolumeRepo(volumeRepo)
 
-			uc := usecase.NewEntryUsecase(transactionObj, entryRepo, bodyRepo, volumeRepo, nil)
+			bodyServ := mockService.NewMockBodyService(ctrl)
+			tt.setMockBodyServ(bodyServ)
+
+			uc := usecase.NewEntryUsecase(transactionObj, entryRepo, bodyRepo, volumeRepo, nil, bodyServ)
 			entry, body, err := uc.GetOne(ctx, tt.inputAccountID, tt.inputVolumeName, tt.inputKey)
 			assert.Error(t, err, tt.expectError)
 
@@ -2190,7 +2378,7 @@ func TestEntry_Search(t *testing.T) {
 			volumeRepo := mockRepository.NewMockVolumeRepository(ctrl)
 			tt.setMockVolumeRepo(volumeRepo)
 
-			uc := usecase.NewEntryUsecase(transactionObj, entryRepo, nil, volumeRepo, nil)
+			uc := usecase.NewEntryUsecase(transactionObj, entryRepo, nil, volumeRepo, nil, nil)
 			result, err := uc.Search(ctx, tt.inputAccountID, tt.inputVolumeName, tt.inputPrefix, tt.inputDepth)
 			assert.Error(t, err, tt.expectError)
 

@@ -46,6 +46,7 @@ func TestVolume_Create(t *testing.T) {
 		setMockVolumeRepo     func(*mockRepository.MockVolumeRepository)
 		setMockBodyRepo       func(*mockRepository.MockBodyRepository)
 		setMockVolumeServ     func(*mockService.MockVolumeService)
+		setMockBodyServ       func(*mockService.MockBodyService)
 	}{
 		{
 			name:           "successfully created",
@@ -84,6 +85,13 @@ func TestVolume_Create(t *testing.T) {
 					Return(nil).
 					Times(1)
 			},
+			setMockBodyServ: func(bodyServ *mockService.MockBodyService) {
+				bodyServ.
+					EXPECT().
+					BuildPath(gomock.Any(), gomock.Any()).
+					Return("name", nil).
+					Times(1)
+			},
 		},
 		{
 			name:                  "invalid name",
@@ -96,6 +104,7 @@ func TestVolume_Create(t *testing.T) {
 			setMockVolumeRepo:     func(*mockRepository.MockVolumeRepository) {},
 			setMockBodyRepo:       func(*mockRepository.MockBodyRepository) {},
 			setMockVolumeServ:     func(*mockService.MockVolumeService) {},
+			setMockBodyServ:       func(*mockService.MockBodyService) {},
 		},
 		{
 			name:           "volume already exists",
@@ -122,6 +131,7 @@ func TestVolume_Create(t *testing.T) {
 					Return(errors.Wrap(service.ErrVolumeNameAlreadyInUse, errors.CodeDuplicate, "volume already exists")).
 					Times(1)
 			},
+			setMockBodyServ: func(*mockService.MockBodyService) {},
 		},
 		{
 			name:           "create volume error",
@@ -154,6 +164,7 @@ func TestVolume_Create(t *testing.T) {
 					Return(nil).
 					Times(1)
 			},
+			setMockBodyServ: func(*mockService.MockBodyService) {},
 		},
 		{
 			name:           "create body error",
@@ -192,6 +203,13 @@ func TestVolume_Create(t *testing.T) {
 					Return(nil).
 					Times(1)
 			},
+			setMockBodyServ: func(bodyServ *mockService.MockBodyService) {
+				bodyServ.
+					EXPECT().
+					BuildPath(gomock.Any(), gomock.Any()).
+					Return("name", nil).
+					Times(1)
+			},
 		},
 	}
 	for _, tt := range tests {
@@ -213,7 +231,10 @@ func TestVolume_Create(t *testing.T) {
 			volumeServ := mockService.NewMockVolumeService(ctrl)
 			tt.setMockVolumeServ(volumeServ)
 
-			uc := usecase.NewVolumeUsecase(transactionObj, volumeRepo, bodyRepo, volumeServ)
+			bodyServ := mockService.NewMockBodyService(ctrl)
+			tt.setMockBodyServ(bodyServ)
+
+			uc := usecase.NewVolumeUsecase(transactionObj, volumeRepo, bodyRepo, volumeServ, bodyServ)
 			result, err := uc.Create(ctx, tt.inputAccountID, tt.inputName, tt.inputIsPublic)
 			assert.Error(t, err, tt.expectError)
 
@@ -271,6 +292,7 @@ func TestVolume_Update(t *testing.T) {
 		setMockVolumeRepo     func(*mockRepository.MockVolumeRepository)
 		setMockBodyRepo       func(*mockRepository.MockBodyRepository)
 		setMockVolumeServ     func(*mockService.MockVolumeService)
+		setMockBodyServ       func(*mockService.MockBodyService)
 	}{
 		{
 			name:           "successfully updated",
@@ -315,6 +337,18 @@ func TestVolume_Update(t *testing.T) {
 					Return(nil).
 					Times(1)
 			},
+			setMockBodyServ: func(bodyServ *mockService.MockBodyService) {
+				bodyServ.
+					EXPECT().
+					BuildPath(gomock.Any(), gomock.Any()).
+					Return("name", nil).
+					Times(1)
+				bodyServ.
+					EXPECT().
+					BuildPath(gomock.Any(), gomock.Any()).
+					Return("update", nil).
+					Times(1)
+			},
 		},
 		{
 			name:           "not updated volume name",
@@ -347,6 +381,13 @@ func TestVolume_Update(t *testing.T) {
 			},
 			setMockBodyRepo:   func(*mockRepository.MockBodyRepository) {},
 			setMockVolumeServ: func(*mockService.MockVolumeService) {},
+			setMockBodyServ: func(bodyServ *mockService.MockBodyService) {
+				bodyServ.
+					EXPECT().
+					BuildPath(gomock.Any(), gomock.Any()).
+					Return("name", nil).
+					Times(1)
+			},
 		},
 		{
 			name:           "invalid name",
@@ -374,6 +415,13 @@ func TestVolume_Update(t *testing.T) {
 			},
 			setMockBodyRepo:   func(*mockRepository.MockBodyRepository) {},
 			setMockVolumeServ: func(*mockService.MockVolumeService) {},
+			setMockBodyServ: func(bodyServ *mockService.MockBodyService) {
+				bodyServ.
+					EXPECT().
+					BuildPath(gomock.Any(), gomock.Any()).
+					Return("name", nil).
+					Times(1)
+			},
 		},
 		{
 			name:           "volume already exists",
@@ -407,6 +455,13 @@ func TestVolume_Update(t *testing.T) {
 					Return(errors.Wrap(service.ErrVolumeNameAlreadyInUse, errors.CodeDuplicate, "volume already exists")).
 					Times(1)
 			},
+			setMockBodyServ: func(bodyServ *mockService.MockBodyService) {
+				bodyServ.
+					EXPECT().
+					BuildPath(gomock.Any(), gomock.Any()).
+					Return("name", nil).
+					Times(1)
+			},
 		},
 		{
 			name:           "find volume error",
@@ -434,6 +489,7 @@ func TestVolume_Update(t *testing.T) {
 			},
 			setMockBodyRepo:   func(*mockRepository.MockBodyRepository) {},
 			setMockVolumeServ: func(*mockService.MockVolumeService) {},
+			setMockBodyServ:   func(*mockService.MockBodyService) {},
 		},
 		{
 			name:           "update volume error",
@@ -470,6 +526,13 @@ func TestVolume_Update(t *testing.T) {
 					EXPECT().
 					Exists(gomock.Any(), gomock.Any()).
 					Return(nil).
+					Times(1)
+			},
+			setMockBodyServ: func(bodyServ *mockService.MockBodyService) {
+				bodyServ.
+					EXPECT().
+					BuildPath(gomock.Any(), gomock.Any()).
+					Return("name", nil).
 					Times(1)
 			},
 		},
@@ -516,6 +579,18 @@ func TestVolume_Update(t *testing.T) {
 					Return(nil).
 					Times(1)
 			},
+			setMockBodyServ: func(bodyServ *mockService.MockBodyService) {
+				bodyServ.
+					EXPECT().
+					BuildPath(gomock.Any(), gomock.Any()).
+					Return("name", nil).
+					Times(1)
+				bodyServ.
+					EXPECT().
+					BuildPath(gomock.Any(), gomock.Any()).
+					Return("update", nil).
+					Times(1)
+			},
 		},
 	}
 	for _, tt := range tests {
@@ -541,7 +616,10 @@ func TestVolume_Update(t *testing.T) {
 			volumeServ := mockService.NewMockVolumeService(ctrl)
 			tt.setMockVolumeServ(volumeServ)
 
-			uc := usecase.NewVolumeUsecase(transactionObj, volumeRepo, bodyRepo, volumeServ)
+			bodyServ := mockService.NewMockBodyService(ctrl)
+			tt.setMockBodyServ(bodyServ)
+
+			uc := usecase.NewVolumeUsecase(transactionObj, volumeRepo, bodyRepo, volumeServ, bodyServ)
 			result, err := uc.Update(ctx, tt.inputAccountID, tt.inputName, tt.inputNewName, tt.inputIsPublic)
 			assert.Error(t, err, tt.expectError)
 
@@ -575,6 +653,7 @@ func TestVolume_Delete(t *testing.T) {
 		setMockVolumeRepo     func(*mockRepository.MockVolumeRepository)
 		setMockBodyRepo       func(*mockRepository.MockBodyRepository)
 		setMockVolumeServ     func(*mockService.MockVolumeService)
+		setMockBodyServ       func(*mockService.MockBodyService)
 	}{
 		{
 			name:           "successfully deleted",
@@ -616,6 +695,13 @@ func TestVolume_Delete(t *testing.T) {
 					Return(nil).
 					Times(1)
 			},
+			setMockBodyServ: func(bodyServ *mockService.MockBodyService) {
+				bodyServ.
+					EXPECT().
+					BuildPath(gomock.Any(), gomock.Any()).
+					Return("name", nil).
+					Times(1)
+			},
 		},
 		{
 			name:           "find volume error",
@@ -640,6 +726,7 @@ func TestVolume_Delete(t *testing.T) {
 			},
 			setMockBodyRepo:   func(*mockRepository.MockBodyRepository) {},
 			setMockVolumeServ: func(*mockService.MockVolumeService) {},
+			setMockBodyServ:   func(*mockService.MockBodyService) {},
 		},
 		{
 			name:           "volume has entries",
@@ -670,6 +757,7 @@ func TestVolume_Delete(t *testing.T) {
 					Return(errors.Wrap(service.ErrVolumeHasEntries, errors.CodeConstraintViolation, "volume cannot be deleted")).
 					Times(1)
 			},
+			setMockBodyServ: func(*mockService.MockBodyService) {},
 		},
 		{
 			name:           "delete volume error",
@@ -705,6 +793,7 @@ func TestVolume_Delete(t *testing.T) {
 					Return(nil).
 					Times(1)
 			},
+			setMockBodyServ: func(*mockService.MockBodyService) {},
 		},
 		{
 			name:           "delete body error",
@@ -746,6 +835,13 @@ func TestVolume_Delete(t *testing.T) {
 					Return(nil).
 					Times(1)
 			},
+			setMockBodyServ: func(bodyServ *mockService.MockBodyService) {
+				bodyServ.
+					EXPECT().
+					BuildPath(gomock.Any(), gomock.Any()).
+					Return("name", nil).
+					Times(1)
+			},
 		},
 	}
 	for _, tt := range tests {
@@ -767,7 +863,10 @@ func TestVolume_Delete(t *testing.T) {
 			volumeServ := mockService.NewMockVolumeService(ctrl)
 			tt.setMockVolumeServ(volumeServ)
 
-			uc := usecase.NewVolumeUsecase(transactionObj, volumeRepo, bodyRepo, volumeServ)
+			bodyServ := mockService.NewMockBodyService(ctrl)
+			tt.setMockBodyServ(bodyServ)
+
+			uc := usecase.NewVolumeUsecase(transactionObj, volumeRepo, bodyRepo, volumeServ, bodyServ)
 			err := uc.Delete(ctx, tt.inputAccountID, tt.inputName)
 			assert.Error(t, err, tt.expectError)
 		})
@@ -840,7 +939,7 @@ func TestVolume_GetOne(t *testing.T) {
 			volumeRepo := mockRepository.NewMockVolumeRepository(ctrl)
 			tt.setMockVolumeRepo(volumeRepo)
 
-			uc := usecase.NewVolumeUsecase(nil, volumeRepo, nil, nil)
+			uc := usecase.NewVolumeUsecase(nil, volumeRepo, nil, nil, nil)
 			result, err := uc.GetOne(ctx, tt.inputAccountID, tt.inputName)
 			assert.Error(t, err, tt.expectError)
 
@@ -927,7 +1026,7 @@ func TestVolume_GetAll(t *testing.T) {
 			volumeRepo := mockRepository.NewMockVolumeRepository(ctrl)
 			tt.setMockVolumeRepo(volumeRepo)
 
-			uc := usecase.NewVolumeUsecase(nil, volumeRepo, nil, nil)
+			uc := usecase.NewVolumeUsecase(nil, volumeRepo, nil, nil, nil)
 			result, err := uc.GetAll(ctx, tt.inputAccountID)
 			assert.Error(t, err, tt.expectError)
 
