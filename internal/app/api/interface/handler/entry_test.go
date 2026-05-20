@@ -356,7 +356,7 @@ func TestEntry_Copy(t *testing.T) {
 		ID:        uuid.New(),
 		AccountID: accountID,
 		VolumeID:  uuid.New(),
-		Key:       "key/sample copy.txt",
+		Key:       "key/copy.txt",
 		Size:      4,
 		Type:      "text/plain; charset=utf-8",
 		CreatedAt: time.Now(),
@@ -365,6 +365,7 @@ func TestEntry_Copy(t *testing.T) {
 
 	tests := []struct {
 		name                  string
+		requestBody           []byte
 		hasAccountIDInContext bool
 		expectCode            int
 		expectResponse        []byte
@@ -372,19 +373,29 @@ func TestEntry_Copy(t *testing.T) {
 	}{
 		{
 			name:                  "successfully copied",
+			requestBody:           []byte(`{"key": "key/copy.txt"}`),
 			hasAccountIDInContext: true,
 			expectCode:            http.StatusCreated,
 			expectResponse:        fmt.Appendf(nil, `{"key":"%s","size":%d,"type":"%s","created_at":"%s","updated_at":"%s"}`, entryDTO.Key, entryDTO.Size, entryDTO.Type, entryDTO.CreatedAt.Format(time.RFC3339Nano), entryDTO.UpdatedAt.Format(time.RFC3339Nano)),
 			setMockEntryUC: func(entryUC *mockUsecase.MockEntryUsecase) {
 				entryUC.
 					EXPECT().
-					Copy(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+					Copy(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 					Return(entryDTO, nil).
 					Times(1)
 			},
 		},
 		{
+			name:                  "invalid request",
+			requestBody:           nil,
+			hasAccountIDInContext: true,
+			expectCode:            http.StatusBadRequest,
+			expectResponse:        []byte(`{"error":{"code":"BAD_REQUEST","message":"bad request"}}`),
+			setMockEntryUC:        func(*mockUsecase.MockEntryUsecase) {},
+		},
+		{
 			name:                  "account id not set",
+			requestBody:           []byte(`{"key": "key/copy.txt"}`),
 			hasAccountIDInContext: false,
 			expectCode:            http.StatusUnauthorized,
 			expectResponse:        []byte(`{"error":{"code":"UNAUTHENTICATED","message":"unauthenticated"}}`),
@@ -392,13 +403,14 @@ func TestEntry_Copy(t *testing.T) {
 		},
 		{
 			name:                  "copy error",
+			requestBody:           []byte(`{"key": "key/copy.txt"}`),
 			hasAccountIDInContext: true,
 			expectCode:            http.StatusInternalServerError,
 			expectResponse:        []byte(`{"error":{"code":"INTERNAL_SERVER_ERROR","message":"internal server error"}}`),
 			setMockEntryUC: func(entryUC *mockUsecase.MockEntryUsecase) {
 				entryUC.
 					EXPECT().
-					Copy(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+					Copy(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 					Return(nil, errors.Wrap(sql.ErrConnDone, errors.CodeInternalServerError, "failed to find entry by key and volume_id and account_id")).
 					Times(1)
 			},
@@ -411,7 +423,7 @@ func TestEntry_Copy(t *testing.T) {
 
 			c, _ := gin.CreateTestContext(w)
 			var err error
-			c.Request, err = http.NewRequestWithContext(ctx, "POST", "entries/volume/key/sample.txt", http.NoBody)
+			c.Request, err = http.NewRequestWithContext(ctx, "POST", "entries/volume/key/sample.txt", bytes.NewBuffer(tt.requestBody))
 			if err != nil {
 				t.Error(err)
 			}

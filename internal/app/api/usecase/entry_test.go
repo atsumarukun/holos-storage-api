@@ -1382,7 +1382,7 @@ func TestEntry_Copy(t *testing.T) {
 		ID:        entry.ID,
 		AccountID: entry.AccountID,
 		VolumeID:  entry.VolumeID,
-		Key:       "key/sample copy.txt",
+		Key:       "key/copy.txt",
 		Size:      entry.Size,
 		Type:      entry.Type,
 		CreatedAt: time.Now(),
@@ -1404,6 +1404,7 @@ func TestEntry_Copy(t *testing.T) {
 		inputAccountID        uuid.UUID
 		inputVolumeName       string
 		inputKey              string
+		inputDstKey           string
 		expectResult          *dto.EntryDTO
 		expectError           error
 		setMockTransactionObj func(*mockTransaction.MockTransactionObject)
@@ -1418,6 +1419,7 @@ func TestEntry_Copy(t *testing.T) {
 			inputAccountID:  accountID,
 			inputVolumeName: "name",
 			inputKey:        "key/sample.txt",
+			inputDstKey:     "key/copy.txt",
 			expectResult:    entryDTO,
 			expectError:     nil,
 			setMockTransactionObj: func(transactionObj *mockTransaction.MockTransactionObject) {
@@ -1458,7 +1460,7 @@ func TestEntry_Copy(t *testing.T) {
 			setMockEntryServ: func(entryServ *mockService.MockEntryService) {
 				entryServ.
 					EXPECT().
-					Copy(gomock.Any(), gomock.Any()).
+					Copy(gomock.Any(), gomock.Any(), gomock.Any()).
 					Return(copiedEntry, nil).
 					Times(1)
 				entryServ.
@@ -1485,6 +1487,7 @@ func TestEntry_Copy(t *testing.T) {
 			inputAccountID:  accountID,
 			inputVolumeName: "name",
 			inputKey:        "key/sample.txt",
+			inputDstKey:     "key/copy.txt",
 			expectResult:    nil,
 			expectError:     sql.ErrConnDone,
 			setMockTransactionObj: func(transactionObj *mockTransaction.MockTransactionObject) {
@@ -1513,6 +1516,7 @@ func TestEntry_Copy(t *testing.T) {
 			inputAccountID:  accountID,
 			inputVolumeName: "name",
 			inputKey:        "key/sample.txt",
+			inputDstKey:     "key/copy.txt",
 			expectResult:    nil,
 			expectError:     sql.ErrConnDone,
 			setMockTransactionObj: func(transactionObj *mockTransaction.MockTransactionObject) {
@@ -1547,6 +1551,7 @@ func TestEntry_Copy(t *testing.T) {
 			inputAccountID:  accountID,
 			inputVolumeName: "name",
 			inputKey:        "key/sample.txt",
+			inputDstKey:     "key/copy.txt",
 			expectResult:    nil,
 			expectError:     sql.ErrConnDone,
 			setMockTransactionObj: func(transactionObj *mockTransaction.MockTransactionObject) {
@@ -1576,7 +1581,7 @@ func TestEntry_Copy(t *testing.T) {
 			setMockEntryServ: func(entryServ *mockService.MockEntryService) {
 				entryServ.
 					EXPECT().
-					Copy(gomock.Any(), gomock.Any()).
+					Copy(gomock.Any(), gomock.Any(), gomock.Any()).
 					Return(nil, errors.Wrap(sql.ErrConnDone, errors.CodeInternalServerError, "failed to find entry by key and volume_id")).
 					Times(1)
 			},
@@ -1593,6 +1598,7 @@ func TestEntry_Copy(t *testing.T) {
 			inputAccountID:  accountID,
 			inputVolumeName: "name",
 			inputKey:        "key/sample.txt",
+			inputDstKey:     "key/copy.txt",
 			expectResult:    nil,
 			expectError:     sql.ErrConnDone,
 			setMockTransactionObj: func(transactionObj *mockTransaction.MockTransactionObject) {
@@ -1622,7 +1628,7 @@ func TestEntry_Copy(t *testing.T) {
 			setMockEntryServ: func(entryServ *mockService.MockEntryService) {
 				entryServ.
 					EXPECT().
-					Copy(gomock.Any(), gomock.Any()).
+					Copy(gomock.Any(), gomock.Any(), gomock.Any()).
 					Return(copiedEntry, nil).
 					Times(1)
 				entryServ.
@@ -1644,6 +1650,7 @@ func TestEntry_Copy(t *testing.T) {
 			inputAccountID:  accountID,
 			inputVolumeName: "name",
 			inputKey:        "key/sample.txt",
+			inputDstKey:     "key/copy.txt",
 			expectResult:    nil,
 			expectError:     sql.ErrConnDone,
 			setMockTransactionObj: func(transactionObj *mockTransaction.MockTransactionObject) {
@@ -1678,7 +1685,7 @@ func TestEntry_Copy(t *testing.T) {
 			setMockEntryServ: func(entryServ *mockService.MockEntryService) {
 				entryServ.
 					EXPECT().
-					Copy(gomock.Any(), gomock.Any()).
+					Copy(gomock.Any(), gomock.Any(), gomock.Any()).
 					Return(copiedEntry, nil).
 					Times(1)
 				entryServ.
@@ -1700,6 +1707,7 @@ func TestEntry_Copy(t *testing.T) {
 			inputAccountID:  accountID,
 			inputVolumeName: "name",
 			inputKey:        "key/sample.txt",
+			inputDstKey:     "key/copy.txt",
 			expectResult:    nil,
 			expectError:     afero.ErrFileClosed,
 			setMockTransactionObj: func(transactionObj *mockTransaction.MockTransactionObject) {
@@ -1740,7 +1748,7 @@ func TestEntry_Copy(t *testing.T) {
 			setMockEntryServ: func(entryServ *mockService.MockEntryService) {
 				entryServ.
 					EXPECT().
-					Copy(gomock.Any(), gomock.Any()).
+					Copy(gomock.Any(), gomock.Any(), gomock.Any()).
 					Return(copiedEntry, nil).
 					Times(1)
 				entryServ.
@@ -1789,7 +1797,7 @@ func TestEntry_Copy(t *testing.T) {
 			tt.setMockBodyServ(bodyServ)
 
 			uc := usecase.NewEntryUsecase(transactionObj, entryRepo, bodyRepo, volumeRepo, entryServ, bodyServ)
-			result, err := uc.Copy(ctx, tt.inputAccountID, tt.inputVolumeName, tt.inputKey)
+			result, err := uc.Copy(ctx, tt.inputAccountID, tt.inputVolumeName, tt.inputKey, tt.inputDstKey)
 			assert.Error(t, err, tt.expectError)
 
 			opts := cmp.Options{

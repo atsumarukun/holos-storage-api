@@ -131,18 +131,26 @@ func (h *entryHandler) Delete(c *gin.Context) {
 }
 
 func (h *entryHandler) Copy(c *gin.Context) {
+	const errMessage = "failed to copy entry"
+
+	var req schema.CopyEntryRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		hdlerr.Handle(c, errors.Wrap(err, errors.CodeBadRequest, errMessage))
+		return
+	}
+
 	volumeName := c.Param("volumeName")
 	key := strings.TrimPrefix(c.Param("key"), "/")
 
 	accountID, err := parameter.GetContextParameter[uuid.UUID](c, "accountID")
 	if err != nil {
-		hdlerr.Handle(c, errors.Wrap(err, errors.CodeUnauthenticated, "failed to copy entry"))
+		hdlerr.Handle(c, errors.Wrap(err, errors.CodeUnauthenticated, errMessage))
 		return
 	}
 
 	ctx := c.Request.Context()
 
-	entry, err := h.entryUC.Copy(ctx, accountID, volumeName, key)
+	entry, err := h.entryUC.Copy(ctx, accountID, volumeName, key, req.Key)
 	if err != nil {
 		hdlerr.Handle(c, err)
 		return

@@ -472,7 +472,7 @@ func TestEntry_Copy(t *testing.T) {
 		ID:        uuid.New(),
 		AccountID: fileEntry.AccountID,
 		VolumeID:  fileEntry.VolumeID,
-		Key:       "key/sample copy.txt",
+		Key:       "key/copy.txt",
 		Size:      fileEntry.Size,
 		Type:      fileEntry.Type,
 		CreatedAt: time.Now(),
@@ -482,7 +482,7 @@ func TestEntry_Copy(t *testing.T) {
 		ID:        uuid.New(),
 		AccountID: folderEntry.AccountID,
 		VolumeID:  folderEntry.VolumeID,
-		Key:       "key copy",
+		Key:       "copy",
 		Size:      folderEntry.Size,
 		Type:      folderEntry.Type,
 		CreatedAt: time.Now(),
@@ -492,7 +492,7 @@ func TestEntry_Copy(t *testing.T) {
 		ID:        uuid.New(),
 		AccountID: fileEntry.AccountID,
 		VolumeID:  fileEntry.VolumeID,
-		Key:       "key/sample copy copy.txt",
+		Key:       "key/copy copy.txt",
 		Size:      fileEntry.Size,
 		Type:      fileEntry.Type,
 		CreatedAt: time.Now(),
@@ -502,6 +502,7 @@ func TestEntry_Copy(t *testing.T) {
 	tests := []struct {
 		name             string
 		inputEntry       *entity.Entry
+		inputDstKey      string
 		expectResult     *entity.Entry
 		expectError      error
 		setMockEntryRepo func(*mockRepository.MockEntryRepository)
@@ -509,6 +510,7 @@ func TestEntry_Copy(t *testing.T) {
 		{
 			name:         "copy file entry",
 			inputEntry:   fileEntry,
+			inputDstKey:  "key/copy.txt",
 			expectResult: copiedFileEntry,
 			expectError:  nil,
 			setMockEntryRepo: func(entryRepo *mockRepository.MockEntryRepository) {
@@ -522,6 +524,7 @@ func TestEntry_Copy(t *testing.T) {
 		{
 			name:         "copy folder entry",
 			inputEntry:   folderEntry,
+			inputDstKey:  "copy",
 			expectResult: copiedFolderEntry,
 			expectError:  nil,
 			setMockEntryRepo: func(entryRepo *mockRepository.MockEntryRepository) {
@@ -535,6 +538,7 @@ func TestEntry_Copy(t *testing.T) {
 		{
 			name:         "duplicate key",
 			inputEntry:   fileEntry,
+			inputDstKey:  "key/copy.txt",
 			expectResult: copiedFileEntryTwice,
 			expectError:  nil,
 			setMockEntryRepo: func(entryRepo *mockRepository.MockEntryRepository) {
@@ -553,6 +557,7 @@ func TestEntry_Copy(t *testing.T) {
 		{
 			name:             "entry is nil",
 			inputEntry:       nil,
+			inputDstKey:      "key/copy.txt",
 			expectResult:     nil,
 			expectError:      service.ErrNilEntry,
 			setMockEntryRepo: func(*mockRepository.MockEntryRepository) {},
@@ -560,6 +565,7 @@ func TestEntry_Copy(t *testing.T) {
 		{
 			name:         "find entry error",
 			inputEntry:   fileEntry,
+			inputDstKey:  "key/copy.txt",
 			expectResult: nil,
 			expectError:  sql.ErrConnDone,
 			setMockEntryRepo: func(entryRepo *mockRepository.MockEntryRepository) {
@@ -583,7 +589,7 @@ func TestEntry_Copy(t *testing.T) {
 
 			serv := service.NewEntryService(entryRepo)
 
-			result, err := serv.Copy(ctx, tt.inputEntry)
+			result, err := serv.Copy(ctx, tt.inputEntry, tt.inputDstKey)
 			assert.Error(t, err, tt.expectError)
 
 			opts := cmp.Options{
