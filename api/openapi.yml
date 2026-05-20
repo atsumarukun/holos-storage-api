@@ -301,6 +301,8 @@ paths:
           required: true
           description: "キー"
           example: "key/sample.txt"
+      requestBody:
+        $ref: "#/components/requestBodies/copy_entry"
       responses:
         201:
           $ref: "#/components/responses/copy_entry"
@@ -602,6 +604,17 @@ components:
                     description: "ファイル"
                 required:
                   - "file"
+    copy_entry:
+      required: true
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: "#/components/schemas/entry"
+              - type: "object"
+                properties:
+                  volume_name:
+                    readOnly: true
     update_entry:
       required: true
       content:
