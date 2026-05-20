@@ -148,7 +148,7 @@ func (h *entryHandler) Copy(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, builder.ToEntryResponse(entry))
+	c.JSON(http.StatusCreated, builder.ToEntryResponse(entry))
 }
 
 func (h *entryHandler) GetMeta(c *gin.Context) {

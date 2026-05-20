@@ -373,7 +373,7 @@ func TestEntry_Copy(t *testing.T) {
 		{
 			name:                  "successfully copied",
 			hasAccountIDInContext: true,
-			expectCode:            http.StatusOK,
+			expectCode:            http.StatusCreated,
 			expectResponse:        fmt.Appendf(nil, `{"key":"%s","size":%d,"type":"%s","created_at":"%s","updated_at":"%s"}`, entryDTO.Key, entryDTO.Size, entryDTO.Type, entryDTO.CreatedAt.Format(time.RFC3339Nano), entryDTO.UpdatedAt.Format(time.RFC3339Nano)),
 			setMockEntryUC: func(entryUC *mockUsecase.MockEntryUsecase) {
 				entryUC.
