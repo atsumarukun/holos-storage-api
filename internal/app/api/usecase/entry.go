@@ -25,7 +25,7 @@ type EntryUsecase interface {
 	Create(context.Context, uuid.UUID, string, string, uint64, io.Reader) (*dto.EntryDTO, error)
 	Update(context.Context, uuid.UUID, string, string, string) (*dto.EntryDTO, error)
 	Delete(context.Context, uuid.UUID, string, string) error
-	Copy(context.Context, uuid.UUID, string, string) (*dto.EntryDTO, error)
+	Copy(context.Context, uuid.UUID, string, string, string) (*dto.EntryDTO, error)
 	GetMeta(context.Context, uuid.UUID, string, string) (*dto.EntryDTO, error)
 	GetOne(context.Context, uuid.UUID, string, string) (*dto.EntryDTO, io.ReadCloser, error)
 	Search(context.Context, uuid.UUID, string, *string, *uint64) ([]*dto.EntryDTO, error)
@@ -162,7 +162,7 @@ func (u *entryUsecase) Delete(ctx context.Context, accountID uuid.UUID, volumeNa
 	})
 }
 
-func (u *entryUsecase) Copy(ctx context.Context, accountID uuid.UUID, volumeName, key string) (*dto.EntryDTO, error) {
+func (u *entryUsecase) Copy(ctx context.Context, accountID uuid.UUID, volumeName, key, dstKey string) (*dto.EntryDTO, error) {
 	const errMessage = "failed to copy entry"
 
 	var entry *entity.Entry
@@ -177,7 +177,7 @@ func (u *entryUsecase) Copy(ctx context.Context, accountID uuid.UUID, volumeName
 			return err
 		}
 
-		dstEntry, err := u.copy(ctx, srcEntry)
+		dstEntry, err := u.copy(ctx, srcEntry, dstKey)
 		if err != nil {
 			return err
 		}
@@ -323,10 +323,10 @@ func (u *entryUsecase) update(ctx context.Context, entry *entity.Entry, key, new
 	return u.entryRepo.Update(ctx, entry)
 }
 
-func (u *entryUsecase) copy(ctx context.Context, src *entity.Entry) (*entity.Entry, error) {
+func (u *entryUsecase) copy(ctx context.Context, src *entity.Entry, dstKey string) (*entity.Entry, error) {
 	srcKey := src.Key
 
-	dst, err := u.entryServ.Copy(ctx, src)
+	dst, err := u.entryServ.Copy(ctx, src, dstKey)
 	if err != nil {
 		return nil, err
 	}

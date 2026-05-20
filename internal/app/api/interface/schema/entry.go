@@ -10,6 +10,10 @@ type UpdateEntryRequest struct {
 	Key string `json:"key"`
 }
 
+type CopyEntryRequest struct {
+	Key string `json:"key"`
+}
+
 type EntryResponse struct {
 	Key       string    `json:"key"`
 	Size      uint64    `json:"size"`

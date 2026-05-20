@@ -23,7 +23,7 @@ type EntryService interface {
 	CreateAncestors(context.Context, *entity.Entry) error
 	UpdateDescendants(context.Context, *entity.Entry, string) error
 	DeleteDescendants(context.Context, *entity.Entry) error
-	Copy(context.Context, *entity.Entry) (*entity.Entry, error)
+	Copy(context.Context, *entity.Entry, string) (*entity.Entry, error)
 	CopyDescendants(context.Context, *entity.Entry, string) error
 }
 
@@ -124,15 +124,18 @@ func (s *entryService) DeleteDescendants(ctx context.Context, entry *entity.Entr
 	return nil
 }
 
-func (s *entryService) Copy(ctx context.Context, entry *entity.Entry) (*entity.Entry, error) {
+func (s *entryService) Copy(ctx context.Context, entry *entity.Entry, dstKey string) (*entity.Entry, error) {
 	if entry == nil {
 		return nil, errors.Wrap(ErrNilEntry, errors.CodeInternalServerError, "failed to copy entry")
 	}
 
-	name := filepath.Base(entry.Key)
-	ext := filepath.Ext(name)
-	base := strings.TrimSuffix(name, ext)
-	key := strings.Replace(entry.Key, name, base+" copy"+ext, 1)
+	key := dstKey
+	if entry.Key == dstKey {
+		name := filepath.Base(entry.Key)
+		ext := filepath.Ext(name)
+		base := strings.TrimSuffix(name, ext)
+		key = strings.Replace(entry.Key, name, base+" copy"+ext, 1)
+	}
 
 	copied, err := entity.NewEntry(entry.AccountID, entry.VolumeID, key, entry.Size, entry.Type)
 	if err != nil {
@@ -141,7 +144,7 @@ func (s *entryService) Copy(ctx context.Context, entry *entity.Entry) (*entity.E
 
 	if err := s.Exists(ctx, copied); err != nil {
 		if stderr.Is(err, ErrEntryKeyAlreadyInUse) {
-			copied, err = s.Copy(ctx, copied)
+			copied, err = s.Copy(ctx, copied, dstKey)
 			if err != nil {
 				return nil, err
 			}

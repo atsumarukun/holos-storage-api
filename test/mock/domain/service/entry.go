@@ -42,18 +42,18 @@ func (m *MockEntryService) EXPECT() *MockEntryServiceMockRecorder {
 }
 
 // Copy mocks base method.
-func (m *MockEntryService) Copy(arg0 context.Context, arg1 *entity.Entry) (*entity.Entry, error) {
+func (m *MockEntryService) Copy(arg0 context.Context, arg1 *entity.Entry, arg2 string) (*entity.Entry, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Copy", arg0, arg1)
+	ret := m.ctrl.Call(m, "Copy", arg0, arg1, arg2)
 	ret0, _ := ret[0].(*entity.Entry)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Copy indicates an expected call of Copy.
-func (mr *MockEntryServiceMockRecorder) Copy(arg0, arg1 any) *gomock.Call {
+func (mr *MockEntryServiceMockRecorder) Copy(arg0, arg1, arg2 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Copy", reflect.TypeOf((*MockEntryService)(nil).Copy), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Copy", reflect.TypeOf((*MockEntryService)(nil).Copy), arg0, arg1, arg2)
 }
 
 // CopyDescendants mocks base method.
