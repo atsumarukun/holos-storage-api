@@ -4,7 +4,7 @@ go 1.27.3
 
 require (
 	github.com/DATA-DOG/go-sqlmock v1.5.2
-	github.com/atsumarukun/holos-api-pkg v1.0.2
+	github.com/atsumarukun/holos-api-pkg v1.0.3
 	github.com/gin-gonic/gin v1.10.0
 	github.com/go-sql-driver/mysql v1.9.2
 	github.com/google/go-cmp v0.7.0
